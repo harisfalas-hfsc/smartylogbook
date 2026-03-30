@@ -53,13 +53,16 @@ export interface ChecklistItem {
 // ===== MONEY =====
 export interface MoneyEntry {
   id: string;
-  type: 'expense' | 'income' | 'bill' | 'savings-deposit' | 'savings-withdraw';
+  type: 'expense' | 'income' | 'bill' | 'savings-deposit' | 'savings-withdraw' | 'transfer';
   amount: number;
   categoryTag: string;
   note: string;
   date: string;
+  paymentMethod?: 'cash' | 'card' | 'other';
   recurring?: boolean;
   recurringInterval?: 'weekly' | 'monthly' | 'yearly';
+  billDueDate?: string;
+  billPaid?: boolean;
 }
 
 export interface SavingsGoal {
