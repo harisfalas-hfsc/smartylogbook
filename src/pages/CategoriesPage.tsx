@@ -10,7 +10,7 @@ const CategoriesPage = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen pb-24 px-4 pt-6 max-w-lg mx-auto">
+    <div className="min-h-screen pb-24 px-4 pt-0 max-w-lg mx-auto">
       <h1 className="text-xl font-bold text-foreground mb-1">Categories</h1>
       <p className="text-sm text-muted-foreground mb-5">Tap a category to view and manage entries</p>
 
