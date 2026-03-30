@@ -136,14 +136,26 @@ export interface WorkEntry {
 }
 
 // ===== FAMILY =====
+export type FamilyEntryType = 'event' | 'task' | 'note' | 'person';
+
 export interface FamilyEvent {
   id: string;
+  type: FamilyEntryType;
   subcategory: string;
   title: string;
   notes: string;
   date: string;
+  time?: string;
   importance: 'normal' | 'important' | 'critical';
   recurring?: boolean;
+  repeat?: 'none' | 'yearly' | 'monthly' | 'weekly' | 'custom';
+  assignedTo?: 'me' | 'partner' | 'kid';
+  completed?: boolean;
+  relationship?: string;
+  birthday?: string;
+  anniversary?: string;
+  linkedPersonId?: string;
+  createdAt: string;
 }
 
 // ===== GROWTH =====

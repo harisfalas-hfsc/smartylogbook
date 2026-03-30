@@ -26,7 +26,7 @@ const InsightsPage = () => {
   const weekSpending = money.filter(e => e.type === 'expense' && (Date.now() - new Date(e.date).getTime()) / 86400000 <= 7).reduce((s, e) => s + e.amount, 0);
 
   return (
-    <div className="min-h-screen pb-24 px-4 pt-0 max-w-lg mx-auto">
+    <div className="min-h-screen pb-24 px-4 pt-1 max-w-lg mx-auto">
       <div className="flex items-center gap-3 mb-6">
         <button onClick={() => navigate('/')} className="w-9 h-9 rounded-xl bg-secondary flex items-center justify-center">
           <ArrowLeft className="w-5 h-5 text-foreground" />

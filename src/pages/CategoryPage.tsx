@@ -30,7 +30,7 @@ const CategoryPage = () => {
   const Component = categoryComponents[category.id];
 
   return (
-    <div className="min-h-screen pb-24 px-4 pt-0 max-w-lg mx-auto">
+    <div className="min-h-screen pb-24 px-4 pt-1 max-w-lg mx-auto">
       <div className="flex items-center gap-3 mb-5">
         <button onClick={() => navigate('/categories')} className="w-9 h-9 rounded-xl bg-secondary flex items-center justify-center">
           <ArrowLeft className="w-5 h-5 text-foreground" />
