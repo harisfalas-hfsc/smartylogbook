@@ -24,16 +24,22 @@ export const CATEGORIES: CategoryInfo[] = [
 ];
 
 // ===== LIFE =====
+export type NoteType = 'note' | 'task' | 'reminder';
+
 export interface Note {
   id: string;
   title: string;
   content: string;
   category: Category;
+  noteType: NoteType;
   pinned: boolean;
   archived: boolean;
   color: string;
   checklist: ChecklistItem[];
+  tags: string[];
   linkedNoteIds: string[];
+  reminderDate?: string;
+  reminderTime?: string;
   createdAt: string;
   updatedAt: string;
 }
