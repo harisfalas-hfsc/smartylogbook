@@ -1,16 +1,89 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { CheckSquare, DollarSign, Heart, Target } from 'lucide-react';
+import OverviewCard from '@/components/OverviewCard';
+import { getNotes, getExpenses, getWorkouts } from '@/lib/store';
+import logo from '@/assets/logo.png';
 
-// IMPORTANT: Fully REPLACE this with your own code
-const PlaceholderIndex = () => {
-  // PLACEHOLDER: Replace this entire return statement with the user's app.
-  // The inline background color is intentionally not part of the design system.
+const getGreeting = () => {
+  const h = new Date().getHours();
+  if (h < 12) return 'Good morning';
+  if (h < 17) return 'Good afternoon';
+  return 'Good evening';
+};
+
+const Index = () => {
+  const notes = getNotes();
+  const expenses = getExpenses();
+  const workouts = getWorkouts();
+
+  const today = new Date().toISOString().slice(0, 10);
+  const todayTasks = notes.filter(n => n.checklist.length > 0 && n.createdAt.startsWith(today));
+  const todaySpending = expenses
+    .filter(e => e.date.startsWith(today))
+    .reduce((s, e) => s + e.amount, 0);
+  const weekWorkouts = workouts.filter(w => {
+    const d = new Date(w.date);
+    const now = new Date();
+    const diff = (now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24);
+    return diff <= 7;
+  });
+
   return (
-    <div className="flex min-h-screen items-center justify-center" style={{ backgroundColor: '#fcfbf8' }}>
-      <img data-lovable-blank-page-placeholder="REMOVE_THIS" src="/placeholder.svg" alt="Your app will live here!" />
+    <div className="min-h-screen pb-24 px-4 pt-6 max-w-lg mx-auto">
+      <div className="flex items-center gap-3 mb-6">
+        <img src={logo} alt="Smarty Logbook" className="w-10 h-10 rounded-xl" />
+        <div>
+          <p className="text-sm text-muted-foreground">{getGreeting()} 👋</p>
+          <h1 className="text-xl font-bold text-foreground">Smarty Logbook</h1>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <OverviewCard
+          icon={<CheckSquare className="w-4 h-4" />}
+          label="Today's Tasks"
+          value={todayTasks.length}
+          sub={`${notes.filter(n => !n.archived).length} active notes`}
+        />
+        <OverviewCard
+          icon={<DollarSign className="w-4 h-4" />}
+          label="Today's Spending"
+          value={`$${todaySpending.toFixed(2)}`}
+          sub={`${expenses.length} total entries`}
+        />
+        <OverviewCard
+          icon={<Heart className="w-4 h-4" />}
+          label="Workouts (7d)"
+          value={weekWorkouts.length}
+          sub="Keep it up!"
+        />
+        <OverviewCard
+          icon={<Target className="w-4 h-4" />}
+          label="Active Notes"
+          value={notes.filter(n => !n.archived).length}
+          sub="Across all categories"
+        />
+      </div>
+
+      <div className="mt-6">
+        <h2 className="text-sm font-semibold text-muted-foreground mb-3">Pinned Notes</h2>
+        {notes.filter(n => n.pinned && !n.archived).length === 0 ? (
+          <div className="bg-card rounded-2xl p-6 shadow-card text-center">
+            <p className="text-muted-foreground text-sm">No pinned notes yet.</p>
+            <p className="text-muted-foreground text-xs mt-1">Tap + to create your first entry!</p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {notes.filter(n => n.pinned && !n.archived).map(note => (
+              <div key={note.id} className="bg-card rounded-2xl p-4 shadow-card animate-fade-in">
+                <p className="font-semibold text-foreground text-sm">{note.title}</p>
+                <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{note.content}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
-
-const Index = PlaceholderIndex;
 
 export default Index;
