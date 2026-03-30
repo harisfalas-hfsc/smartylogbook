@@ -11,6 +11,7 @@ import CategoryPage from "./pages/CategoryPage";
 import NotFound from "./pages/NotFound";
 import BottomNav from "./components/BottomNav";
 import FabButton from "./components/FabButton";
+import AppHeader from "./components/AppHeader";
 
 const queryClient = new QueryClient();
 
@@ -20,6 +21,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <AppHeader />
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/categories" element={<CategoriesPage />} />
