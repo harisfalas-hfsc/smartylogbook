@@ -417,16 +417,6 @@ const MoneyCategory = () => {
         </div>
       )}
 
-      {/* ===== TABS ===== */}
-      <div className="flex gap-1 bg-secondary rounded-xl p-1 mb-4 mt-4 sticky top-0 z-10"
-        style={{ order: -1, position: 'relative' }}>
-        {tabs.map(t => (
-          <button key={t.key} onClick={() => { setTab(t.key); setShowForm(null); }}
-            className={`flex-1 py-2 rounded-lg text-[10px] font-medium transition-colors ${tab === t.key ? 'bg-card text-foreground shadow-card' : 'text-muted-foreground'}`}>
-            {t.label}
-          </button>
-        ))}
-      </div>
 
       {/* ===== FORMS ===== */}
       {showForm && (
