@@ -6,7 +6,7 @@ const AppHeader = () => {
       <img
         src={logo}
         alt="Smarty Logbook"
-        className="h-36 w-auto object-contain"
+        className="h-20 w-auto object-contain"
       />
     </div>
   );
