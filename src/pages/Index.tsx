@@ -34,7 +34,7 @@ const Index = () => {
   const balance = totalIncome - totalExpenses;
 
   return (
-    <div className="min-h-screen pb-24 px-4 pt-2 max-w-lg mx-auto">
+    <div className="min-h-screen pb-24 px-4 pt-0 max-w-lg mx-auto">
       {/* Greeting + Time */}
       <div className="text-center mb-5">
         <p className="text-sm text-muted-foreground">{getGreeting()} 👋</p>
