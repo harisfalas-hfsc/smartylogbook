@@ -1,13 +1,12 @@
-import logo from '@/assets/logo.png';
+import logo from '@/assets/logo-tight.png';
 
 const AppHeader = () => {
   return (
-    <div className="flex items-center justify-center py-1 bg-background sticky top-0 z-50">
+    <div className="sticky top-0 z-50 flex items-center justify-center bg-background py-0">
       <img
         src={logo}
         alt="Smarty Logbook"
         className="h-36 w-auto object-contain"
-        style={{ mixBlendMode: 'multiply' }}
       />
     </div>
   );
