@@ -80,7 +80,7 @@ const BottomNav = () => {
         )}
       </AnimatePresence>
 
-      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-card border-t border-border safe-area-bottom">
+      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-background border-t border-border safe-area-bottom">
         <div className="max-w-lg mx-auto grid grid-cols-5 items-center h-16 px-1">
           {tabs.slice(0, 2).map((tab) => {
             const active = isActive(tab.path);
