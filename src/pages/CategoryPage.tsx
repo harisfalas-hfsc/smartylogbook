@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { CATEGORIES } from '@/lib/types';
 import LifeCategory from '@/components/categories/LifeCategory';
@@ -8,7 +8,7 @@ import WorkCategory from '@/components/categories/WorkCategory';
 import FamilyCategory from '@/components/categories/FamilyCategory';
 import GrowthCategory from '@/components/categories/GrowthCategory';
 
-const categoryComponents: Record<string, React.FC> = {
+const categoryComponents: Record<string, React.ComponentType<{ quickAdd?: boolean }>> = {
   life: LifeCategory,
   money: MoneyCategory,
   health: HealthCategory,
@@ -20,6 +20,8 @@ const categoryComponents: Record<string, React.FC> = {
 const CategoryPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const quickAdd = searchParams.get('add') === '1';
   const category = CATEGORIES.find(c => c.id === id);
 
   if (!category) {
@@ -41,7 +43,7 @@ const CategoryPage = () => {
         </div>
       </div>
 
-      {Component && <Component />}
+      {Component && <Component quickAdd={quickAdd} />}
     </div>
   );
 };

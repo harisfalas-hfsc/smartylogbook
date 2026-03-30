@@ -10,7 +10,7 @@ import SettingsPage from "./pages/SettingsPage";
 import CategoryPage from "./pages/CategoryPage";
 import NotFound from "./pages/NotFound";
 import BottomNav from "./components/BottomNav";
-import FabButton from "./components/FabButton";
+
 import AppHeader from "./components/AppHeader";
 
 const queryClient = new QueryClient();
@@ -30,7 +30,7 @@ const App = () => (
           <Route path="/category/:id" element={<CategoryPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
-        <FabButton />
+        
         <BottomNav />
       </BrowserRouter>
     </TooltipProvider>

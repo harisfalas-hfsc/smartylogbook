@@ -8,7 +8,11 @@ import NoteEditor from '@/components/NoteEditor';
 type ViewFilter = 'all' | 'notes' | 'tasks' | 'reminders' | 'pinned';
 type QuickCreate = 'note' | 'task' | null;
 
-const LifeCategory = () => {
+interface LifeCategoryProps {
+  quickAdd?: boolean;
+}
+
+const LifeCategory = ({ quickAdd = false }: LifeCategoryProps) => {
   const [notes, setNotes] = useState<Note[]>([]);
   const [editing, setEditing] = useState<Note | null>(null);
   const [creating, setCreating] = useState<QuickCreate>(null);
@@ -28,6 +32,14 @@ const LifeCategory = () => {
   }, []);
 
   const refresh = () => setNotes(getNotes().filter(n => n.category === 'life' && !n.archived));
+
+  useEffect(() => {
+    if (quickAdd) {
+      setCreating('note');
+      setEditing(null);
+      setShowQuickMenu(false);
+    }
+  }, [quickAdd]);
 
   const filtered = (() => {
     let result = notes;

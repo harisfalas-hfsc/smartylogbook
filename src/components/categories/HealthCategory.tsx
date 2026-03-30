@@ -11,7 +11,11 @@ type Tab = 'dashboard' | 'workout' | 'sleep' | 'weight' | 'activity' | 'readines
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-const HealthCategory = () => {
+interface HealthCategoryProps {
+  quickAdd?: boolean;
+}
+
+const HealthCategory = ({ quickAdd = false }: HealthCategoryProps) => {
   const [workouts, setWorkouts] = useState<WorkoutEntry[]>([]);
   const [weights, setWeights] = useState<WeightEntry[]>([]);
   const [sleeps, setSleeps] = useState<SleepEntry[]>([]);
@@ -60,6 +64,13 @@ const HealthCategory = () => {
     setCustomMetrics(getCustomMetrics());
     setActivities(getActivityEntries());
   }, []);
+
+  useEffect(() => {
+    if (quickAdd) {
+      setTab('workout');
+      setShowForm(true);
+    }
+  }, [quickAdd]);
 
   // ---- Derived data ----
   const thisWeekStart = new Date();

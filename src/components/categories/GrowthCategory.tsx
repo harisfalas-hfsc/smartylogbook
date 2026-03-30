@@ -14,7 +14,11 @@ const REFLECTION_PROMPTS = [
   'What made you smile?',
 ];
 
-const GrowthCategory = () => {
+interface GrowthCategoryProps {
+  quickAdd?: boolean;
+}
+
+const GrowthCategory = ({ quickAdd = false }: GrowthCategoryProps) => {
   const [moods, setMoods] = useState<MoodEntry[]>([]);
   const [goals, setGoals] = useState<GoalEntry[]>([]);
   const [habits, setHabits] = useState<HabitEntry[]>([]);
@@ -37,6 +41,13 @@ const GrowthCategory = () => {
     setHabits(getHabits());
     setReflections(getReflections());
   }, []);
+
+  useEffect(() => {
+    if (quickAdd) {
+      setTab('mood');
+      setShowForm(true);
+    }
+  }, [quickAdd]);
 
   // ---- Streak calculation ----
   function getStreak(dates: string[]): number {

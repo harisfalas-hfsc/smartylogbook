@@ -9,7 +9,11 @@ type RepeatType = 'none' | 'yearly' | 'monthly' | 'weekly' | 'custom';
 
 type AssignedTo = 'me' | 'partner' | 'kid';
 
-const FamilyCategory = () => {
+interface FamilyCategoryProps {
+  quickAdd?: boolean;
+}
+
+const FamilyCategory = ({ quickAdd = false }: FamilyCategoryProps) => {
   const [entries, setEntries] = useState<FamilyEvent[]>([]);
   const [tabs, setTabs] = useState<string[]>(() => {
     const saved = localStorage.getItem('smarty_family_tabs');
@@ -49,6 +53,13 @@ const FamilyCategory = () => {
 
     setEntries(normalized);
   }, []);
+
+  useEffect(() => {
+    if (quickAdd) {
+      setActiveTab('Events');
+      setShowForm(true);
+    }
+  }, [quickAdd]);
 
   const today = new Date();
   const todayStr = new Date().toISOString().slice(0, 10);

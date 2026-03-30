@@ -13,7 +13,11 @@ const PAYMENT_METHODS = [
   { value: 'other' as const, label: 'Other', icon: MoreHorizontal },
 ];
 
-const MoneyCategory = () => {
+interface MoneyCategoryProps {
+  quickAdd?: boolean;
+}
+
+const MoneyCategory = ({ quickAdd = false }: MoneyCategoryProps) => {
   const [entries, setEntries] = useState<MoneyEntry[]>([]);
   const [goals, setGoals] = useState<SavingsGoal[]>([]);
   const [tab, setTab] = useState<Tab>('dashboard');
@@ -40,6 +44,13 @@ const MoneyCategory = () => {
   const today = new Date().toISOString().slice(0, 10);
 
   useEffect(() => { setEntries(getMoneyEntries()); setGoals(getSavingsGoals()); }, []);
+
+  useEffect(() => {
+    if (quickAdd) {
+      setTab('expenses');
+      setShowForm('expense');
+    }
+  }, [quickAdd]);
 
   // ===== CALCULATIONS =====
   const totalIncome = entries.filter(e => e.type === 'income').reduce((s, e) => s + e.amount, 0);

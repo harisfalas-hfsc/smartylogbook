@@ -7,7 +7,11 @@ const DEFAULT_SUBS = ['Work Log', 'Ideas', 'Meetings'];
 
 type Tab = 'dashboard' | 'log';
 
-const WorkCategory = () => {
+interface WorkCategoryProps {
+  quickAdd?: boolean;
+}
+
+const WorkCategory = ({ quickAdd = false }: WorkCategoryProps) => {
   const [entries, setEntries] = useState<WorkEntry[]>([]);
   const [subcategories, setSubcategories] = useState<string[]>(() => {
     const saved = localStorage.getItem('smarty_work_subs');
@@ -25,6 +29,14 @@ const WorkCategory = () => {
   const today = new Date().toISOString().slice(0, 10);
 
   useEffect(() => { setEntries(getWorkEntries()); }, []);
+
+  useEffect(() => {
+    if (quickAdd) {
+      setTab('log');
+      setActiveSub('Work Log');
+      setShowForm(true);
+    }
+  }, [quickAdd]);
 
   const filtered = entries.filter(e => e.subcategory === activeSub);
   const todayEntries = entries.filter(e => e.date === today);
