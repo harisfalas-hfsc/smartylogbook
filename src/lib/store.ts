@@ -35,6 +35,18 @@ export function saveWeightEntries(entries: WeightEntry[]) { set('smarty_weight',
 export function getSleepEntries(): SleepEntry[] { return get('smarty_sleep', []); }
 export function saveSleepEntries(entries: SleepEntry[]) { set('smarty_sleep', entries); }
 
+// Readiness
+export function getReadinessEntries(): ReadinessEntry[] { return get('smarty_readiness', []); }
+export function saveReadinessEntries(entries: ReadinessEntry[]) { set('smarty_readiness', entries); }
+
+// Custom Health Metrics
+export function getCustomMetrics(): CustomHealthMetric[] { return get('smarty_custom_metrics', []); }
+export function saveCustomMetrics(metrics: CustomHealthMetric[]) { set('smarty_custom_metrics', metrics); }
+
+// Activities
+export function getActivityEntries(): ActivityEntry[] { return get('smarty_activities', []); }
+export function saveActivityEntries(entries: ActivityEntry[]) { set('smarty_activities', entries); }
+
 // Work
 export function getWorkEntries(): WorkEntry[] { return get('smarty_work', []); }
 export function saveWorkEntries(entries: WorkEntry[]) { set('smarty_work', entries); }
