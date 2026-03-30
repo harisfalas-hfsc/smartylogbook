@@ -1,6 +1,7 @@
 import { CheckSquare, DollarSign, Heart, Target } from 'lucide-react';
 import OverviewCard from '@/components/OverviewCard';
-import { getNotes, getExpenses, getWorkouts } from '@/lib/store';
+import { getNotes, getMoneyEntries, getWorkouts, getMoodEntries, getHabits } from '@/lib/store';
+import SmartSummary from '@/components/SmartSummary';
 import logo from '@/assets/logo.png';
 
 const getGreeting = () => {
@@ -12,20 +13,22 @@ const getGreeting = () => {
 
 const Index = () => {
   const notes = getNotes();
-  const expenses = getExpenses();
+  const money = getMoneyEntries();
   const workouts = getWorkouts();
 
   const today = new Date().toISOString().slice(0, 10);
   const todayTasks = notes.filter(n => n.checklist.length > 0 && n.createdAt.startsWith(today));
-  const todaySpending = expenses
-    .filter(e => e.date.startsWith(today))
+  const todaySpending = money
+    .filter(e => e.type === 'expense' && e.date.startsWith(today))
     .reduce((s, e) => s + e.amount, 0);
   const weekWorkouts = workouts.filter(w => {
-    const d = new Date(w.date);
-    const now = new Date();
-    const diff = (now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24);
+    const diff = (Date.now() - new Date(w.date).getTime()) / (1000 * 60 * 60 * 24);
     return diff <= 7;
   });
+
+  const totalIncome = money.filter(e => e.type === 'income').reduce((s, e) => s + e.amount, 0);
+  const totalExpenses = money.filter(e => e.type === 'expense').reduce((s, e) => s + e.amount, 0);
+  const balance = totalIncome - totalExpenses;
 
   return (
     <div className="min-h-screen pb-24 px-4 pt-6 max-w-lg mx-auto">
@@ -37,7 +40,9 @@ const Index = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <SmartSummary />
+
+      <div className="grid grid-cols-2 gap-3 mt-4">
         <OverviewCard
           icon={<CheckSquare className="w-4 h-4" />}
           label="Today's Tasks"
@@ -46,15 +51,15 @@ const Index = () => {
         />
         <OverviewCard
           icon={<DollarSign className="w-4 h-4" />}
-          label="Today's Spending"
-          value={`$${todaySpending.toFixed(2)}`}
-          sub={`${expenses.length} total entries`}
+          label="Balance"
+          value={`$${balance.toFixed(2)}`}
+          sub={`$${todaySpending.toFixed(2)} spent today`}
         />
         <OverviewCard
           icon={<Heart className="w-4 h-4" />}
           label="Workouts (7d)"
           value={weekWorkouts.length}
-          sub="Keep it up!"
+          sub={weekWorkouts.length >= 3 ? '🔥 Great streak!' : 'Keep moving!'}
         />
         <OverviewCard
           icon={<Target className="w-4 h-4" />}
