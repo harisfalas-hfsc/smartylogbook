@@ -1,6 +1,7 @@
+import { useState, useEffect } from 'react';
 import { CheckSquare, DollarSign, Heart, Target } from 'lucide-react';
 import OverviewCard from '@/components/OverviewCard';
-import { getNotes, getMoneyEntries, getWorkouts, getMoodEntries, getHabits } from '@/lib/store';
+import { getNotes, getMoneyEntries, getWorkouts } from '@/lib/store';
 import SmartSummary from '@/components/SmartSummary';
 import logo from '@/assets/logo.png';
 
@@ -11,10 +12,24 @@ const getGreeting = () => {
   return 'Good evening';
 };
 
+const formatTime = (date: Date) => {
+  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+};
+
+const formatDate = (date: Date) => {
+  return date.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+};
+
 const Index = () => {
+  const [now, setNow] = useState(new Date());
   const notes = getNotes();
   const money = getMoneyEntries();
   const workouts = getWorkouts();
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const today = new Date().toISOString().slice(0, 10);
   const todayTasks = notes.filter(n => n.checklist.length > 0 && n.createdAt.startsWith(today));
@@ -32,12 +47,13 @@ const Index = () => {
 
   return (
     <div className="min-h-screen pb-24 px-4 pt-6 max-w-lg mx-auto">
-      <div className="flex items-center gap-3 mb-6">
-        <img src={logo} alt="Smarty Logbook" className="w-10 h-10 rounded-xl" />
-        <div>
-          <p className="text-sm text-muted-foreground">{getGreeting()} 👋</p>
-          <h1 className="text-xl font-bold text-foreground">Smarty Logbook</h1>
-        </div>
+      {/* Header with larger logo + time/date */}
+      <div className="flex flex-col items-center mb-6">
+        <img src={logo} alt="Smarty Logbook" className="w-20 h-20 rounded-2xl shadow-card mb-3" />
+        <p className="text-sm text-muted-foreground">{getGreeting()} 👋</p>
+        <h1 className="text-xl font-bold text-foreground">Smarty Logbook</h1>
+        <p className="text-3xl font-bold text-foreground mt-2 tabular-nums">{formatTime(now)}</p>
+        <p className="text-xs text-muted-foreground mt-0.5">{formatDate(now)}</p>
       </div>
 
       <SmartSummary />
