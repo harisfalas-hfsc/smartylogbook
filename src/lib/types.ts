@@ -15,12 +15,12 @@ export interface CategoryInfo {
 }
 
 export const CATEGORIES: CategoryInfo[] = [
-  { id: 'life', label: 'Life', icon: 'BookOpen', color: 'bg-primary', description: 'Notes, lists & reminders' },
-  { id: 'work', label: 'Work & Productivity', icon: 'Briefcase', color: 'bg-accent', description: 'Work log, ideas & meetings' },
-  { id: 'health', label: 'Health & Fitness', icon: 'Heart', color: 'bg-success', description: 'Workouts, sleep & tracking' },
-  { id: 'family', label: 'Family & Personal', icon: 'Users', color: 'bg-warning', description: 'Events, dates & family' },
-  { id: 'money', label: 'Money', icon: 'DollarSign', color: 'bg-info', description: 'Expenses, income & savings' },
-  { id: 'growth', label: 'Personal Growth', icon: 'TrendingUp', color: 'bg-primary', description: 'Goals, habits & reflection' },
+  { id: 'life', label: 'Life', icon: 'BookOpen', color: 'bg-cat-life', description: 'Notes, lists & reminders' },
+  { id: 'work', label: 'Work & Productivity', icon: 'Briefcase', color: 'bg-cat-work', description: 'Work log, ideas & meetings' },
+  { id: 'health', label: 'Health & Fitness', icon: 'Heart', color: 'bg-cat-health', description: 'Workouts, sleep & tracking' },
+  { id: 'family', label: 'Family & Personal', icon: 'Users', color: 'bg-cat-family', description: 'Events, dates & family' },
+  { id: 'money', label: 'Money', icon: 'DollarSign', color: 'bg-cat-money', description: 'Expenses, income & savings' },
+  { id: 'growth', label: 'Personal Growth', icon: 'TrendingUp', color: 'bg-cat-growth', description: 'Goals, habits & reflection' },
 ];
 
 // ===== LIFE =====
@@ -93,7 +93,7 @@ export interface WeightEntry {
 
 export interface SleepEntry {
   id: string;
-  rating: number; // 1-5
+  rating: number;
   hours?: number;
   notes?: string;
   date: string;
@@ -101,10 +101,10 @@ export interface SleepEntry {
 
 export interface ReadinessEntry {
   id: string;
-  energy: number; // 1-5
-  sleepQuality: number; // 1-5
-  stress: number; // 1-5
-  score: number; // calculated 1-10
+  energy: number;
+  sleepQuality: number;
+  stress: number;
+  score: number;
   date: string;
 }
 
@@ -161,7 +161,7 @@ export interface FamilyEvent {
 // ===== GROWTH =====
 export interface MoodEntry {
   id: string;
-  value: number; // 1-10
+  value: number;
   note: string;
   date: string;
 }
@@ -177,7 +177,7 @@ export interface GoalEntry {
 export interface HabitEntry {
   id: string;
   name: string;
-  dates: string[]; // dates completed (YYYY-MM-DD)
+  dates: string[];
 }
 
 export interface ReflectionEntry {
