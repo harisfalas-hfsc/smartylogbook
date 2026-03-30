@@ -95,6 +95,16 @@ export interface SleepEntry {
   id: string;
   rating: number; // 1-5
   hours?: number;
+  notes?: string;
+  date: string;
+}
+
+export interface ReadinessEntry {
+  id: string;
+  energy: number; // 1-5
+  sleepQuality: number; // 1-5
+  stress: number; // 1-5
+  score: number; // calculated 1-10
   date: string;
 }
 
@@ -103,6 +113,14 @@ export interface CustomHealthMetric {
   name: string;
   value: number;
   unit: string;
+  date: string;
+}
+
+export interface ActivityEntry {
+  id: string;
+  type: 'walking' | 'steps' | 'general';
+  value: number;
+  notes: string;
   date: string;
 }
 
