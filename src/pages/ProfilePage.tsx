@@ -35,10 +35,7 @@ const ProfilePage = () => {
     }
   };
 
-  if (!user) {
-    navigate('/auth');
-    return null;
-  }
+  // Auth check handled by ProtectedRoute
 
   const initials = (profile?.username || user.email || 'U').slice(0, 2).toUpperCase();
 
