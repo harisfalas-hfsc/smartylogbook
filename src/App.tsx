@@ -19,6 +19,7 @@ import HelpPage from "./pages/HelpPage";
 import NotFound from "./pages/NotFound";
 import BottomNav from "./components/BottomNav";
 import AppHeader from "./components/AppHeader";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
