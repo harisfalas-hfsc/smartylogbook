@@ -32,18 +32,18 @@ const App = () => (
         <AuthProvider>
           <AppHeader />
           <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/categories" element={<CategoriesPage />} />
-            <Route path="/insights" element={<InsightsPage />} />
-            <Route path="/settings" element={<ProfilePage />} />
-            <Route path="/category/:id" element={<CategoryPage />} />
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
-            <Route path="/profile/account" element={<AccountPage />} />
-            <Route path="/profile/notifications" element={<NotificationsPage />} />
-            <Route path="/profile/privacy" element={<PrivacyPage />} />
-            <Route path="/profile/terms" element={<TermsPage />} />
-            <Route path="/profile/help" element={<HelpPage />} />
+            <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+            <Route path="/categories" element={<ProtectedRoute><CategoriesPage /></ProtectedRoute>} />
+            <Route path="/insights" element={<ProtectedRoute><InsightsPage /></ProtectedRoute>} />
+            <Route path="/settings" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+            <Route path="/category/:id" element={<ProtectedRoute><CategoryPage /></ProtectedRoute>} />
+            <Route path="/profile/account" element={<ProtectedRoute><AccountPage /></ProtectedRoute>} />
+            <Route path="/profile/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
+            <Route path="/profile/privacy" element={<ProtectedRoute><PrivacyPage /></ProtectedRoute>} />
+            <Route path="/profile/terms" element={<ProtectedRoute><TermsPage /></ProtectedRoute>} />
+            <Route path="/profile/help" element={<ProtectedRoute><HelpPage /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           <BottomNav />
