@@ -34,6 +34,7 @@ import AppearancePage from "./pages/AppearancePage";
 import RemindersPage from "./pages/RemindersPage";
 import OnboardingPage from "./pages/OnboardingPage";
 import NotFound from "./pages/NotFound";
+import AnalyticsTracker from "./components/AnalyticsTracker";
 
 const queryClient = new QueryClient();
 
@@ -44,6 +45,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
+          <AnalyticsTracker />
           <Routes>
             <Route element={<PublicLayout />}>
               <Route path="/" element={<Landing />} />
