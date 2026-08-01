@@ -1,125 +1,137 @@
-import {
-  Brain, Camera, Mic, FileText, Link2, MessageCircle, Clock,
-  Bell, Sparkles, ShieldCheck, CheckCircle2,
-} from 'lucide-react';
-import { Block, PageHeader, CtaCard, BrandText, problems, features } from '@/lib/marketing';
+import { Brain, Sparkles, Layers, ShieldCheck } from 'lucide-react';
+import { Panel, SubCard, MiniRow, Divider, PageHeader, CtaCard, BrandText, features } from '@/lib/marketing';
 import { MODULES } from '@/lib/constants';
 
 const pillars = [
-  { icon: Camera, emoji: '📥', title: 'Capture anything', text: 'Text, voice, a photo of a receipt, a lab report, a screenshot. One tap and it is in.' },
-  { icon: Brain, emoji: '🧠', title: 'The AI classifies it', text: 'You never pick a category. The Smarty Assistant reads it, understands it and files it.' },
-  { icon: Link2, emoji: '🔗', title: 'It connects the dots', text: 'A new scan links to an old injury. A receipt links to a monthly bill. Your life becomes a graph.' },
-  { icon: MessageCircle, emoji: '💬', title: 'Ask in plain language', text: '"What did the doctor say in March?" It searches your whole logbook and answers.' },
+  { e: '📥', t: 'Capture anything', s: 'Text, voice, a receipt photo, a lab report, a screenshot.' },
+  { e: '🧠', t: 'It classifies it', s: 'You never pick a category. The Assistant reads and files it.' },
+  { e: '🔗', t: 'It connects it', s: 'A scan links to an old injury. A receipt to a monthly bill.' },
+  { e: '💬', t: 'Ask in plain words', s: '"What did the doctor say in March?" It answers.' },
+];
+
+const problemsShort = [
+  { e: '📱', t: 'Ten apps, one life', s: 'Everything scattered, nothing connected.' },
+  { e: '🗒️', t: 'Notes go to die', s: 'Written once, never read again.' },
+  { e: '🧾', t: 'Paper disappears', s: 'Receipts and reports lost in a camera roll.' },
+  { e: '🔁', t: 'No learning', s: 'You remember the past but never learn from it.' },
 ];
 
 const assistantPowers = [
-  { e: '🗣️', t: 'Talk to it', s: 'Chat by text or voice, attach a photo or a document and ask what it means.' },
-  { e: '🔎', t: 'It knows your logbook', s: 'Every answer is grounded in what you actually captured.' },
-  { e: '🧩', t: 'It links everything', s: 'New entries attach to the older ones they belong with.' },
-  { e: '📌', t: 'It plans ahead', s: 'Reminders, renewals and follow-ups created automatically.' },
+  { e: '🗣️', t: 'Talk to it', s: 'Text or voice, attach a photo or document.' },
+  { e: '🔎', t: 'Knows your logbook', s: 'Every answer grounded in what you captured.' },
+  { e: '🧩', t: 'Links everything', s: 'New entries attach to the ones they belong with.' },
+  { e: '📌', t: 'Plans ahead', s: 'Reminders and follow-ups created for you.' },
+  { e: '❓', t: 'Asks, never guesses', s: 'Missing a date or amount? It asks one question.' },
+  { e: '☀️', t: 'Daily brief', s: 'One headline, the actions that matter, nothing else.' },
 ];
 
-const abilities = [
-  { emoji: '🎙️', icon: Mic, t: 'Voice capture', s: 'Speak it. Transcribed, understood, stored.' },
-  { emoji: '🧾', icon: FileText, t: 'Document intelligence', s: 'Dates, amounts and results extracted automatically.' },
-  { emoji: '🕰️', icon: Clock, t: 'Universal timeline', s: 'One feed of your life, filtered by day, week, month or year.' },
-  { emoji: '☀️', icon: Sparkles, t: 'Daily brief', s: 'One headline, the actions that matter, nothing else.' },
-  { emoji: '🔔', icon: Bell, t: 'Proactive reminders', s: 'Bills, check-ups and follow-ups before you forget.' },
-  { emoji: '💡', icon: Brain, t: 'Pattern insights', s: 'Plain language observations — no scores, no dashboards.' },
-  { emoji: '❓', icon: MessageCircle, t: 'Follow-up questions', s: 'When something is missing, it asks instead of guessing.' },
-  { emoji: '🔒', icon: ShieldCheck, t: 'Private by design', s: 'Encrypted storage. Export or delete any time.' },
+const promises = [
+  { e: '📂', t: 'No folders', s: 'Nothing to file. Nothing to name.' },
+  { e: '🏷️', t: 'No tags', s: 'The Assistant writes them for you.' },
+  { e: '🔢', t: 'No scores', s: 'Plain language, never numbers to decode.' },
+];
+
+const privacy = [
+  { e: '🔒', t: 'Encrypted storage', s: 'Protected in transit and at rest.' },
+  { e: '🙋', t: 'Yours only', s: 'Every entry gated behind your account.' },
+  { e: '📤', t: 'Export or delete', s: 'Take everything, or erase it, any time.' },
 ];
 
 const AboutPage = () => (
-  <div className="mx-auto max-w-5xl px-4 py-8 sm:px-5 sm:py-10">
+  <div className="mx-auto max-w-6xl px-3 py-7 sm:px-5 sm:py-10">
     <PageHeader
       eyebrow="About"
       title="The Smarty Logbook that remembers your life better than you do."
-      subtitle="One place where everything that happens to you is captured, understood and connected — by an AI that does all the organising for you."
+      subtitle="One place where everything that happens to you is captured, understood and connected — by an AI that does all the organising."
     />
 
-    {/* Pillars */}
-    <Block>
-      <div className="grid gap-3 sm:grid-cols-2">
-        {pillars.map((p, i) => (
-          <div key={p.title} className="smarty-card relative overflow-hidden p-5">
-            <span className="absolute right-4 top-3 text-3xl font-extrabold text-secondary">{i + 1}</span>
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-secondary text-xl">{p.emoji}</span>
-            <p className="mt-3 text-[15px] font-bold text-foreground">{p.title}</p>
-            <p className="mt-1.5 text-[13px] leading-relaxed text-muted-foreground">{p.text}</p>
+    <Panel
+      eyebrow="Our mission"
+      eyebrowEmoji="🌱"
+      badge={Sparkles}
+      title={<>Your life, <span className="gradient-text">remembered.</span></>}
+      lead="Smarty Logbook takes the work of organising, filing and remembering off your hands. You throw things in; the Smarty Assistant makes sense of them."
+    >
+      <div className="grid gap-3 lg:grid-cols-2">
+        <SubCard label="How it feels" labelEmoji="✨">
+          <div className="grid gap-2 sm:grid-cols-2">
+            {pillars.map((p) => (
+              <MiniRow key={p.t} emoji={p.e} title={p.t} text={p.s} />
+            ))}
           </div>
-        ))}
-      </div>
-    </Block>
+          <Divider />
+          <p className="text-[12.5px] leading-relaxed text-muted-foreground">
+            <BrandText>Six seconds of effort from you. Everything after that is Smarty Logbook.</BrandText>
+          </p>
+        </SubCard>
 
-    {/* Problem */}
-    <Block title="Why it exists" subtitle="The reason nothing else worked.">
-      <div className="grid gap-2.5 sm:grid-cols-2">
-        {problems.map((p) => (
-          <div key={p} className="smarty-card flex items-start gap-2.5 p-4">
-            <span className="text-base leading-none">⚠️</span>
-            <p className="text-[13px] font-medium text-muted-foreground">{p}</p>
+        <SubCard label="Why it exists" labelEmoji="⚠️">
+          <div className="grid gap-2">
+            {problemsShort.map((p) => (
+              <MiniRow key={p.t} emoji={p.e} title={p.t} text={p.s} />
+            ))}
           </div>
-        ))}
+        </SubCard>
       </div>
-    </Block>
+    </Panel>
 
-    {/* Assistant */}
-    <Block title="The Smarty Assistant" subtitle="The brain behind everything. Included with Premium.">
-      <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
+    <Panel
+      eyebrow="What powers Smarty Logbook"
+      eyebrowEmoji="🧠"
+      badge={Brain}
+      title={<>The <span className="gradient-text">Smarty Assistant</span></>}
+      lead="The brain behind everything — included with Premium. It reads, files, links, reminds and answers, so your logbook stays organised without you touching it."
+    >
+      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
         {assistantPowers.map((a) => (
-          <div key={a.t} className="smarty-card p-4 sm:p-5">
-            <span className="text-xl leading-none">{a.e}</span>
-            <p className="mt-2.5 text-sm font-bold text-foreground">{a.t}</p>
-            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{a.s}</p>
-          </div>
+          <MiniRow key={a.t} emoji={a.e} title={a.t} text={a.s} />
         ))}
       </div>
-    </Block>
+    </Panel>
 
-    {/* Abilities */}
-    <Block title="What it can do" subtitle="Everything below happens without you organising anything.">
-      <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
-        {abilities.map((a) => (
-          <div key={a.t} className="smarty-card p-4 sm:p-5">
-            <div className="flex items-center gap-2">
-              <span className="text-lg leading-none">{a.emoji}</span>
-              <a.icon className="h-4 w-4 text-primary" />
-            </div>
-            <p className="mt-2.5 text-sm font-bold text-foreground">{a.t}</p>
-            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{a.s}</p>
+    <Panel
+      eyebrow="Everything it does"
+      eyebrowEmoji="⚡"
+      badge={Layers}
+      title={<>Twelve things you <span className="gradient-text">never do again.</span></>}
+      lead="No setup, no maintenance, no organising — the whole feature set works in the background."
+    >
+      <div className="grid gap-3 lg:grid-cols-2">
+        <SubCard label="Capture & understand" labelEmoji="📥">
+          <div className="grid gap-2">
+            {features.slice(0, 6).map((f) => (
+              <MiniRow key={f.title} emoji={f.emoji} title={f.title} text={f.text} />
+            ))}
           </div>
-        ))}
-      </div>
-    </Block>
-
-    {/* Full feature list */}
-    <Block title="Every feature, in one list" subtitle="Twelve things Smarty Logbook does so you don't have to.">
-      <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
-        {features.map((f) => (
-          <div key={f.title} className="smarty-card p-4 sm:p-5">
-            <div className="flex items-center gap-2">
-              <span className="text-lg leading-none">{f.emoji}</span>
-              <f.icon className="h-4 w-4 text-primary" />
-            </div>
-            <p className="mt-2.5 text-sm font-bold text-foreground">{f.title}</p>
-            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{f.text}</p>
+        </SubCard>
+        <SubCard label="Recall & guidance" labelEmoji="💡">
+          <div className="grid gap-2">
+            {features.slice(6).map((f) => (
+              <MiniRow key={f.title} emoji={f.emoji} title={f.title} text={f.text} />
+            ))}
           </div>
-        ))}
+        </SubCard>
       </div>
-    </Block>
+    </Panel>
 
-    {/* Modules */}
-    <Block title="The life modules" subtitle="You never choose one — the Assistant files each memory where it belongs.">
-      <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4">
+    <Panel
+      eyebrow="Life modules"
+      eyebrowEmoji="🗂️"
+      badge={Layers}
+      title={<>You never choose <span className="gradient-text">where it goes.</span></>}
+      lead="Every memory lands in the right module automatically. These are the areas your life gets filed into."
+    >
+      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
         {MODULES.map((m) => (
-          <div key={m.id} className="smarty-card p-4">
-            <div className={`flex h-9 w-9 items-center justify-center rounded-2xl ${m.tint}`}>
-              <m.icon className={`h-4 w-4 ${m.color}`} />
+          <div key={m.id} className="rounded-2xl border border-primary/15 bg-card p-3.5">
+            <div className="flex items-center gap-2.5">
+              <span className={`flex h-9 w-9 items-center justify-center rounded-xl ${m.tint}`}>
+                <m.icon className={`h-4 w-4 ${m.color}`} />
+              </span>
+              <p className="text-sm font-bold text-foreground">{m.label}</p>
             </div>
-            <p className="mt-2.5 text-sm font-bold text-foreground">{m.label}</p>
-            <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{m.description}</p>
-            <div className="mt-2.5 flex flex-wrap gap-1">
+            <p className="mt-2 text-[11.5px] leading-relaxed text-muted-foreground">{m.description}</p>
+            <div className="mt-2 flex flex-wrap gap-1">
               {m.topics.slice(0, 4).map((t) => (
                 <span key={t} className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-semibold text-muted-foreground">
                   {t}
@@ -129,33 +141,32 @@ const AboutPage = () => (
           </div>
         ))}
       </div>
-    </Block>
+    </Panel>
 
-    {/* Promise */}
-    <Block title="The promise">
-      <div className="grid gap-2.5 sm:grid-cols-3">
-        {[
-          { e: '📂', t: 'No folders', s: 'Nothing to file. Nothing to name.' },
-          { e: '🏷️', t: 'No tags', s: 'The Assistant writes them for you.' },
-          { e: '🔢', t: 'No scores', s: 'Plain language, never numbers to decode.' },
-        ].map((c) => (
-          <div key={c.t} className="smarty-card p-5">
-            <div className="flex items-center gap-2">
-              <span className="text-lg leading-none">{c.e}</span>
-              <CheckCircle2 className="h-4 w-4 text-primary" />
-            </div>
-            <p className="mt-2.5 text-sm font-bold text-foreground">{c.t}</p>
-            <p className="mt-1 text-xs text-muted-foreground">{c.s}</p>
+    <Panel
+      eyebrow="The promise"
+      eyebrowEmoji="🤝"
+      badge={ShieldCheck}
+      title={<>Effortless, and <span className="gradient-text">private.</span></>}
+      lead="Free to start. Premium unlocks the Smarty Assistant for €9.99 per month."
+    >
+      <div className="grid gap-3 lg:grid-cols-2">
+        <SubCard label="What you never deal with" labelEmoji="🚫">
+          <div className="grid gap-2">
+            {promises.map((p) => (
+              <MiniRow key={p.t} emoji={p.e} title={p.t} text={p.s} />
+            ))}
           </div>
-        ))}
+        </SubCard>
+        <SubCard label="Your data" labelEmoji="🔐">
+          <div className="grid gap-2">
+            {privacy.map((p) => (
+              <MiniRow key={p.t} emoji={p.e} title={p.t} text={p.s} />
+            ))}
+          </div>
+        </SubCard>
       </div>
-    </Block>
-
-    <div className="smarty-card mb-10 p-5 text-center text-[13px] leading-relaxed text-muted-foreground">
-      <BrandText>
-        Smarty Logbook is free to start. Premium unlocks the Smarty Assistant for €9.99 per month.
-      </BrandText>
-    </div>
+    </Panel>
 
     <CtaCard text="Free to begin. Capture your first memory in under ten seconds — the Smarty Assistant handles the rest." />
   </div>
