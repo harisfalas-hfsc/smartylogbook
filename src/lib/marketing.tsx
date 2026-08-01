@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import {
   Brain, Camera, Clock, Fingerprint, Layers, Bell, Lock, Search, Shield,
   Sparkles, Wand2, Link2, MessageCircle, FileText, Mic,
@@ -132,11 +133,11 @@ export const CtaCard = ({ title, text }: { title?: string; text?: string }) => (
     <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
       {text ?? 'Free to begin. Capture your first memory in under ten seconds.'}
     </p>
-    <a
-      href="/auth"
+    <Link
+      to="/auth"
       className="mt-5 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-primary-foreground transition hover:opacity-90"
     >
       Create your logbook →
-    </a>
+    </Link>
   </section>
 );
