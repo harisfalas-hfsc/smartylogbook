@@ -26,6 +26,8 @@ import InsightsPage from "./pages/InsightsPage";
 import ModulesPage from "./pages/ModulesPage";
 import ModuleDetailPage from "./pages/ModuleDetailPage";
 import SettingsPage from "./pages/SettingsPage";
+import RemindersPage from "./pages/RemindersPage";
+import OnboardingPage from "./pages/OnboardingPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -51,6 +53,7 @@ const App = () => (
             </Route>
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
             <Route path="/app" element={<ProtectedRoute><AppShell /></ProtectedRoute>}>
               <Route index element={<Dashboard />} />
               <Route path="timeline" element={<TimelinePage />} />
@@ -60,6 +63,7 @@ const App = () => (
               <Route path="insights" element={<InsightsPage />} />
               <Route path="modules" element={<ModulesPage />} />
               <Route path="module/:id" element={<ModuleDetailPage />} />
+              <Route path="reminders" element={<RemindersPage />} />
               <Route path="settings" element={<SettingsPage />} />
             </Route>
             <Route path="*" element={<NotFound />} />
