@@ -41,6 +41,7 @@ export type Database = {
       coach_cards: {
         Row: {
           action: string
+          alerts: Json
           created_at: string
           done: boolean
           done_at: string | null
@@ -54,6 +55,7 @@ export type Database = {
         }
         Insert: {
           action: string
+          alerts?: Json
           created_at?: string
           done?: boolean
           done_at?: string | null
@@ -67,6 +69,7 @@ export type Database = {
         }
         Update: {
           action?: string
+          alerts?: Json
           created_at?: string
           done?: boolean
           done_at?: string | null
@@ -149,6 +152,8 @@ export type Database = {
           module: string
           mood: number | null
           occurred_at: string
+          related_ids: string[]
+          relation_note: string | null
           summary: string | null
           title: string
           updated_at: string
@@ -168,6 +173,8 @@ export type Database = {
           module?: string
           mood?: number | null
           occurred_at?: string
+          related_ids?: string[]
+          relation_note?: string | null
           summary?: string | null
           title: string
           updated_at?: string
@@ -187,6 +194,8 @@ export type Database = {
           module?: string
           mood?: number | null
           occurred_at?: string
+          related_ids?: string[]
+          relation_note?: string | null
           summary?: string | null
           title?: string
           updated_at?: string
