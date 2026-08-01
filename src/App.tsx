@@ -22,6 +22,7 @@ import Dashboard from "./pages/Dashboard";
 import TimelinePage from "./pages/TimelinePage";
 import CapturePage from "./pages/CapturePage";
 import AiPage from "./pages/AiPage";
+import CoachPage from "./pages/CoachPage";
 import InsightsPage from "./pages/InsightsPage";
 import ModulesPage from "./pages/ModulesPage";
 import ModuleDetailPage from "./pages/ModuleDetailPage";
@@ -58,6 +59,7 @@ const App = () => (
               <Route index element={<Dashboard />} />
               <Route path="timeline" element={<TimelinePage />} />
               <Route path="capture" element={<CapturePage />} />
+              <Route path="coach" element={<CoachPage />} />
               <Route path="ai" element={<AiPage />} />
               <Route path="search" element={<AiPage />} />
               <Route path="insights" element={<InsightsPage />} />

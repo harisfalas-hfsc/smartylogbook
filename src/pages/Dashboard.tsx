@@ -86,7 +86,7 @@ const Dashboard = () => {
         </div>
       </section>
 
-      {/* Daily AI coach */}
+      {/* Smarty Coach */}
       <DailyCoachCard card={card} generating={generating} onToggleDone={toggleDone} onRegenerate={regenerate} />
 
       {/* Quick capture */}
