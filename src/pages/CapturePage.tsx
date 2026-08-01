@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Camera, FileText, Image as ImageIcon, Loader2, Mic, Paperclip, Sparkles, Square, X } from 'lucide-react';
+import { Camera, FileText, Loader2, Mic, Paperclip, Sparkles, Square, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
