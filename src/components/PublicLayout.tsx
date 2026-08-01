@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
-import { Menu, ArrowRight, Home, Info, Sparkles, Layers, Tag, MessageSquareQuote, Users, HelpCircle, ShieldCheck } from 'lucide-react';
+import { Menu, ArrowRight, Home, Info, Sparkles, Layers, Tag, MessageSquareQuote, Users, HelpCircle, ShieldCheck, User } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import Logo from '@/components/Logo';
+import BackButton from '@/components/BackButton';
 import SiteFooter from '@/components/SiteFooter';
+import { useAuth } from '@/contexts/AuthContext';
 
 const discoverLinks = [
   { to: '/', label: 'Home', icon: Home },
