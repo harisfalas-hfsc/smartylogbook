@@ -42,7 +42,7 @@ const SiteFooter = () => (
         </a>
       </div>
 
-      <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-sm text-muted-foreground md:gap-4">
+      <nav aria-label="Footer" className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-sm text-muted-foreground md:gap-4">
         {legal.map((l) => (
           <Link key={l.to} to={l.to} className="transition-colors hover:text-primary">
             {l.to === '/terms-and-conditions' ? (
