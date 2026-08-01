@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { AlertTriangle, ArrowLeft, Download, FileText, KeyRound, Loader2, Mail, ShieldCheck, ShieldCheck, Trash2, UserCircle } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, Download, FileText, KeyRound, Loader2, Mail, ShieldCheck, Trash2, UserCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
