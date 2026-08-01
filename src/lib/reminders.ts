@@ -1,0 +1,177 @@
+import { useCallback, useEffect, useState } from 'react';
+import { Bell, CalendarClock, HeartPulse, Receipt, CheckSquare } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import type { Preferences } from '@/lib/preferences';
+
+export type ReminderType = 'task' | 'bill' | 'health' | 'event';
+
+export interface Reminder {
+  id: string;
+  user_id: string;
+  title: string;
+  type: string;
+  module: string | null;
+  amount: number | null;
+  due_at: string;
+  repeat_rule: string | null;
+  notified_at: string | null;
+  done: boolean;
+}
+
+export const REMINDER_TYPES: { id: ReminderType; label: string; icon: typeof Bell }[] = [
+  { id: 'task', label: 'Task', icon: CheckSquare },
+  { id: 'bill', label: 'Bill', icon: Receipt },
+  { id: 'health', label: 'Health check-in', icon: HeartPulse },
+  { id: 'event', label: 'Event', icon: CalendarClock },
+];
+
+export const reminderIcon = (type: string) =>
+  REMINDER_TYPES.find((t) => t.id === type)?.icon ?? Bell;
+
+export const useReminders = () => {
+  const { user } = useAuth();
+  const [reminders, setReminders] = useState<Reminder[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    if (!user) {
+      setReminders([]);
+      setLoading(false);
+      return;
+    }
+    const { data } = await supabase
+      .from('reminders')
+      .select('*')
+      .order('due_at', { ascending: true });
+    setReminders((data ?? []) as Reminder[]);
+    setLoading(false);
+  }, [user]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const create = async (r: {
+    title: string;
+    type: ReminderType;
+    due_at: string;
+    amount?: number | null;
+    module?: string | null;
+    repeat_rule?: string | null;
+  }) => {
+    if (!user) return { error: new Error('Not signed in') };
+    const { error } = await supabase.from('reminders').insert({
+      user_id: user.id,
+      title: r.title,
+      type: r.type,
+      due_at: r.due_at,
+      amount: r.amount ?? null,
+      module: r.module ?? null,
+      repeat_rule: r.repeat_rule ?? null,
+    });
+    if (!error) await load();
+    return { error };
+  };
+
+  const toggleDone = async (id: string, done: boolean) => {
+    setReminders((prev) => prev.map((r) => (r.id === id ? { ...r, done } : r)));
+    await supabase.from('reminders').update({ done }).eq('id', id);
+  };
+
+  const remove = async (id: string) => {
+    setReminders((prev) => prev.filter((r) => r.id !== id));
+    await supabase.from('reminders').delete().eq('id', id);
+  };
+
+  return { reminders, loading, reload: load, create, toggleDone, remove };
+};
+
+const typeEnabled = (prefs: Preferences, type: string) => {
+  if (type === 'bill') return prefs.notify_bills;
+  if (type === 'health') return prefs.notify_health;
+  if (type === 'event') return prefs.notify_events;
+  return prefs.notify_tasks;
+};
+
+const toMinutes = (hhmm: string) => {
+  const [h, m] = hhmm.split(':').map(Number);
+  return (h || 0) * 60 + (m || 0);
+};
+
+export const inQuietHours = (prefs: Preferences, at = new Date()) => {
+  const now = at.getHours() * 60 + at.getMinutes();
+  const start = toMinutes(prefs.quiet_hours_start);
+  const end = toMinutes(prefs.quiet_hours_end);
+  return start <= end ? now >= start && now < end : now >= start || now < end;
+};
+
+export const requestNotificationPermission = async () => {
+  if (typeof Notification === 'undefined') return 'unsupported' as const;
+  if (Notification.permission === 'granted') return 'granted' as const;
+  return (await Notification.requestPermission()) as NotificationPermission;
+};
+
+/**
+ * Context-aware local notifications: checks every minute for due reminders and
+ * the daily coach nudge, respecting the user's per-type toggles and quiet hours.
+ */
+export const useNotificationEngine = (prefs: Preferences | null) => {
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (!user || !prefs) return;
+    if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+
+    let stopped = false;
+
+    const fire = (title: string, body: string) => {
+      try {
+        new Notification(title, { body, icon: '/favicon.ico' });
+      } catch {
+        /* notification blocked */
+      }
+    };
+
+    const tick = async () => {
+      if (stopped || inQuietHours(prefs)) return;
+      const now = new Date();
+
+      // Coach nudge at the chosen morning time
+      if (prefs.notify_coach) {
+        const key = `smarty-coach-notified-${now.toDateString()}`;
+        const [h, m] = prefs.coach_time.split(':').map(Number);
+        const scheduled = new Date(now);
+        scheduled.setHours(h || 7, m || 30, 0, 0);
+        if (now >= scheduled && !localStorage.getItem(key)) {
+          localStorage.setItem(key, '1');
+          fire('Your daily focus is ready', 'Open Smarty Logbook to see today’s recommendation.');
+        }
+      }
+
+      const { data } = await supabase
+        .from('reminders')
+        .select('*')
+        .eq('done', false)
+        .is('notified_at', null)
+        .lte('due_at', now.toISOString());
+
+      for (const r of (data ?? []) as Reminder[]) {
+        if (!typeEnabled(prefs, r.type)) continue;
+        const label = REMINDER_TYPES.find((t) => t.id === r.type)?.label ?? 'Reminder';
+        fire(`${label}: ${r.title}`, r.amount ? `Amount: ${r.amount}` : 'Tap to open your logbook.');
+        await supabase
+          .from('reminders')
+          .update({ notified_at: new Date().toISOString() })
+          .eq('id', r.id);
+      }
+    };
+
+    tick();
+    const interval = window.setInterval(tick, 60000);
+    return () => {
+      stopped = true;
+      window.clearInterval(interval);
+    };
+  }, [user, prefs]);
+};
