@@ -83,60 +83,6 @@ export type Database = {
         }
         Relationships: []
       }
-      daily_scores: {
-        Row: {
-          created_at: string
-          date: string
-          finance: number | null
-          id: string
-          learning: number | null
-          mental: number | null
-          movement: number | null
-          nutrition: number | null
-          productivity: number | null
-          recovery: number | null
-          relationships: number | null
-          score: number
-          sleep: number | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          date?: string
-          finance?: number | null
-          id?: string
-          learning?: number | null
-          mental?: number | null
-          movement?: number | null
-          nutrition?: number | null
-          productivity?: number | null
-          recovery?: number | null
-          relationships?: number | null
-          score?: number
-          sleep?: number | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          date?: string
-          finance?: number | null
-          id?: string
-          learning?: number | null
-          mental?: number | null
-          movement?: number | null
-          nutrition?: number | null
-          productivity?: number | null
-          recovery?: number | null
-          relationships?: number | null
-          score?: number
-          sleep?: number | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       memories: {
         Row: {
           ai_tags: string[]
