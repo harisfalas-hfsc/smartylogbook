@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils';
 const suggestions = [
   'Upper body session, 48 minutes, felt strong',
   'Lunch: grilled salmon, rice and salad',
-  'Paid $42.10 at the supermarket',
+  'Paid €42.10 at the supermarket',
   'Idea: a weekly review email for the team',
   'Call the clinic about the blood test results',
 ];
