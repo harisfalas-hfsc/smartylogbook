@@ -88,26 +88,15 @@ export const NAV_TABS = [
   { path: '/app', icon: Home, label: 'Home' },
   { path: '/app/timeline', icon: Clock, label: 'Timeline' },
   { path: '/app/capture', icon: Plus, label: 'Capture' },
-  { path: '/app/coach', icon: Sparkles, label: 'Coach' },
+  { path: '/app/assistant', icon: Sparkles, label: 'Assistant' },
   { path: '/app/insights', icon: BarChart3, label: 'Insights' },
 ];
 
 export const MORE_LINKS = [
-  { path: '/app/ai', icon: Brain, label: 'Ask your life' },
+  { path: '/app/ai', icon: Brain, label: 'Ask your logbook' },
   { path: '/app/search', icon: Search, label: 'Search' },
   { path: '/app/reminders', icon: Bell, label: 'Reminders' },
   { path: '/app/modules', icon: Activity, label: 'Modules' },
   { path: '/app/settings', icon: Settings, label: 'Settings' },
 ];
 
-export const SCORE_DIMENSIONS = [
-  { key: 'sleep', label: 'Sleep' },
-  { key: 'movement', label: 'Movement' },
-  { key: 'nutrition', label: 'Nutrition' },
-  { key: 'recovery', label: 'Recovery' },
-  { key: 'productivity', label: 'Productivity' },
-  { key: 'learning', label: 'Learning' },
-  { key: 'mental', label: 'Mental' },
-  { key: 'relationships', label: 'Relationships' },
-  { key: 'finance', label: 'Finance' },
-] as const;
