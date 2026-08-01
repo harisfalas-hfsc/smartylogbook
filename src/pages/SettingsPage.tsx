@@ -184,10 +184,10 @@ const SettingsPage = () => {
 
       <section className="animate-fade-up rounded-3xl bg-gradient-primary p-5 text-primary-foreground shadow-glow">
         <Sparkles className="h-5 w-5" />
-        <p className="mt-2 text-sm font-bold">Smarty Wellness ecosystem</p>
+        <p className="mt-2 text-sm font-bold">Smarty Assistant</p>
         <p className="mt-1 text-xs opacity-85">
-          Smarty Gym, Smarty Diet and Smarty Move feed this Logbook. The Logbook returns
-          personalised recommendations to every app.
+          Everything you capture is classified, connected and remembered for you — then turned into
+          plain-language answers, reminders and insights.
         </p>
       </section>
 

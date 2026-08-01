@@ -15,7 +15,7 @@ const Landing = () => {
         <div className="pointer-events-none absolute inset-0 bg-gradient-halo" />
         <div className="relative mx-auto w-full max-w-5xl px-5 md:px-8 pb-10 pt-12 text-center md:pb-16 md:pt-20">
           <span className="inline-flex animate-fade-in items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-[11px] font-semibold text-muted-foreground shadow-soft">
-            <Sparkles className="h-3.5 w-3.5 text-primary" /> Smarty Wellness ecosystem
+            <Sparkles className="h-3.5 w-3.5 text-primary" /> Powered by the Smarty Assistant
           </span>
           <h1 className="mx-auto mt-5 animate-fade-up text-[30px] font-extrabold leading-[1.1] tracking-tight text-foreground md:text-5xl">
             The <span className="gradient-text">Smarty Logbook</span> that remembers{' '}
