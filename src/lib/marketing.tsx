@@ -155,17 +155,90 @@ export const Block = ({ title, subtitle, children }: { title?: string; subtitle?
   </section>
 );
 
+/* ---------- Panel system (big card → nested cards) ---------- */
+
+type PanelProps = {
+  eyebrow: string;
+  eyebrowEmoji?: string;
+  badge?: React.ElementType;
+  title: React.ReactNode;
+  lead?: string;
+  children?: React.ReactNode;
+};
+
+export const Panel = ({ eyebrow, eyebrowEmoji, badge: Badge, title, lead, children }: PanelProps) => (
+  <section className="smarty-card relative mb-5 overflow-hidden p-3 sm:p-5 md:p-7">
+    <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-halo opacity-70" />
+    <div className="relative flex items-start gap-2.5">
+      <div className="flex min-w-0 flex-1 items-center gap-2 rounded-full border border-primary/25 bg-secondary/60 px-3.5 py-2">
+        {eyebrowEmoji && <span className="text-sm leading-none">{eyebrowEmoji}</span>}
+        <span className="truncate text-[10px] font-bold uppercase tracking-[0.18em] text-primary sm:text-[11px]">
+          {eyebrow}
+        </span>
+      </div>
+      {Badge && (
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-primary/25 bg-secondary/60">
+          <Badge className="h-4 w-4 text-primary" />
+        </span>
+      )}
+    </div>
+
+    <div className="relative mt-5 sm:mt-7">
+      <h2 className="text-[22px] font-extrabold leading-[1.15] tracking-tight text-foreground sm:text-3xl md:text-[34px]">
+        {title}
+      </h2>
+      {lead && (
+        <p className="mt-2.5 max-w-3xl text-[13px] leading-relaxed text-muted-foreground sm:text-[15px]">
+          <BrandText>{lead}</BrandText>
+        </p>
+      )}
+    </div>
+
+    {children && <div className="relative mt-5 sm:mt-6">{children}</div>}
+  </section>
+);
+
+export const SubCard = ({
+  label,
+  labelEmoji,
+  children,
+  className = '',
+}: { label?: string; labelEmoji?: string; children: React.ReactNode; className?: string }) => (
+  <div className={`rounded-3xl border border-primary/20 bg-secondary/40 p-3.5 sm:p-5 ${className}`}>
+    {label && (
+      <div className="mb-3 flex items-center gap-1.5">
+        {labelEmoji && <span className="text-sm leading-none">{labelEmoji}</span>}
+        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-foreground sm:text-[11px]">{label}</p>
+      </div>
+    )}
+    {children}
+  </div>
+);
+
+export const MiniRow = ({ emoji, title, text }: { emoji: string; title: string; text?: string }) => (
+  <div className="flex items-start gap-2.5 rounded-2xl border border-primary/15 bg-card p-2.5 sm:p-3">
+    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-secondary text-sm">{emoji}</span>
+    <div className="min-w-0">
+      <p className="text-[13px] font-bold leading-snug text-foreground">{title}</p>
+      {text && <p className="mt-0.5 text-[11.5px] leading-relaxed text-muted-foreground">{text}</p>}
+    </div>
+  </div>
+);
+
+export const Divider = () => <div className="my-4 h-px bg-primary/15" />;
+
 export const CtaCard = ({ title, text }: { title?: string; text?: string }) => (
-  <section className="smarty-card mt-2 p-7 text-center">
-    <h2 className="text-lg font-extrabold tracking-tight text-foreground md:text-2xl">
+  <section className="smarty-card relative mt-2 overflow-hidden p-6 text-center sm:p-9">
+    <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-halo opacity-80" />
+    <h2 className="relative text-xl font-extrabold tracking-tight text-foreground md:text-3xl">
       <BrandText>{title ?? 'Start remembering everything.'}</BrandText>
     </h2>
-    <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+    <p className="relative mx-auto mt-2 max-w-md text-sm text-muted-foreground">
       <BrandText>{text ?? 'Free to begin. Capture your first memory in under ten seconds.'}</BrandText>
     </p>
     <Link
       to="/auth"
-      className="mt-5 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-primary-foreground transition hover:opacity-90"
+      className="relative mt-5 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-primary-foreground transition hover:opacity-90"
     >
       Create your logbook →
     </Link>
