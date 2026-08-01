@@ -5,7 +5,8 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useMemories } from '@/lib/memories';
-import { CAPTURE_KINDS, MODULES, CaptureKind } from '@/lib/constants';
+import { CAPTURE_KINDS, MODULES, CaptureKind, getModule } from '@/lib/constants';
+import { useReminders } from '@/lib/reminders';
 import { cn } from '@/lib/utils';
 
 const suggestions = [
@@ -28,6 +29,11 @@ interface Extracted {
   date?: string | null;
   category?: string | null;
   items?: string[];
+  due_date?: string | null;
+  details?: Record<string, unknown>;
+  related_ids?: string[];
+  relation_note?: string | null;
+  reminder?: { title?: string; type?: string; due_date?: string } | null;
 }
 
 const readAsDataUrl = (file: File | Blob) =>
@@ -42,10 +48,17 @@ const CapturePage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { create } = useMemories({ limit: 1 });
+  const { memories: recent } = useMemories({ limit: 40 });
+  const { create: createReminder } = useReminders();
   const [text, setText] = useState('');
   const [kind, setKind] = useState<CaptureKind | null>(null);
   const [module, setModule] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [showOverride, setShowOverride] = useState(false);
+
+  const candidates = recent.map((m) => ({
+    id: m.id, title: m.title, module: m.module, kind: m.kind, occurred_at: m.occurred_at,
+  }));
 
   const [listening, setListening] = useState(false);
   const [recording, setRecording] = useState(false);
@@ -195,7 +208,7 @@ const CapturePage = () => {
     setExtracting(true);
     try {
       const { data } = await supabase.functions.invoke('ai-brain', {
-        body: { mode: 'extract', image: dataUrl, input: text },
+        body: { mode: 'extract', image: dataUrl, input: text, candidates },
       });
       if (data && !data.error) {
         setExtracted(data as Extracted);
@@ -232,7 +245,7 @@ const CapturePage = () => {
     if (!classified && text.trim()) {
       try {
         const { data } = await supabase.functions.invoke('ai-brain', {
-          body: { mode: 'classify', input: text.trim() },
+          body: { mode: 'classify', input: text.trim(), candidates },
         });
         if (data && !data.error) classified = data as Extracted;
       } catch {
@@ -269,12 +282,18 @@ const CapturePage = () => {
       location: classified?.merchant ?? null,
       attachment_url: attachmentUrl,
       occurred_at: occurredAt,
+      related_ids: Array.isArray(classified?.related_ids)
+        ? classified!.related_ids!.map(String).filter((id) => recent.some((m) => m.id === id)).slice(0, 5)
+        : [],
+      relation_note: classified?.relation_note ?? null,
       metadata: classified
         ? {
             merchant: classified.merchant ?? null,
             category: classified.category ?? null,
             date: classified.date ?? null,
+            due_date: classified.due_date ?? null,
             items: classified.items ?? [],
+            details: classified.details ?? {},
           }
         : {},
     });
@@ -284,7 +303,20 @@ const CapturePage = () => {
       toast.error(error.message);
       return;
     }
-    toast.success(classified?.module ? `Filed under ${classified.module}` : 'Memory captured');
+    const reminder = classified?.reminder;
+    if (reminder?.title && reminder.due_date) {
+      const dueAt = new Date(`${reminder.due_date}T09:00:00`);
+      if (!Number.isNaN(dueAt.getTime())) {
+        await createReminder({
+          title: String(reminder.title).slice(0, 80),
+          type: (['task', 'bill', 'health', 'event'].includes(String(reminder.type)) ? reminder.type : 'task') as 'task' | 'bill' | 'health' | 'event',
+          due_at: dueAt.toISOString(),
+          module: classified?.module ?? null,
+        });
+        toast.info(`Reminder set: ${reminder.title}`);
+      }
+    }
+    toast.success(classified?.module ? `Filed under ${getModule(classified.module).label} automatically` : 'Captured');
     setText('');
     setKind(null);
     setModule(null);
@@ -296,7 +328,9 @@ const CapturePage = () => {
     <div className="space-y-5">
       <header className="animate-fade-up">
         <h1 className="text-2xl font-extrabold tracking-tight text-foreground">Quick Capture</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Type, speak or snap it. The AI reads and files it for you.</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Type, speak or snap it. The AI reads it, files it and connects it to what you already have — you never pick a category.
+        </p>
       </header>
 
       <div className="smarty-card animate-fade-up p-4">
@@ -346,6 +380,13 @@ const CapturePage = () => {
                   </div>
                 ))}
             </div>
+            {extracted.related_ids?.length ? (
+              <p className="mt-2 text-[11px] font-semibold text-primary">
+                Connected to {extracted.related_ids.length} existing{' '}
+                {extracted.related_ids.length === 1 ? 'entry' : 'entries'}
+                {extracted.relation_note ? ` — ${extracted.relation_note}` : ''}
+              </p>
+            ) : null}
             {extracted.items?.length ? (
               <p className="mt-2 text-[11px] text-muted-foreground">{extracted.items.slice(0, 6).join(' · ')}</p>
             ) : null}
@@ -426,6 +467,16 @@ const CapturePage = () => {
       </div>
 
       <section className="animate-fade-up">
+        <button
+          onClick={() => setShowOverride((v) => !v)}
+          className="text-xs font-semibold text-muted-foreground underline underline-offset-4"
+        >
+          {showOverride ? 'Hide manual override' : 'The AI files this automatically — override manually'}
+        </button>
+      </section>
+
+      {showOverride && (
+      <section className="animate-fade-up">
         <p className="mb-2.5 text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">Type (optional)</p>
         <div className="flex flex-wrap gap-2">
           {CAPTURE_KINDS.map((k) => (
@@ -462,6 +513,7 @@ const CapturePage = () => {
           ))}
         </div>
       </section>
+      )}
 
       <section className="animate-fade-up">
         <p className="mb-2.5 text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">Try one</p>
