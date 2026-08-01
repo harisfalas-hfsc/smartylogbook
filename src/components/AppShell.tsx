@@ -5,6 +5,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import BottomNav from '@/components/BottomNav';
 import SiteFooter from '@/components/SiteFooter';
 import Logo from '@/components/Logo';
+import BackButton from '@/components/BackButton';
 import { MORE_LINKS, NAV_TABS } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
