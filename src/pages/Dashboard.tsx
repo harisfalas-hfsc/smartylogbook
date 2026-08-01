@@ -3,10 +3,9 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Camera, Loader2, Mic, Plus, Sparkles, Wallet, Dumbbell, Activity } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useMemories, timeOf } from '@/lib/memories';
-import LifeScoreRing from '@/components/LifeScoreRing';
-import DailyCoachCard from '@/components/DailyCoachCard';
+import DailyBriefCard from '@/components/DailyBriefCard';
 import { usePreferences } from '@/lib/preferences';
-import { useCoachCard } from '@/lib/coach';
+import { useDailyBrief } from '@/lib/assistant';
 import MemoryCard from '@/components/MemoryCard';
 import { MODULES, kindIcon, getModule } from '@/lib/constants';
 
@@ -21,7 +20,7 @@ const Dashboard = () => {
   const { profile, user } = useAuth();
   const { memories, loading } = useMemories({ limit: 60 });
   const { prefs } = usePreferences();
-  const { card, generating, toggleDone, regenerate } = useCoachCard(memories, prefs, !loading);
+  const { brief, generating, toggleDone, regenerate } = useDailyBrief(memories, prefs, !loading);
 
   const name = profile?.username ?? user?.email?.split('@')[0] ?? 'there';
   const todayKey = new Date().toDateString();
@@ -43,51 +42,22 @@ const Dashboard = () => {
   const health = week.filter((m) => m.module === 'health').length;
 
   const focus = prefs?.focus_modules ?? [];
-  const focusToday = today.filter((m) => focus.includes(m.module)).length;
-  const score = Math.min(
-    100,
-    42 +
-      today.length * 6 +
-      workouts * 4 +
-      Math.min(12, memories.length) +
-      focusToday * 4 +
-      (card?.done ? 8 : 0)
-  );
 
   const orderedModules = focus.length
     ? [...MODULES].sort((a, b) => Number(focus.includes(b.id)) - Number(focus.includes(a.id)))
     : MODULES;
-
 
   return (
     <div className="space-y-5">
       <header className="animate-fade-up">
         <p className="text-sm text-muted-foreground">{greeting()}, <span className="font-semibold text-foreground">{name}</span></p>
         <h1 className="mt-1 text-2xl font-extrabold tracking-tight text-foreground">
-          {today.length ? `${today.length} memories captured today` : 'Your day is a blank page'}
+          {today.length ? `${today.length} entries captured today` : 'Your day is a blank page'}
         </h1>
       </header>
 
-      {/* Life score */}
-      <section className="smarty-card animate-fade-up overflow-hidden">
-        <div className="flex flex-col items-center gap-5 p-6 sm:flex-row sm:items-center">
-          <LifeScoreRing score={score} />
-          <div className="min-w-0 flex-1 text-center sm:text-left">
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">Life Score</p>
-            <p className="mt-1.5 text-base font-bold text-foreground">
-              {prefs?.goals?.length ? prefs.goals.slice(0, 2).join(' · ') : 'Tuned to your day'}
-            </p>
-            <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
-              {focus.length
-                ? `Weighted towards ${focus.slice(0, 3).join(', ')}.`
-                : 'Set your goals in onboarding to personalise this.'}
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Smarty Coach */}
-      <DailyCoachCard card={card} generating={generating} onToggleDone={toggleDone} onRegenerate={regenerate} />
+      {/* Smarty Assistant daily brief */}
+      <DailyBriefCard brief={brief} generating={generating} onToggleDone={toggleDone} onRegenerate={regenerate} />
 
       {/* Quick capture */}
       <section className="animate-fade-up">
@@ -109,7 +79,7 @@ const Dashboard = () => {
         </Link>
       </section>
 
-      {/* Summaries */}
+      {/* This week at a glance */}
       <section className="grid grid-cols-3 gap-3">
         {[
           { icon: Wallet, label: 'Spent 7d', value: `$${spend.toFixed(0)}`, to: '/app/module/finance' },
@@ -124,10 +94,10 @@ const Dashboard = () => {
         ))}
       </section>
 
-      {/* Today's memories */}
+      {/* Today's entries */}
       <section className="animate-fade-up">
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-sm font-bold text-foreground">Today's memories</h2>
+          <h2 className="text-sm font-bold text-foreground">Today</h2>
           <Link to="/app/timeline" className="flex items-center gap-1 text-xs font-semibold text-primary">
             Timeline <ArrowRight className="h-3.5 w-3.5" />
           </Link>
@@ -160,7 +130,7 @@ const Dashboard = () => {
               </div>
               <p className="mt-2.5 text-xs font-bold text-foreground">{m.label}</p>
               <p className="text-[10px] text-muted-foreground">
-                {memories.filter((x) => x.module === m.id).length} memories
+                {memories.filter((x) => x.module === m.id).length} entries
               </p>
             </Link>
           ))}
