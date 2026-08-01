@@ -105,7 +105,7 @@ export default {
           from: { opacity: "0", transform: "scale(0.96)" },
           to: { opacity: "1", transform: "scale(1)" },
         },
-        pulse-ring: {
+        "pulse-ring": {
           "0%": { transform: "scale(0.9)", opacity: "0.7" },
           "70%": { transform: "scale(1.35)", opacity: "0" },
           "100%": { transform: "scale(1.35)", opacity: "0" },
