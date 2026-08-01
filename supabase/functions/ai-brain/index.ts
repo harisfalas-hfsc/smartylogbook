@@ -7,9 +7,11 @@ const corsHeaders = {
 const MODEL = "google/gemini-3.6-flash";
 
 interface Body {
-  mode: "classify" | "coach" | "search" | "insights" | "extract";
+  mode: "classify" | "coach" | "search" | "insights" | "extract" | "transcribe";
   input?: string;
   image?: string;
+  audio?: string;
+  audioFormat?: string;
   memories?: Array<Record<string, unknown>>;
   preferences?: { goals?: string[]; focus?: string[]; tone?: string } | null;
 }
