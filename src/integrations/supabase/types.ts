@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      coach_cards: {
+        Row: {
+          action: string
+          created_at: string
+          done: boolean
+          done_at: string | null
+          for_date: string
+          headline: string
+          id: string
+          module: string | null
+          reason: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          done?: boolean
+          done_at?: string | null
+          for_date?: string
+          headline: string
+          id?: string
+          module?: string | null
+          reason?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          done?: boolean
+          done_at?: string | null
+          for_date?: string
+          headline?: string
+          id?: string
+          module?: string | null
+          reason?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       daily_scores: {
         Row: {
           created_at: string
@@ -152,6 +194,108 @@ export type Database = {
           updated_at?: string
           user_id?: string
           username?: string
+        }
+        Relationships: []
+      }
+      reminders: {
+        Row: {
+          amount: number | null
+          created_at: string
+          done: boolean
+          due_at: string
+          id: string
+          module: string | null
+          notified_at: string | null
+          repeat_rule: string | null
+          title: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string
+          done?: boolean
+          due_at: string
+          id?: string
+          module?: string | null
+          notified_at?: string | null
+          repeat_rule?: string | null
+          title: string
+          type?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string
+          done?: boolean
+          due_at?: string
+          id?: string
+          module?: string | null
+          notified_at?: string | null
+          repeat_rule?: string | null
+          title?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_preferences: {
+        Row: {
+          coach_time: string
+          created_at: string
+          focus_modules: string[]
+          goals: string[]
+          id: string
+          notify_bills: boolean
+          notify_coach: boolean
+          notify_events: boolean
+          notify_health: boolean
+          notify_tasks: boolean
+          onboarding_completed: boolean
+          quiet_hours_end: string
+          quiet_hours_start: string
+          tone: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          coach_time?: string
+          created_at?: string
+          focus_modules?: string[]
+          goals?: string[]
+          id?: string
+          notify_bills?: boolean
+          notify_coach?: boolean
+          notify_events?: boolean
+          notify_health?: boolean
+          notify_tasks?: boolean
+          onboarding_completed?: boolean
+          quiet_hours_end?: string
+          quiet_hours_start?: string
+          tone?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          coach_time?: string
+          created_at?: string
+          focus_modules?: string[]
+          goals?: string[]
+          id?: string
+          notify_bills?: boolean
+          notify_coach?: boolean
+          notify_events?: boolean
+          notify_health?: boolean
+          notify_tasks?: boolean
+          onboarding_completed?: boolean
+          quiet_hours_end?: string
+          quiet_hours_start?: string
+          tone?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
