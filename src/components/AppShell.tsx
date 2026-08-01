@@ -3,6 +3,7 @@ import { Link, NavLink, Navigate, Outlet, useLocation, useNavigate } from 'react
 import { Bell, LogOut, Menu, Search, Sparkles } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import BottomNav from '@/components/BottomNav';
+import SiteFooter from '@/components/SiteFooter';
 import Logo from '@/components/Logo';
 import { MORE_LINKS, NAV_TABS } from '@/lib/constants';
 import { cn } from '@/lib/utils';
@@ -153,7 +154,7 @@ const AppShell = () => {
               <Bell className="h-4 w-4" />
             </Link>
             <Link
-              to="/app/settings"
+              to="/app/account"
               aria-label="Account"
               className="inline-flex h-8 w-8 items-center justify-center rounded-full border-2 border-primary bg-primary text-xs font-bold text-primary-foreground"
             >
@@ -195,9 +196,13 @@ const AppShell = () => {
         </div>
       </header>
 
-      <main className="mx-auto max-w-3xl px-4 pb-32 pt-4 md:pb-12 md:pl-64">
+      <main className="mx-auto max-w-3xl px-4 pt-4 md:pl-64">
         <Outlet />
       </main>
+
+      <div className="pb-28 pt-6 md:pb-8 md:pl-64">
+        <SiteFooter />
+      </div>
 
       <BottomNav />
     </div>
