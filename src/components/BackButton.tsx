@@ -1,24 +1,58 @@
+import { useEffect, useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
 /**
- * Desktop-only back button. Mirrors the Smarty Wellness family pattern:
- * an icon appears to the left of the logo as soon as there is navigation
- * history to go back to, and it walks the real browser history stack.
- * Hidden on mobile — native gestures/buttons handle back there.
+ * Desktop-only back button. Depth is measured against the history index of the
+ * first page of this app the user landed on (and re-baselined whenever they
+ * reach a home route), so back never walks out of the site into the browser's
+ * previous page. Hidden on home routes — there is no back past home.
  */
-export const useCanGoBack = () => {
-  const location = useLocation();
-  const idx = (window.history.state as { idx?: number } | null)?.idx ?? 0;
-  return idx > 0 || Boolean(location.key && location.key !== 'default');
+const HOME_ROUTES = ['/', '/app'];
+
+const currentIdx = () => (window.history.state as { idx?: number } | null)?.idx ?? 0;
+
+let baseline = currentIdx();
+const listeners = new Set<() => void>();
+const notify = () => listeners.forEach((l) => l());
+
+export const resetNavDepth = () => {
+  baseline = currentIdx();
+  notify();
 };
+
+const useNavDepth = () => {
+  const location = useLocation();
+  const [, force] = useState(0);
+
+  useEffect(() => {
+    const cb = () => force((n) => n + 1);
+    listeners.add(cb);
+    return () => {
+      listeners.delete(cb);
+    };
+  }, []);
+
+  useEffect(() => {
+    const idx = currentIdx();
+    if (HOME_ROUTES.includes(location.pathname) || idx < baseline) {
+      baseline = idx;
+      notify();
+    }
+  }, [location.key, location.pathname]);
+
+  if (HOME_ROUTES.includes(location.pathname)) return 0;
+  return Math.max(0, currentIdx() - baseline);
+};
+
+export const useCanGoBack = () => useNavDepth() > 0;
 
 const BackButton = ({ className }: { className?: string }) => {
   const navigate = useNavigate();
-  const canGoBack = useCanGoBack();
+  const depth = useNavDepth();
 
-  if (!canGoBack) return null;
+  if (depth <= 0) return null;
 
   return (
     <button
