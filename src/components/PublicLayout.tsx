@@ -35,7 +35,6 @@ const PublicLayout = () => {
       <header className="sticky top-0 z-50 bg-background">
         <div className="mx-auto flex h-11 max-w-6xl items-center justify-between gap-2 px-3">
           <div className="flex items-center gap-2">
-            <BackButton />
             <Sheet open={open} onOpenChange={setOpen}>
               <SheetTrigger asChild>
                 <button
@@ -83,6 +82,7 @@ const PublicLayout = () => {
                 </nav>
               </SheetContent>
             </Sheet>
+            <BackButton />
             <Link to="/" aria-label="Smarty Logbook home">
               <Logo />
             </Link>
