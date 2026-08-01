@@ -4,7 +4,7 @@ import { ArrowRight, Brain, Clock, Compass, Sparkles } from 'lucide-react';
 const highlights = [
   { icon: Sparkles, t: 'Capture in 3 seconds', s: 'Voice, photo or text. No folders, no tags.' },
   { icon: Clock, t: 'One life timeline', s: 'Everything you do, in one continuous feed.' },
-  { icon: Brain, t: 'It thinks for you', s: 'Patterns, answers and a daily AI coach.' },
+  { icon: Brain, t: 'It thinks for you', s: 'Patterns, answers and a daily brief from Smarty Assistant.' },
 ];
 
 const Landing = () => {

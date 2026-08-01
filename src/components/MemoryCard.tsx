@@ -1,4 +1,4 @@
-import { MapPin, Trash2 } from 'lucide-react';
+import { Link2, MapPin, Trash2 } from 'lucide-react';
 import { getModule, kindIcon } from '@/lib/constants';
 import { Memory, timeOf } from '@/lib/memories';
 
@@ -41,6 +41,14 @@ const MemoryCard = ({ memory, onDelete }: Props) => {
                 <MapPin className="h-3 w-3" /> {memory.location}
               </span>
             )}
+            {memory.related_ids?.length ? (
+              <span
+                title={memory.relation_note ?? undefined}
+                className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary"
+              >
+                <Link2 className="h-3 w-3" /> {memory.related_ids.length} connected
+              </span>
+            ) : null}
             {memory.ai_tags.slice(0, 3).map((tag) => (
               <span key={tag} className="rounded-full border border-border px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
                 #{tag}

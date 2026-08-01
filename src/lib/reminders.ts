@@ -114,7 +114,7 @@ export const requestNotificationPermission = async () => {
 
 /**
  * Context-aware local notifications: checks every minute for due reminders and
- * the daily coach nudge, respecting the user's per-type toggles and quiet hours.
+ * the daily assistant brief, respecting the user's per-type toggles and quiet hours.
  */
 export const useNotificationEngine = (prefs: Preferences | null) => {
   const { user } = useAuth();
@@ -137,7 +137,7 @@ export const useNotificationEngine = (prefs: Preferences | null) => {
       if (stopped || inQuietHours(prefs)) return;
       const now = new Date();
 
-      // Coach nudge at the chosen morning time
+      // Assistant brief at the chosen morning time
       if (prefs.notify_coach) {
         const key = `smarty-coach-notified-${now.toDateString()}`;
         const [h, m] = prefs.coach_time.split(':').map(Number);

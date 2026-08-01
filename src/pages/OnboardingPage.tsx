@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils';
 const TONES = [
   { id: 'friendly', label: 'Warm & encouraging' },
   { id: 'direct', label: 'Short & direct' },
-  { id: 'coach', label: 'Tough-love coach' },
+  { id: 'coach', label: 'Tough love' },
 ];
 
 const OnboardingPage = () => {
@@ -59,7 +59,7 @@ const OnboardingPage = () => {
     {
       icon: Target,
       title: 'What matters most right now?',
-      sub: 'Pick as many as you like. Your Life Score and recommendations follow these.',
+      sub: 'Pick as many as you like. Your assistant’s summaries and recommendations follow these.',
       body: (
         <div className="flex flex-wrap gap-2">
           {GOAL_OPTIONS.map((g) => (
@@ -107,7 +107,7 @@ const OnboardingPage = () => {
     },
     {
       icon: Bell,
-      title: 'How should your coach talk to you?',
+      title: 'How should your assistant talk to you?',
       sub: 'And when should the daily recommendation land?',
       body: (
         <div className="space-y-4">
@@ -127,7 +127,7 @@ const OnboardingPage = () => {
             ))}
           </div>
           <label className="flex items-center justify-between rounded-2xl border border-border bg-card px-4 py-3">
-            <span className="text-sm font-semibold text-foreground">Morning coach time</span>
+            <span className="text-sm font-semibold text-foreground">Morning brief time</span>
             <input
               type="time"
               value={coachTime}

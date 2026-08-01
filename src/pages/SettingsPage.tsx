@@ -10,7 +10,7 @@ import { requestNotificationPermission } from '@/lib/reminders';
 import { cn } from '@/lib/utils';
 
 const NOTIFY_ROWS = [
-  { key: 'notify_coach', label: 'Daily coach nudge', sub: 'One morning recommendation' },
+  { key: 'notify_coach', label: 'Daily assistant brief', sub: 'One morning recommendation' },
   { key: 'notify_tasks', label: 'Tasks & to-dos', sub: 'Context-aware task reminders' },
   { key: 'notify_bills', label: 'Bills & payments', sub: 'Before a payment is due' },
   { key: 'notify_health', label: 'Health check-ins', sub: 'Medication, appointments, symptoms' },
@@ -105,7 +105,7 @@ const SettingsPage = () => {
 
           <div className="flex items-center gap-3 px-3 py-3">
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-semibold text-foreground">Morning coach time</p>
+              <p className="text-sm font-semibold text-foreground">Morning brief time</p>
               <p className="text-[11px] text-muted-foreground">When today's recommendation lands</p>
             </div>
             <input
