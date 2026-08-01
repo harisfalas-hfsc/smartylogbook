@@ -28,6 +28,7 @@ import InsightsPage from "./pages/InsightsPage";
 import ModulesPage from "./pages/ModulesPage";
 import ModuleDetailPage from "./pages/ModuleDetailPage";
 import SettingsPage from "./pages/SettingsPage";
+import AdminPage from "./pages/AdminPage";
 import AccountPage from "./pages/AccountPage";
 import PrivacySecurityPage from "./pages/PrivacySecurityPage";
 import AppearancePage from "./pages/AppearancePage";
@@ -84,6 +85,7 @@ const App = () => (
               <Route path="account" element={<AccountPage />} />
               <Route path="privacy" element={<PrivacySecurityPage />} />
               <Route path="appearance" element={<AppearancePage />} />
+              <Route path="admin" element={<AdminPage />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

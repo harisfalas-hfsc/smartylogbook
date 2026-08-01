@@ -149,6 +149,36 @@ export type Database = {
         }
         Relationships: []
       }
+      payments: {
+        Row: {
+          amount_eur: number
+          created_at: string
+          currency: string
+          description: string | null
+          id: string
+          status: string
+          user_id: string | null
+        }
+        Insert: {
+          amount_eur?: number
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          status?: string
+          user_id?: string | null
+        }
+        Update: {
+          amount_eur?: number
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          status?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -216,6 +246,45 @@ export type Database = {
           repeat_rule?: string | null
           title?: string
           type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          amount_eur: number
+          created_at: string
+          current_period_end: string | null
+          granted_by: string | null
+          id: string
+          plan: string
+          source: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount_eur?: number
+          created_at?: string
+          current_period_end?: string | null
+          granted_by?: string | null
+          id?: string
+          plan?: string
+          source?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount_eur?: number
+          created_at?: string
+          current_period_end?: string | null
+          granted_by?: string | null
+          id?: string
+          plan?: string
+          source?: string
+          status?: string
           updated_at?: string
           user_id?: string
         }
@@ -311,6 +380,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_admin_email: { Args: { _email: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
