@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, ArrowRight, Home, Info, Sparkles, Layers, Tag, MessageSquareQuote, Users, HelpCircle, ShieldCheck, User } from 'lucide-react';
+import { Menu, ArrowRight, Home, Info, Sparkles, Tag, MessageSquareQuote, HelpCircle, ShieldCheck, User } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import Logo from '@/components/Logo';
 import BackButton, { resetNavDepth } from '@/components/BackButton';
@@ -11,10 +11,8 @@ const discoverLinks = [
   { to: '/', label: 'Home', icon: Home },
   { to: '/about', label: 'About', icon: Info },
   { to: '/how-it-works', label: 'How it works', icon: Sparkles },
-  { to: '/features', label: 'Features & Modules', icon: Layers },
   { to: '/pricing', label: 'Pricing', icon: Tag },
   { to: '/testimonials', label: 'Testimonials', icon: MessageSquareQuote },
-  { to: '/community', label: 'Community', icon: Users },
   { to: '/faq', label: 'FAQ', icon: HelpCircle },
   { to: '/security', label: 'Security & Privacy', icon: ShieldCheck },
 ];

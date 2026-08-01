@@ -10,10 +10,8 @@ import PublicLayout from "./components/PublicLayout";
 import Landing from "./pages/Landing";
 import AboutPage from "./pages/AboutPage";
 import HowItWorksPage from "./pages/HowItWorksPage";
-import FeaturesPage from "./pages/FeaturesPage";
 import PricingPage from "./pages/PricingPage";
 import TestimonialsPage from "./pages/TestimonialsPage";
-import CommunityPage from "./pages/CommunityPage";
 import FaqPage from "./pages/FaqPage";
 import SecurityPage from "./pages/SecurityPage";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
@@ -51,10 +49,10 @@ const App = () => (
               <Route path="/" element={<Landing />} />
               <Route path="/about" element={<AboutPage />} />
               <Route path="/how-it-works" element={<HowItWorksPage />} />
-              <Route path="/features" element={<FeaturesPage />} />
+              <Route path="/features" element={<Navigate to="/about" replace />} />
+              <Route path="/community" element={<Navigate to="/" replace />} />
               <Route path="/pricing" element={<PricingPage />} />
               <Route path="/testimonials" element={<TestimonialsPage />} />
-              <Route path="/community" element={<CommunityPage />} />
               <Route path="/faq" element={<FaqPage />} />
               <Route path="/security" element={<SecurityPage />} />
               <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />

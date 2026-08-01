@@ -133,7 +133,7 @@
 
 @layer components {
   .smarty-card {
-    @apply rounded-3xl border border-border/70 bg-card shadow-card;
+    @apply rounded-3xl border border-primary/25 bg-card shadow-card;
   }
 
   .glass {

@@ -92,12 +92,24 @@ export const testimonials = [
 ];
 
 export const faqs = [
-  { q: 'Is Smarty Logbook another note app?', a: 'No. Notes store text. Smarty Logbook understands it — classifying, connecting and analysing everything you capture into one intelligent life timeline.' },
-  { q: 'Do I need to organise anything?', a: 'Never. No folders, no tags, no manual filing. Capture it and the Smarty Assistant takes care of the rest.' },
-  { q: 'What is the Smarty Assistant?', a: 'Your personal assistant inside the logbook. It classifies everything you capture, links related entries, reminds you proactively and answers any question about your own life in plain language.' },
-  { q: 'What is the difference between Free and Premium?', a: 'Free lets you capture and keep everything in a timeline. Premium adds the Smarty Assistant: automatic classification, document extraction, connections, proactive reminders and plain-language answers — €9.99 per month.' },
-  { q: 'How private is my data?', a: 'Privacy-first architecture with encrypted storage and full export or deletion at any time.' },
-  { q: 'Are there scores or ratings?', a: 'No. Scores were removed on purpose. The Assistant writes plain-language summaries instead of numbers you have to interpret.' },
+  { q: 'What is Smarty Logbook?', a: 'Smarty Logbook is a second brain for your life. You capture anything — a thought, a receipt, a lab report, a voice note — and the Smarty Assistant reads it, files it, connects it to what you already have and reminds you when it matters.' },
+  { q: 'Is it just another note app?', a: 'No. Notes store text and forget it. Smarty Logbook understands what you capture, extracts the details, links related entries and can answer questions about your own life.' },
+  { q: 'How do I add something?', a: 'Open Capture and type it, speak it, take a photo or attach a file. That is the whole flow — no title, no category, no tags.' },
+  { q: 'Do I have to choose a category?', a: 'Never. The Assistant classifies every entry into the right life module automatically, and you can always see and change where it landed.' },
+  { q: 'Can it read receipts, invoices and medical reports?', a: 'Yes. Photograph or upload a document and the Assistant extracts the key details — dates, amounts, merchants, values — and stores them with the entry.' },
+  { q: 'Does voice really work?', a: 'Yes. Speak naturally; your recording is transcribed, understood and saved as a normal entry. You can also talk to the Assistant by voice.' },
+  { q: 'What is the Smarty Assistant?', a: 'Your personal assistant inside the logbook. It classifies what you capture, links related entries, writes your daily brief, reminds you proactively and answers any question about your own history in plain language.' },
+  { q: 'How do I find something later?', a: 'Ask in plain language — "what did the doctor say in March?" or "how much did I spend on restaurants?" You can also scroll the timeline and filter by day, week, month or year.' },
+  { q: 'What are life modules?', a: 'Modules are the areas your entries are filed into — health, fitness, nutrition, finance, business, documents and personal. You never pick one; the Assistant does.' },
+  { q: 'How does it connect my entries?', a: 'The relationship engine looks for links: a new scan attaches to an old injury, a receipt to a recurring bill, a meeting to the person involved. Over time your logbook becomes a knowledge graph of your life.' },
+  { q: 'Will it remind me about things?', a: 'Yes. Bills, renewals, appointments, follow-up tests and important dates are detected and scheduled automatically, and you control which notifications you receive.' },
+  { q: 'Are there scores or ratings?', a: 'No. Scores were removed on purpose. The Assistant writes plain-language summaries and observations instead of numbers you have to interpret.' },
+  { q: 'What does it cost?', a: 'Free is €0 forever: capture, timeline and basic search. Premium is €9.99 per month and adds the Smarty Assistant — automatic classification, document extraction, connections, proactive reminders, the daily brief and plain-language answers.' },
+  { q: 'Can I cancel or change plan?', a: 'Yes, any time. Prices are in euros and your data stays yours and exportable whatever plan you are on.' },
+  { q: 'Do I need an account?', a: 'Yes — an email and password. Your logbook is private to you and every entry is gated behind your account.' },
+  { q: 'How private is my data?', a: 'Privacy-first architecture with encrypted storage in transit and at rest. You can export everything or permanently delete your account and all of its data at any time.' },
+  { q: 'Does it work on mobile?', a: 'It is built mobile-first. Everything is reachable with one thumb, and capture takes about three seconds.' },
+  { q: 'Is it a medical or financial adviser?', a: 'No. It organises and explains your own information. It does not replace a doctor, accountant or any other professional.' },
 ];
 
 export const securityPoints = [
@@ -106,20 +118,38 @@ export const securityPoints = [
   { icon: Shield, t: 'You own it', s: 'Export or delete everything, any time.' },
 ];
 
+
+export const BrandText = ({ children }: { children: string }) => {
+  const parts = children.split(/(Smarty Logbook)/g);
+  return (
+    <>
+      {parts.map((part, i) =>
+        part === 'Smarty Logbook' ? (
+          <span key={i} className="gradient-text font-extrabold">
+            {part}
+          </span>
+        ) : (
+          <span key={i}>{part}</span>
+        ),
+      )}
+    </>
+  );
+};
+
 export const PageHeader = ({ eyebrow, title, subtitle }: { eyebrow: string; title: string; subtitle?: string }) => (
   <div className="mx-auto mb-8 max-w-2xl text-center">
     <span className="inline-block rounded-full bg-secondary px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-primary">
       {eyebrow}
     </span>
-    <h1 className="mt-4 text-[26px] font-extrabold leading-tight tracking-tight text-foreground md:text-4xl">{title}</h1>
-    {subtitle && <p className="mt-3 text-sm leading-relaxed text-muted-foreground md:text-base">{subtitle}</p>}
+    <h1 className="mt-4 text-[26px] font-extrabold leading-tight tracking-tight text-foreground md:text-4xl"><BrandText>{title}</BrandText></h1>
+    {subtitle && <p className="mt-3 text-sm leading-relaxed text-muted-foreground md:text-base"><BrandText>{subtitle}</BrandText></p>}
   </div>
 );
 
 export const Block = ({ title, subtitle, children }: { title?: string; subtitle?: string; children: React.ReactNode }) => (
   <section className="mb-10">
     {title && <h2 className="mb-1 text-lg font-extrabold tracking-tight text-foreground md:text-2xl">{title}</h2>}
-    {subtitle && <p className="mb-4 text-xs text-muted-foreground md:text-sm">{subtitle}</p>}
+    {subtitle && <p className="mb-4 text-xs text-muted-foreground md:text-sm"><BrandText>{subtitle}</BrandText></p>}
     {!subtitle && title && <div className="mb-4" />}
     {children}
   </section>
@@ -128,10 +158,10 @@ export const Block = ({ title, subtitle, children }: { title?: string; subtitle?
 export const CtaCard = ({ title, text }: { title?: string; text?: string }) => (
   <section className="smarty-card mt-2 p-7 text-center">
     <h2 className="text-lg font-extrabold tracking-tight text-foreground md:text-2xl">
-      {title ?? 'Start remembering everything.'}
+      <BrandText>{title ?? 'Start remembering everything.'}</BrandText>
     </h2>
     <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-      {text ?? 'Free to begin. Capture your first memory in under ten seconds.'}
+      <BrandText>{text ?? 'Free to begin. Capture your first memory in under ten seconds.'}</BrandText>
     </p>
     <Link
       to="/auth"
