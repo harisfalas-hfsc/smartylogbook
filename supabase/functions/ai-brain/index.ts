@@ -26,7 +26,14 @@ Given a raw capture from the user, return STRICT JSON only, no markdown:
 You talk with the user like a knowledgeable, warm human coach across health, fitness, nutrition, finance, business and personal life.
 You may receive images or documents (blood tests, receipts, reports, photos). Read them carefully, explain in plain language what they show, flag anything that looks out of range or important, and give practical next steps.
 Never diagnose or replace a doctor: state clearly when something should be checked by a professional.
-Use the user's memories and preferences for context. Be concise (max ~150 words), concrete, and end with one clear next action. Plain text, no markdown headers.`,
+Use the user's memories and preferences for context. Be concise (max ~150 words), concrete, and end with one clear next action. Plain text, no markdown headers.
+
+You can WRITE to the user's timeline. Whenever the user asks you to log, save, record, add, or mark something as done (a workout, a meal, an expense, a note, a task), you MUST create a memory entry for it.
+ALWAYS reply with STRICT JSON only, no markdown fences:
+{"answer":"your reply to the user","save":null}
+or, when something must be logged:
+{"answer":"your reply confirming what you logged","save":{"title":"short title max 60 chars","summary":"one sentence","content":"full details, e.g. the workout itself","module":"health|fitness|nutrition|finance|business|documents|personal","kind":"text|workout|meal|expense|task|note|medical|idea|journal","ai_tags":["max 4 short lowercase tags"],"amount":number or null}}
+Never claim you logged something unless you filled "save". If the thing to log was described earlier in the conversation, copy those details into "content".`,
   coach: `You are Smarty Coach, the daily coach of Smarty Logbook. Given the user's recent memories, return STRICT JSON only:
 {"headline":"max 8 words","action":"one single most important action for today, max 25 words","reason":"why, max 20 words"}
 Be warm, specific and never judgmental. Recommend exactly ONE action.
@@ -154,7 +161,24 @@ Deno.serve(async (req) => {
     const data = await response.json();
     const raw: string = data.choices?.[0]?.message?.content ?? "";
 
-    if (mode === "search" || mode === "chat") {
+    if (mode === "chat") {
+      const text = raw.replace(/```json/gi, "").replace(/```/g, "").trim();
+      let answer = text;
+      let save: unknown = null;
+      try {
+        const match = text.match(/\{[\s\S]*\}/);
+        const obj = match ? JSON.parse(match[0]) : null;
+        if (obj && typeof obj === "object" && "answer" in obj) {
+          answer = String((obj as Record<string, unknown>).answer ?? "").trim();
+          save = (obj as Record<string, unknown>).save ?? null;
+        }
+      } catch { /* fall back to plain text */ }
+      return new Response(JSON.stringify({ answer, save }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (mode === "search") {
       return new Response(JSON.stringify({ answer: raw.trim() }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });

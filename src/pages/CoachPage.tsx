@@ -23,7 +23,7 @@ const readAsDataUrl = (file: File | Blob) =>
   });
 
 const CoachPage = () => {
-  const { memories, loading } = useMemories({ limit: 60 });
+  const { memories, loading, create, reload } = useMemories({ limit: 60 });
   const { prefs } = usePreferences();
   const { card, generating, toggleDone, regenerate } = useCoachCard(memories, prefs, !loading);
 
@@ -187,6 +187,20 @@ const CoachPage = () => {
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
+      const save = data?.save;
+      if (save && typeof save === 'object' && save.title) {
+        const { error: saveError } = await create({
+          title: String(save.title).slice(0, 80),
+          summary: save.summary ? String(save.summary) : null,
+          content: save.content ? String(save.content) : question || null,
+          module: save.module ? String(save.module) : 'personal',
+          kind: save.kind ? String(save.kind) : 'text',
+          ai_tags: Array.isArray(save.ai_tags) ? save.ai_tags.map(String).slice(0, 4) : [],
+          amount: typeof save.amount === 'number' ? save.amount : null,
+        });
+        if (saveError) toast.error('Could not save that to your timeline');
+        else { toast.success('Saved to your timeline'); void reload(); }
+      }
       setMessages((prev) => [...prev, { role: 'assistant', content: String(data?.answer ?? '').trim() || 'I could not read that — try again.' }]);
     } catch (err) {
       toast.error((err as Error).message || 'Smarty Coach is unavailable right now');
