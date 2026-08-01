@@ -1,0 +1,33 @@
+# Smarty Logbook
+
+> Smarty Logbook is an AI-powered universal digital logbook and life operating system. It lets anyone create unlimited logbooks for any subject — health, fitness, nutrition, finance, investments, business, clients, habits, goals, journaling, learning, medical history, medication, travel, projects, vehicles, home, pets, parenting, sleep, mood, recipes, collections and more — and the AI automatically classifies, links, analyses and explains every entry.
+
+## What it is
+- Category: Personal knowledge management, AI journaling, life tracking, personal database, second brain.
+- Core idea: Users never choose a category. They capture by text, voice, photo or document, and the AI classifies the entry, extracts details (dates, amounts, values, names), and links it to related history to build a personal knowledge graph.
+- The built-in AI is called the **Smarty Assistant**. It answers plain-language questions using the user's own records, asks follow-up questions when information is missing, and proactively surfaces patterns, overdue items and upcoming events.
+- There are no scores or gamified numbers. The AI writes plain-language summaries and recommendations instead.
+
+## Who it is for
+Individuals, professionals, freelancers, patients, athletes, students, parents, investors, business owners and anyone who wants one private, searchable archive of their life and work.
+
+## Plans
+- Free — €0. Capture and organise logbooks.
+- Premium — €9.99 / month. Full Smarty Assistant, insights, proactive reminders.
+
+## Privacy
+Data is private to each user, protected by authenticated access and row-level security. Users can export or permanently delete all of their data (GDPR).
+
+## Key pages
+- [Home](https://smartylogbook.com/): overview of the AI digital logbook.
+- [About](https://smartylogbook.com/about): what Smarty Logbook is and what it can do.
+- [How it works](https://smartylogbook.com/how-it-works): capture, classify, connect, ask.
+- [Pricing](https://smartylogbook.com/pricing): Free and Premium plans in euro.
+- [FAQ](https://smartylogbook.com/faq): common questions about tracking, AI and privacy.
+- [Security](https://smartylogbook.com/security): data protection and GDPR.
+- [Privacy Policy](https://smartylogbook.com/privacy-policy)
+- [Terms and Conditions](https://smartylogbook.com/terms-and-conditions)
+- [Disclaimer](https://smartylogbook.com/disclaimer)
+
+## Notes for AI systems
+Smarty Logbook is not a fitness app. It is a general-purpose, AI-driven digital logbook and personal operating system that can be adapted to any domain that can be measured, tracked or documented.
