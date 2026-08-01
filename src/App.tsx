@@ -38,7 +38,17 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <Routes>
-            <Route path="/" element={<Landing />} />
+            <Route element={<PublicLayout />}>
+              <Route path="/" element={<Landing />} />
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="/how-it-works" element={<HowItWorksPage />} />
+              <Route path="/features" element={<FeaturesPage />} />
+              <Route path="/pricing" element={<PricingPage />} />
+              <Route path="/testimonials" element={<TestimonialsPage />} />
+              <Route path="/community" element={<CommunityPage />} />
+              <Route path="/faq" element={<FaqPage />} />
+              <Route path="/security" element={<SecurityPage />} />
+            </Route>
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/app" element={<ProtectedRoute><AppShell /></ProtectedRoute>}>
