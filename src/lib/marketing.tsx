@@ -188,7 +188,7 @@ export const Panel = ({ eyebrow, eyebrowEmoji, badge: Badge, title, lead, childr
         {title}
       </h2>
       {lead && (
-        <p className="mt-2.5 max-w-3xl text-[13px] leading-relaxed text-muted-foreground sm:text-[15px]">
+        <p className="mt-2.5 hidden max-w-3xl text-[13px] leading-relaxed text-muted-foreground sm:block sm:text-[15px]">
           <BrandText>{lead}</BrandText>
         </p>
       )}
@@ -216,16 +216,21 @@ export const SubCard = ({
 );
 
 export const MiniRow = ({ emoji, title, text }: { emoji: string; title: string; text?: string }) => (
-  <div className="flex items-start gap-2.5 rounded-2xl border border-primary/15 bg-card p-2.5 sm:p-3">
+  <div className="flex items-center gap-2.5 rounded-2xl border border-primary/15 bg-card p-2.5 sm:items-start sm:p-3">
     <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-secondary text-sm">{emoji}</span>
     <div className="min-w-0">
       <p className="text-[13px] font-bold leading-snug text-foreground">{title}</p>
-      {text && <p className="mt-0.5 text-[11.5px] leading-relaxed text-muted-foreground">{text}</p>}
+      {text && <p className="mt-0.5 hidden text-[11.5px] leading-relaxed text-muted-foreground sm:block">{text}</p>}
     </div>
   </div>
 );
 
-export const Divider = () => <div className="my-4 h-px bg-primary/15" />;
+/* Content shown only from lg upwards — keeps mobile pages short without touching desktop. */
+export const DesktopOnly = ({ children }: { children: React.ReactNode }) => (
+  <div className="hidden lg:contents">{children}</div>
+);
+
+export const Divider = () => <div className="my-4 hidden h-px bg-primary/15 sm:block" />;
 
 export const CtaCard = ({ title, text }: { title?: string; text?: string }) => (
   <section className="smarty-card relative mt-2 overflow-hidden p-6 text-center sm:p-9">
