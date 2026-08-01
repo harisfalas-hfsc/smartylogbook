@@ -1,5 +1,5 @@
 import { Brain, Sparkles, Layers, ShieldCheck } from 'lucide-react';
-import { Panel, SubCard, MiniRow, Divider, PageHeader, CtaCard, BrandText, features } from '@/lib/marketing';
+import { Panel, SubCard, MiniRow, Divider, DesktopOnly, PageHeader, CtaCard, BrandText, features } from '@/lib/marketing';
 import { MODULES } from '@/lib/constants';
 
 const pillars = [
@@ -59,19 +59,23 @@ const AboutPage = () => (
               <MiniRow key={p.t} emoji={p.e} title={p.t} text={p.s} />
             ))}
           </div>
-          <Divider />
-          <p className="text-[12.5px] leading-relaxed text-muted-foreground">
-            <BrandText>Six seconds of effort from you. Everything after that is Smarty Logbook.</BrandText>
-          </p>
+          <DesktopOnly>
+            <Divider />
+            <p className="text-[12.5px] leading-relaxed text-muted-foreground">
+              <BrandText>Six seconds of effort from you. Everything after that is Smarty Logbook.</BrandText>
+            </p>
+          </DesktopOnly>
         </SubCard>
 
-        <SubCard label="Why it exists" labelEmoji="⚠️">
-          <div className="grid gap-2">
-            {problemsShort.map((p) => (
-              <MiniRow key={p.t} emoji={p.e} title={p.t} text={p.s} />
-            ))}
-          </div>
-        </SubCard>
+        <DesktopOnly>
+          <SubCard label="Why it exists" labelEmoji="⚠️">
+            <div className="grid gap-2">
+              {problemsShort.map((p) => (
+                <MiniRow key={p.t} emoji={p.e} title={p.t} text={p.s} />
+              ))}
+            </div>
+          </SubCard>
+        </DesktopOnly>
       </div>
     </Panel>
 
@@ -83,9 +87,10 @@ const AboutPage = () => (
       lead="The brain behind everything — included with Premium. It reads, files, links, reminds and answers, so your logbook stays organised without you touching it."
     >
       <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-        {assistantPowers.map((a) => (
-          <MiniRow key={a.t} emoji={a.e} title={a.t} text={a.s} />
-        ))}
+        {assistantPowers.map((a, i) => {
+          const row = <MiniRow key={a.t} emoji={a.e} title={a.t} text={a.s} />;
+          return i < 4 ? row : <DesktopOnly key={a.t}>{row}</DesktopOnly>;
+        })}
       </div>
     </Panel>
 
@@ -99,18 +104,21 @@ const AboutPage = () => (
       <div className="grid gap-3 lg:grid-cols-2">
         <SubCard label="Capture & understand" labelEmoji="📥">
           <div className="grid gap-2">
-            {features.slice(0, 6).map((f) => (
-              <MiniRow key={f.title} emoji={f.emoji} title={f.title} text={f.text} />
-            ))}
+            {features.slice(0, 6).map((f, i) => {
+              const row = <MiniRow key={f.title} emoji={f.emoji} title={f.title} text={f.text} />;
+              return i < 4 ? row : <DesktopOnly key={f.title}>{row}</DesktopOnly>;
+            })}
           </div>
         </SubCard>
-        <SubCard label="Recall & guidance" labelEmoji="💡">
-          <div className="grid gap-2">
-            {features.slice(6).map((f) => (
-              <MiniRow key={f.title} emoji={f.emoji} title={f.title} text={f.text} />
-            ))}
-          </div>
-        </SubCard>
+        <DesktopOnly>
+          <SubCard label="Recall & guidance" labelEmoji="💡">
+            <div className="grid gap-2">
+              {features.slice(6).map((f) => (
+                <MiniRow key={f.title} emoji={f.emoji} title={f.title} text={f.text} />
+              ))}
+            </div>
+          </SubCard>
+        </DesktopOnly>
       </div>
     </Panel>
 
@@ -130,8 +138,8 @@ const AboutPage = () => (
               </span>
               <p className="text-sm font-bold text-foreground">{m.label}</p>
             </div>
-            <p className="mt-2 text-[11.5px] leading-relaxed text-muted-foreground">{m.description}</p>
-            <div className="mt-2 flex flex-wrap gap-1">
+            <p className="mt-2 hidden text-[11.5px] leading-relaxed text-muted-foreground sm:block">{m.description}</p>
+            <div className="mt-2 hidden flex-wrap gap-1 sm:flex">
               {m.topics.slice(0, 4).map((t) => (
                 <span key={t} className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-semibold text-muted-foreground">
                   {t}
@@ -158,13 +166,15 @@ const AboutPage = () => (
             ))}
           </div>
         </SubCard>
-        <SubCard label="Your data" labelEmoji="🔐">
-          <div className="grid gap-2">
-            {privacy.map((p) => (
-              <MiniRow key={p.t} emoji={p.e} title={p.t} text={p.s} />
-            ))}
-          </div>
-        </SubCard>
+        <DesktopOnly>
+          <SubCard label="Your data" labelEmoji="🔐">
+            <div className="grid gap-2">
+              {privacy.map((p) => (
+                <MiniRow key={p.t} emoji={p.e} title={p.t} text={p.s} />
+              ))}
+            </div>
+          </SubCard>
+        </DesktopOnly>
       </div>
     </Panel>
 
