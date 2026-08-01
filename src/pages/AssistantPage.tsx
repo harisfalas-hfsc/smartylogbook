@@ -4,8 +4,8 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useMemories } from '@/lib/memories';
 import { usePreferences } from '@/lib/preferences';
-import { useCoachCard } from '@/lib/coach';
-import DailyCoachCard from '@/components/DailyCoachCard';
+import { useDailyBrief } from '@/lib/assistant';
+import DailyBriefCard from '@/components/DailyBriefCard';
 import { cn } from '@/lib/utils';
 
 interface ChatMessage {
@@ -22,10 +22,10 @@ const readAsDataUrl = (file: File | Blob) =>
     reader.readAsDataURL(file);
   });
 
-const CoachPage = () => {
+const AssistantPage = () => {
   const { memories, loading, create, reload } = useMemories({ limit: 60 });
   const { prefs } = usePreferences();
-  const { card, generating, toggleDone, regenerate } = useCoachCard(memories, prefs, !loading);
+  const { card, generating, toggleDone, regenerate } = useDailyBrief(memories, prefs, !loading);
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
@@ -203,7 +203,7 @@ const CoachPage = () => {
       }
       setMessages((prev) => [...prev, { role: 'assistant', content: String(data?.answer ?? '').trim() || 'I could not read that — try again.' }]);
     } catch (err) {
-      toast.error((err as Error).message || 'Smarty Coach is unavailable right now');
+      toast.error((err as Error).message || 'Smarty Assistant is unavailable right now');
       setMessages((prev) => [...prev, { role: 'assistant', content: 'Something went wrong reaching me just now. Please try again.' }]);
     } finally {
       setThinking(false);
@@ -228,7 +228,7 @@ const CoachPage = () => {
         </p>
       </header>
 
-      <DailyCoachCard card={card} generating={generating} onToggleDone={toggleDone} onRegenerate={regenerate} />
+      <DailyBriefCard card={card} generating={generating} onToggleDone={toggleDone} onRegenerate={regenerate} />
 
       <div className="space-y-3">
         {messages.length === 0 && (
@@ -269,7 +269,7 @@ const CoachPage = () => {
 
         {thinking && (
           <p className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin" /> Smarty Coach is thinking…
+            <Loader2 className="h-4 w-4 animate-spin" /> Smarty Assistant is thinking…
           </p>
         )}
         <div ref={endRef} />
@@ -305,7 +305,7 @@ const CoachPage = () => {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             rows={2}
-            placeholder="Ask Smarty Coach anything…"
+            placeholder="Ask Smarty Assistant anything…"
             className="w-full resize-none bg-transparent px-1 text-sm text-foreground outline-none placeholder:text-muted-foreground"
           />
 
@@ -352,4 +352,4 @@ const CoachPage = () => {
   );
 };
 
-export default CoachPage;
+export default AssistantPage;
