@@ -88,10 +88,16 @@ const PublicLayout = () => {
             </Link>
           </div>
           <Link
-            to="/auth"
-            className="rounded-full bg-primary px-3.5 py-1.5 text-[13px] font-semibold text-primary-foreground transition-smooth active:scale-95"
+            to={user ? '/app' : '/auth'}
+            aria-label={user ? 'Open your logbook' : 'Sign in or create an account'}
+            title={user ? 'Your logbook' : 'Sign in'}
+            className="inline-flex h-8 w-8 items-center justify-center rounded-full border-2 border-primary text-primary transition-smooth hover:bg-primary/10 active:scale-95"
           >
-            Get Started
+            {user && initial ? (
+              <span className="text-[13px] font-bold leading-none">{initial}</span>
+            ) : (
+              <User className="h-4 w-4" strokeWidth={2.5} />
+            )}
           </Link>
         </div>
       </header>
