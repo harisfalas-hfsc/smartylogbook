@@ -25,7 +25,7 @@ const readAsDataUrl = (file: File | Blob) =>
 const AssistantPage = () => {
   const { memories, loading, create, reload } = useMemories({ limit: 60 });
   const { prefs } = usePreferences();
-  const { card, generating, toggleDone, regenerate } = useDailyBrief(memories, prefs, !loading);
+  const { brief, generating, toggleDone, regenerate } = useDailyBrief(memories, prefs, !loading);
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
@@ -179,9 +179,12 @@ const AssistantPage = () => {
           history,
           attachments: attachments.map((a) => ({ url: a.url, name: a.name })),
           preferences: prefs ? { goals: prefs.goals, focus: prefs.focus_modules, tone: prefs.tone } : null,
-          memories: memories.slice(0, 30).map((m) => ({
-            title: m.title, summary: m.summary, module: m.module, kind: m.kind,
+          memories: memories.slice(0, 40).map((m) => ({
+            id: m.id, title: m.title, summary: m.summary, module: m.module, kind: m.kind,
             amount: m.amount, occurred_at: m.occurred_at, tags: m.ai_tags,
+          })),
+          candidates: memories.slice(0, 40).map((m) => ({
+            id: m.id, title: m.title, module: m.module, kind: m.kind, occurred_at: m.occurred_at,
           })),
         },
       });
@@ -197,11 +200,19 @@ const AssistantPage = () => {
           kind: save.kind ? String(save.kind) : 'text',
           ai_tags: Array.isArray(save.ai_tags) ? save.ai_tags.map(String).slice(0, 4) : [],
           amount: typeof save.amount === 'number' ? save.amount : null,
+          related_ids: Array.isArray(save.related_ids)
+            ? save.related_ids.map(String).filter((id: string) => memories.some((m) => m.id === id)).slice(0, 5)
+            : [],
         });
         if (saveError) toast.error('Could not save that to your timeline');
         else { toast.success('Saved to your timeline'); void reload(); }
       }
-      setMessages((prev) => [...prev, { role: 'assistant', content: String(data?.answer ?? '').trim() || 'I could not read that — try again.' }]);
+      const question2 = typeof data?.question === 'string' ? data.question.trim() : '';
+      const answer = String(data?.answer ?? '').trim();
+      const content = question2 && !answer.includes(question2)
+        ? `${answer}\n\n${question2}`.trim()
+        : answer;
+      setMessages((prev) => [...prev, { role: 'assistant', content: content || 'I could not read that — try again.' }]);
     } catch (err) {
       toast.error((err as Error).message || 'Smarty Assistant is unavailable right now');
       setMessages((prev) => [...prev, { role: 'assistant', content: 'Something went wrong reaching me just now. Please try again.' }]);
@@ -211,24 +222,24 @@ const AssistantPage = () => {
   };
 
   const quick = [
-    'How am I doing this week?',
-    'Read my blood test and explain it',
-    'Where is my money going?',
-    'What should I focus on today?',
+    'When was my last blood test?',
+    'Read this report and explain it',
+    'How much did I spend on groceries last month?',
+    'What do I need to deal with this week?',
   ];
 
   return (
     <div className="space-y-5 pb-4">
       <header className="animate-fade-up">
         <h1 className="text-2xl font-extrabold tracking-tight text-foreground">
-          Smarty <span className="gradient-text">Coach</span>
+          Smarty <span className="gradient-text">Assistant</span>
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Talk, record your voice or attach a report — your coach reads it and tells you what to do.
+          Ask anything about your life. It searches everything you have logged, reads your documents and answers.
         </p>
       </header>
 
-      <DailyBriefCard card={card} generating={generating} onToggleDone={toggleDone} onRegenerate={regenerate} />
+      <DailyBriefCard brief={brief} generating={generating} onToggleDone={toggleDone} onRegenerate={regenerate} />
 
       <div className="space-y-3">
         {messages.length === 0 && (
@@ -305,7 +316,7 @@ const AssistantPage = () => {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             rows={2}
-            placeholder="Ask Smarty Assistant anything…"
+            placeholder="Ask your assistant anything…"
             className="w-full resize-none bg-transparent px-1 text-sm text-foreground outline-none placeholder:text-muted-foreground"
           />
 
