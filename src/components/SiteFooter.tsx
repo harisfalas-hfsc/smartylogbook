@@ -55,7 +55,7 @@ const SiteFooter = () => (
             )}
           </Link>
         ))}
-      </div>
+      </nav>
 
       <div className="text-center text-sm text-muted-foreground">
         <p>
