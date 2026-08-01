@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Brain, Clock, Compass, Sparkles } from 'lucide-react';
+import { ArrowRight, Brain, Clock, Sparkles } from 'lucide-react';
 
 const highlights = [
   { icon: Sparkles, t: 'Capture in 3 seconds', s: 'Voice, photo or text. No folders, no tags.' },
@@ -58,34 +58,6 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* Explore */}
-      <section className="mx-auto w-full max-w-5xl px-5 md:px-8 pb-14">
-        <div className="smarty-card flex items-center justify-between gap-4 p-5">
-          <div>
-            <p className="text-sm font-bold text-foreground">Explore Smarty Logbook</p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              About, how it works, features, pricing, community and FAQ — all in the Discover menu.
-            </p>
-          </div>
-          <Compass className="h-6 w-6 shrink-0 text-primary" />
-        </div>
-        <div className="mt-2.5 grid grid-cols-2 gap-2.5">
-          {[
-            { to: '/about', l: 'About' },
-            { to: '/features', l: 'Features' },
-            { to: '/pricing', l: 'Pricing' },
-            { to: '/faq', l: 'FAQ' },
-          ].map((i) => (
-            <Link
-              key={i.to}
-              to={i.to}
-              className="smarty-card flex items-center justify-between p-4 text-sm font-semibold text-foreground transition-smooth active:scale-95"
-            >
-              {i.l} <ArrowRight className="h-4 w-4 text-primary" />
-            </Link>
-          ))}
-        </div>
-      </section>
     </div>
   );
 };
