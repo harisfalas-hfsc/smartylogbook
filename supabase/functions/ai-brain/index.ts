@@ -137,6 +137,12 @@ Deno.serve(async (req) => {
       });
     }
 
+    if (mode === "transcribe") {
+      return new Response(JSON.stringify({ text: raw.trim().replace(/^"|"$/g, "") }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const cleaned = raw.replace(/```json/gi, "").replace(/```/g, "").trim();
     let parsed: unknown;
     try {
