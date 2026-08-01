@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, ArrowRight, Home, Info, Sparkles, Layers, Tag, MessageSquareQuote, Users, HelpCircle, ShieldCheck, User } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import Logo from '@/components/Logo';
-import BackButton from '@/components/BackButton';
+import BackButton, { resetNavDepth } from '@/components/BackButton';
 import SiteFooter from '@/components/SiteFooter';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -22,6 +22,7 @@ const discoverLinks = [
 const PublicLayout = () => {
   const [open, setOpen] = useState(false);
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const { user, profile } = useAuth();
   const initial = (profile?.username ?? user?.email ?? '').charAt(0).toUpperCase();
 
@@ -83,7 +84,16 @@ const PublicLayout = () => {
               </SheetContent>
             </Sheet>
             <BackButton />
-            <Link to="/" aria-label="Smarty Logbook home">
+            <Link
+              to="/"
+              aria-label="Smarty Logbook home"
+              onClick={(e) => {
+                e.preventDefault();
+                navigate('/', { replace: true });
+                resetNavDepth();
+                window.scrollTo({ top: 0 });
+              }}
+            >
               <Logo />
             </Link>
           </div>

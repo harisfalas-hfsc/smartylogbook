@@ -5,7 +5,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import BottomNav from '@/components/BottomNav';
 import SiteFooter from '@/components/SiteFooter';
 import Logo from '@/components/Logo';
-import BackButton from '@/components/BackButton';
+import BackButton, { resetNavDepth } from '@/components/BackButton';
 import { MORE_LINKS, NAV_TABS } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -42,7 +42,14 @@ const AppShell = () => {
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-border bg-card/60 px-4 py-6 md:flex">
         <div className="mb-8 flex items-center gap-2 px-2">
           <BackButton className="-ml-1" />
-          <Link to="/app">
+          <Link
+            to="/app"
+            onClick={(e) => {
+              e.preventDefault();
+              navigate('/app', { replace: true });
+              resetNavDepth();
+            }}
+          >
             <Logo />
           </Link>
         </div>
@@ -138,7 +145,15 @@ const AppShell = () => {
                 </nav>
               </SheetContent>
             </Sheet>
-            <Link to="/app" aria-label="Smarty Logbook home">
+            <Link
+              to="/app"
+              aria-label="Smarty Logbook home"
+              onClick={(e) => {
+                e.preventDefault();
+                navigate('/app', { replace: true });
+                resetNavDepth();
+              }}
+            >
               <Logo />
             </Link>
           </div>
