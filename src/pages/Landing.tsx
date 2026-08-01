@@ -13,7 +13,7 @@ const Landing = () => {
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="pointer-events-none absolute inset-0 bg-gradient-halo" />
-        <div className="relative mx-auto max-w-3xl px-5 pb-10 pt-12 text-center md:pb-16 md:pt-20">
+        <div className="relative mx-auto w-full max-w-5xl px-5 md:px-8 pb-10 pt-12 text-center md:pb-16 md:pt-20">
           <span className="inline-flex animate-fade-in items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-[11px] font-semibold text-muted-foreground shadow-soft">
             <Sparkles className="h-3.5 w-3.5 text-primary" /> Smarty Wellness ecosystem
           </span>
@@ -42,7 +42,7 @@ const Landing = () => {
       </section>
 
       {/* Three highlights */}
-      <section className="mx-auto max-w-3xl px-5 pb-10">
+      <section className="mx-auto w-full max-w-5xl px-5 md:px-8 pb-10">
         <div className="grid gap-2.5 md:grid-cols-3">
           {highlights.map((h) => (
             <div key={h.t} className="smarty-card flex items-start gap-3 p-4">
@@ -59,7 +59,7 @@ const Landing = () => {
       </section>
 
       {/* Explore */}
-      <section className="mx-auto max-w-3xl px-5 pb-14">
+      <section className="mx-auto w-full max-w-5xl px-5 md:px-8 pb-14">
         <div className="smarty-card flex items-center justify-between gap-4 p-5">
           <div>
             <p className="text-sm font-bold text-foreground">Explore Smarty Logbook</p>
