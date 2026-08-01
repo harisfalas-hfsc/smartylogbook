@@ -54,6 +54,9 @@ const App = () => (
               <Route path="/community" element={<CommunityPage />} />
               <Route path="/faq" element={<FaqPage />} />
               <Route path="/security" element={<SecurityPage />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+              <Route path="/terms-and-conditions" element={<TermsPage />} />
+              <Route path="/disclaimer" element={<DisclaimerPage />} />
             </Route>
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
