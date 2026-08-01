@@ -32,7 +32,7 @@ Deno.serve(async (req) => {
     const admin = createClient(supabaseUrl, serviceKey);
 
     if (action === "export") {
-      const tables = ["profiles", "memories", "daily_scores", "user_preferences", "coach_cards", "reminders", "user_roles", "account_requests"];
+      const tables = ["profiles", "memories", "user_preferences", "coach_cards", "reminders", "user_roles", "account_requests"];
       const data: Record<string, unknown> = {};
       for (const t of tables) {
         const { data: rows } = await admin.from(t).select("*").eq("user_id", user.id);
@@ -64,7 +64,7 @@ Deno.serve(async (req) => {
       const paths = (objects ?? []).map((o) => `${user.id}/${o.name}`);
       if (paths.length) await admin.storage.from("captures").remove(paths);
 
-      for (const t of ["memories", "daily_scores", "coach_cards", "reminders", "user_preferences", "user_roles", "profiles", "account_requests"]) {
+      for (const t of ["memories", "coach_cards", "reminders", "user_preferences", "user_roles", "profiles", "account_requests"]) {
         await admin.from(t).delete().eq("user_id", user.id);
       }
 

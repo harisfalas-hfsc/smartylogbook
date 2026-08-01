@@ -17,6 +17,8 @@ export interface Memory {
   location: string | null;
   attachment_url: string | null;
   metadata: Record<string, unknown>;
+  related_ids: string[];
+  relation_note: string | null;
   occurred_at: string;
   created_at: string;
   updated_at: string;
@@ -67,6 +69,8 @@ export const useMemories = (options?: { module?: string; limit?: number }) => {
       location: memory.location ?? null,
       attachment_url: memory.attachment_url ?? null,
       metadata: (memory.metadata ?? {}) as never,
+      related_ids: memory.related_ids ?? [],
+      relation_note: memory.relation_note ?? null,
       occurred_at: memory.occurred_at ?? new Date().toISOString(),
     });
     if (!error) await load();

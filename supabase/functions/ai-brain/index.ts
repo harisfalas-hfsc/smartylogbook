@@ -6,55 +6,87 @@ const corsHeaders = {
 
 const MODEL = "google/gemini-3.6-flash";
 
+type Mode = "classify" | "brief" | "coach" | "search" | "insights" | "extract" | "transcribe" | "chat";
+
 interface Body {
-  mode: "classify" | "coach" | "search" | "insights" | "extract" | "transcribe" | "chat";
+  mode: Mode;
   input?: string;
   image?: string;
   audio?: string;
   audioFormat?: string;
   memories?: Array<Record<string, unknown>>;
+  candidates?: Array<{ id: string; title: string; module?: string; kind?: string; occurred_at?: string }>;
   preferences?: { goals?: string[]; focus?: string[]; tone?: string } | null;
   history?: Array<{ role: "user" | "assistant"; content: string }>;
   attachments?: Array<{ url: string; name?: string }>;
 }
 
-const prompts: Record<Body["mode"], string> = {
-  classify: `You are the classification engine of Smarty Logbook, an AI personal operating system.
-Given a raw capture from the user, return STRICT JSON only, no markdown:
-{"title":"short title max 60 chars","summary":"one sentence summary","module":"health|fitness|nutrition|finance|business|documents|personal","kind":"text|voice|photo|receipt|document|medical|workout|meal|expense|task|reminder|idea|journal|mood|location","ai_tags":["max 4 short lowercase tags"],"amount":number or null,"location":"string or null"}`,
-  chat: `You are Smarty Coach, the personal coach inside Smarty Logbook.
-You talk with the user like a knowledgeable, warm human coach across health, fitness, nutrition, finance, business and personal life.
-You may receive images or documents (blood tests, receipts, reports, photos). Read them carefully, explain in plain language what they show, flag anything that looks out of range or important, and give practical next steps.
-Never diagnose or replace a doctor: state clearly when something should be checked by a professional.
-Use the user's memories and preferences for context. Be concise (max ~150 words), concrete, and end with one clear next action. Plain text, no markdown headers.
+const RELATION_RULES = `RELATIONSHIP ENGINE — nothing exists in isolation.
+You are given "Existing entries" with ids. Choose every entry the new capture is genuinely related to
+(a new MRI relates to previous injuries and scans, a blood test to earlier lab reports, a receipt to the matching expense or merchant,
+a meeting to the client, a workout to body measurements, a prescription to its diagnosis, a bill to earlier bills from the same company).
+Return their ids in "related_ids" (max 5, only real matches, empty array when none) and explain the strongest link in "relation_note" (max 15 words, or null).
+Also decide whether this capture implies a future action (a bill due date, an appointment, a re-test, an expiry).
+If so return "reminder": {"title":"short","type":"task|bill|health|event","due_date":"YYYY-MM-DD"} else "reminder": null.`;
 
-You can WRITE to the user's timeline. Whenever the user asks you to log, save, record, add, or mark something as done (a workout, a meal, an expense, a note, a task), you MUST create a memory entry for it.
+const prompts: Record<Mode, string> = {
+  classify: `You are the automatic classification engine of Smarty Logbook.
+The user NEVER picks a category. From the raw capture alone you must understand what it is, where it belongs, what to extract and what it connects to.
+Return STRICT JSON only, no markdown:
+{"title":"short title max 60 chars","summary":"one sentence summary","module":"health|fitness|nutrition|finance|business|documents|personal","secondary_modules":["other modules it also belongs to, max 2"],"kind":"text|voice|photo|receipt|document|medical|workout|meal|expense|task|reminder|idea|journal|mood|location","ai_tags":["max 4 short lowercase tags"],"amount":number or null,"currency":"3-letter code or null","merchant":"string or null","date":"YYYY-MM-DD or null","location":"string or null","details":{"any structured facts you extracted, e.g. duration, muscle groups, biomarkers, due date, company"},"related_ids":[],"relation_note":null,"reminder":null}
+
+${RELATION_RULES}`,
+  chat: `You are Smarty Assistant, the intelligent personal assistant inside Smarty Logbook.
+You are NOT a fitness coach and NOT a simple chatbot — you understand every part of the user's life: health, fitness, nutrition, finance, business, documents, family, ideas, travel and daily admin.
+You always search the user's complete knowledge base (the memories given to you) BEFORE answering, and you answer from it: quote real dates, amounts, merchants, names and numbers you find.
+You can read images and documents (blood tests, receipts, contracts, reports, photos). Explain in plain language what they show, flag anything important, and give a practical next step.
+Never diagnose or replace a doctor; say when something should be checked by a professional.
+
+NEVER GUESS. If information is missing, ask ONE intelligent follow-up question instead, for example:
+"I couldn't find your latest electricity bill — would you like to upload it?"
+"I found your MRI but not the doctor's report. Want to attach it?"
+"I found two similar documents — which one do you mean?"
+
+Be proactive: when you notice something worth flagging (a bill due soon, an overdue check-up, a document expiring, an unusual spend, a long gap since training or since contacting someone), mention it briefly.
+Be concise (max ~150 words), warm and concrete. Plain text, no markdown headers, no scores or ratings — never rate the user's life with numbers.
+
+You can WRITE to the user's logbook. Whenever the user asks you to log, save, note, record, add, create a list, or mark something as done, you MUST create an entry.
 ALWAYS reply with STRICT JSON only, no markdown fences:
-{"answer":"your reply to the user","save":null}
-or, when something must be logged:
-{"answer":"your reply confirming what you logged","save":{"title":"short title max 60 chars","summary":"one sentence","content":"full details, e.g. the workout itself","module":"health|fitness|nutrition|finance|business|documents|personal","kind":"text|workout|meal|expense|task|note|medical|idea|journal","ai_tags":["max 4 short lowercase tags"],"amount":number or null}}
-Never claim you logged something unless you filled "save". If the thing to log was described earlier in the conversation, copy those details into "content".`,
-  coach: `You are Smarty Coach, the daily coach of Smarty Logbook. Given the user's recent memories, return STRICT JSON only:
-{"headline":"max 8 words","action":"one single most important action for today, max 25 words","reason":"why, max 20 words"}
-Be warm, specific and never judgmental. Recommend exactly ONE action.
-Optionally include "module" with the most relevant module id.
-If user goals, focus areas or a preferred tone are provided, the recommendation MUST serve those goals and match that tone.`,
-  search: `You are the memory search engine of Smarty Logbook. Answer the user's question using ONLY the provided memories.
-Be concise and concrete: give numbers, dates and names when present. If nothing matches, say so plainly and suggest what to capture. Plain text, no markdown headers.`,
-  insights: `You are the behaviour intelligence engine of Smarty Logbook. Analyse the memories and return STRICT JSON only:
-{"patterns":[{"title":"short pattern","detail":"one sentence","confidence":"low|medium|high"}],"predictions":[{"title":"short prediction","detail":"one sentence"}],"score":{"value":0-100,"reason":"one short sentence"}}
-Return at most 4 patterns and 3 predictions. If there is too little data, return fewer items and say so in the detail.`,
-  extract: `You read photos and receipts for Smarty Logbook. Look at the image and return STRICT JSON only, no markdown:
-{"title":"short title max 60 chars","summary":"one sentence of what this is","module":"health|fitness|nutrition|finance|business|documents|personal","kind":"photo|receipt|document|medical|meal|expense","ai_tags":["max 4 short lowercase tags"],"amount":number or null,"currency":"3-letter code or null","merchant":"string or null","date":"YYYY-MM-DD or null","category":"string or null","items":["max 6 line items"]}
-For receipts always try to read the total amount, the merchant and the date. Use null when a value is genuinely not visible.`,
+{"answer":"your reply","question":null,"save":null}
+- "question": the single follow-up question you need answered, or null.
+- "save": null, or {"title":"short title max 60 chars","summary":"one sentence","content":"full details","module":"health|fitness|nutrition|finance|business|documents|personal","kind":"text|workout|meal|expense|task|note|medical|idea|journal","ai_tags":["max 4"],"amount":number or null,"related_ids":["ids of existing entries this connects to"],"reminder":null or {"title":"short","type":"task|bill|health|event","due_date":"YYYY-MM-DD"}}
+Never claim you logged something unless you filled "save".`,
+  brief: `You are Smarty Assistant writing the user's daily brief in Smarty Logbook. Given their recent entries, return STRICT JSON only:
+{"headline":"max 8 words","action":"the single most useful thing to do today, max 25 words","reason":"why, max 20 words","module":"most relevant module id or null","alerts":[{"title":"short proactive alert","detail":"one sentence"}]}
+Alerts are proactive: bills due, overdue check-ups, documents expiring, long gaps in training or contact, unusual spending. Max 3, empty array when nothing matters.
+Never use scores, ratings, percentages or numeric evaluations of the user. Be warm, specific and never judgmental.
+If goals, focus areas or a tone are provided, follow them.`,
+  coach: "",
+  search: `You are the knowledge base of Smarty Logbook. Answer the user's question using ONLY the provided entries.
+Be concise and concrete: give real numbers, dates, merchants and names. Connect related entries when useful.
+If the answer is not in the data, say so plainly and ask one intelligent follow-up question (e.g. offer to have it uploaded). Never invent facts. Plain text, no markdown headers.`,
+  insights: `You are the intelligence engine of Smarty Logbook. Analyse the entries and return STRICT JSON only:
+{"summaries":[{"module":"health|fitness|nutrition|finance|business|documents|personal","title":"e.g. Health summary","lines":["short plain-language observations, max 4"]}],"patterns":[{"title":"short pattern","detail":"one sentence"}],"attention":[{"title":"what needs attention","detail":"one sentence with the concrete reason"}],"overview":"2-3 sentence plain-language summary of how life looks right now"}
+ABSOLUTELY NO scores, ratings, percentages, grades or numeric evaluations of the user. Describe and explain instead.
+Only include modules the user actually has data for. Max 5 summaries, 4 patterns, 4 attention items.
+If there is too little data, return fewer items and say so in the overview.`,
+  extract: `You read photos, receipts, documents and PDFs for Smarty Logbook and classify them automatically — the user never chooses a category.
+Return STRICT JSON only, no markdown:
+{"title":"short title max 60 chars","summary":"one sentence of what this is","module":"health|fitness|nutrition|finance|business|documents|personal","kind":"photo|receipt|document|medical|meal|expense","ai_tags":["max 4 short lowercase tags"],"amount":number or null,"currency":"3-letter code or null","merchant":"string or null","date":"YYYY-MM-DD or null","due_date":"YYYY-MM-DD or null","paid":true|false|null,"category":"string or null","items":["max 6 line items"],"details":{"structured facts, e.g. biomarkers with values and ranges, laboratory name, policy number, expiry date"},"related_ids":[],"relation_note":null,"reminder":null}
+For receipts and bills always read the total, the company and the due date, and whether it is paid.
+For medical documents extract biomarkers with their values and reference ranges, the date and the laboratory.
+
+${RELATION_RULES}`,
   transcribe: `You are a speech-to-text engine. Transcribe the audio verbatim in its original language. Return ONLY the transcript text, with no quotes, no markdown and no commentary. If the audio contains no speech, return an empty string.`,
 };
+prompts.coach = prompts.brief;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { mode, input, image, audio, audioFormat, memories, preferences, history, attachments }: Body = await req.json();
+    const { mode, input, image, audio, audioFormat, memories, candidates, preferences, history, attachments }: Body =
+      await req.json();
     if (!mode || !prompts[mode]) {
       return new Response(JSON.stringify({ error: "Invalid mode" }), {
         status: 400,
@@ -66,22 +98,29 @@ Deno.serve(async (req) => {
     if (!apiKey) throw new Error("LOVABLE_API_KEY is not configured");
 
     const context = memories?.length
-      ? `Memories (JSON):\n${JSON.stringify(memories).slice(0, 24000)}`
-      : "No memories available yet.";
+      ? `Entries (JSON):\n${JSON.stringify(memories).slice(0, 24000)}`
+      : "No entries available yet.";
+
+    const candidateText = candidates?.length
+      ? `Existing entries (id + title):\n${JSON.stringify(candidates).slice(0, 12000)}`
+      : "Existing entries: none.";
 
     const prefsText = preferences
       ? `User goals: ${(preferences.goals ?? []).join(", ") || "not set"}. Focus areas: ${(preferences.focus ?? []).join(", ") || "not set"}. Preferred tone: ${preferences.tone ?? "friendly"}.`
       : "";
 
     const userContent = mode === "classify"
-      ? `Raw capture:\n${input ?? ""}`
+      ? `Raw capture:\n${input ?? ""}\n\n${candidateText}\n\nToday: ${new Date().toISOString().slice(0, 10)}`
       : mode === "search"
         ? `${context}\n\nQuestion: ${input ?? ""}`
         : `${context}\n\n${prefsText}\n\nToday: ${new Date().toISOString()}`;
 
     const chatMessages = mode === "chat"
       ? [
-        { role: "system", content: `${prompts.chat}\n\n${context}\n\n${prefsText}\n\nToday: ${new Date().toISOString()}` },
+        {
+          role: "system",
+          content: `${prompts.chat}\n\n${context}\n\n${candidateText}\n\n${prefsText}\n\nToday: ${new Date().toISOString()}`,
+        },
         ...(history ?? []).slice(-10).map((m) => ({ role: m.role, content: m.content })),
         {
           role: "user",
@@ -101,7 +140,10 @@ Deno.serve(async (req) => {
         {
           role: "user",
           content: [
-            { type: "text", text: input?.trim() ? `User note: ${input.trim()}` : "Extract the key details from this image." },
+            {
+              type: "text",
+              text: `${input?.trim() ? `User note: ${input.trim()}\n\n` : ""}${candidateText}\n\nToday: ${new Date().toISOString().slice(0, 10)}\n\nExtract and classify this document.`,
+            },
             { type: "image_url", image_url: { url: image ?? "" } },
           ],
         },
@@ -131,10 +173,7 @@ Deno.serve(async (req) => {
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: MODEL,
-        messages,
-      }),
+      body: JSON.stringify({ model: MODEL, messages }),
     });
 
     if (response.status === 429) {
@@ -165,15 +204,17 @@ Deno.serve(async (req) => {
       const text = raw.replace(/```json/gi, "").replace(/```/g, "").trim();
       let answer = text;
       let save: unknown = null;
+      let question: unknown = null;
       try {
         const match = text.match(/\{[\s\S]*\}/);
         const obj = match ? JSON.parse(match[0]) : null;
         if (obj && typeof obj === "object" && "answer" in obj) {
           answer = String((obj as Record<string, unknown>).answer ?? "").trim();
           save = (obj as Record<string, unknown>).save ?? null;
+          question = (obj as Record<string, unknown>).question ?? null;
         }
       } catch { /* fall back to plain text */ }
-      return new Response(JSON.stringify({ answer, save }), {
+      return new Response(JSON.stringify({ answer, save, question }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -185,7 +226,7 @@ Deno.serve(async (req) => {
     }
 
     if (mode === "transcribe") {
-      return new Response(JSON.stringify({ text: raw.trim().replace(/^"|"$/g, "") }), {
+      return new Response(JSON.stringify({ text: raw.trim() }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }

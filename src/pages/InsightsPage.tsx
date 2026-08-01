@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react';
-import { Brain, Loader2, RefreshCw, Sparkles, Zap } from 'lucide-react';
+import { Brain, Loader2, RefreshCw, Sparkles, AlertTriangle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useMemories } from '@/lib/memories';
-import LifeScoreRing from '@/components/LifeScoreRing';
-import { MODULES, SCORE_DIMENSIONS } from '@/lib/constants';
+import { MODULES, getModule } from '@/lib/constants';
 
 interface Insights {
-  patterns: { title: string; detail: string; confidence: string }[];
-  predictions: { title: string; detail: string }[];
-  score: { value: number; reason: string };
+  summaries: { module: string; title: string; lines: string[] }[];
+  patterns: { title: string; detail: string }[];
+  attention: { title: string; detail: string }[];
+  overview: string;
 }
 
 const InsightsPage = () => {
@@ -54,7 +54,7 @@ const InsightsPage = () => {
       <header className="flex items-start justify-between gap-3 animate-fade-up">
         <div>
           <h1 className="text-2xl font-extrabold tracking-tight text-foreground">Insights</h1>
-          <p className="mt-1 text-sm text-muted-foreground">What your life has been quietly telling you.</p>
+          <p className="mt-1 text-sm text-muted-foreground">Plain-language summaries — no scores, no ratings.</p>
         </div>
         <button
           onClick={analyse}
@@ -66,69 +66,85 @@ const InsightsPage = () => {
         </button>
       </header>
 
-      <section className="smarty-card animate-fade-up flex flex-col items-center gap-5 p-6 sm:flex-row">
-        <LifeScoreRing score={insights?.score.value ?? Math.min(100, 40 + memories.length * 2)} />
-        <div className="text-center sm:text-left">
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">Life Score</p>
-          <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
-            {insights?.score.reason ?? 'Balanced across sleep, movement, nutrition, recovery, productivity, learning, mental wellbeing, relationships and financial discipline.'}
-          </p>
-          <div className="mt-3 flex flex-wrap justify-center gap-1.5 sm:justify-start">
-            {SCORE_DIMENSIONS.map((d) => (
-              <span key={d.key} className="rounded-full bg-secondary px-2.5 py-1 text-[10px] font-semibold text-secondary-foreground">
-                {d.label}
-              </span>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {memories.length === 0 ? (
         <div className="smarty-card p-10 text-center">
           <Sparkles className="mx-auto h-6 w-6 text-primary" />
           <p className="mt-3 text-sm font-semibold text-foreground">Nothing to analyse yet</p>
-          <p className="mt-1 text-xs text-muted-foreground">Capture a week of life and patterns start appearing.</p>
+          <p className="mt-1 text-xs text-muted-foreground">Capture a week of life and the picture starts forming.</p>
         </div>
       ) : loading && !insights ? (
         <div className="smarty-card flex items-center justify-center gap-2 p-10 text-sm text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" /> Analysing your behaviour…
+          <Loader2 className="h-4 w-4 animate-spin" /> Reading your logbook…
         </div>
       ) : error ? (
         <div className="smarty-card p-6 text-center text-sm text-muted-foreground">{error}</div>
       ) : insights ? (
         <>
-          <section className="animate-fade-up">
-            <h2 className="mb-3 flex items-center gap-2 text-sm font-bold text-foreground">
-              <Brain className="h-4 w-4 text-primary" /> Behaviour patterns
-            </h2>
-            <div className="space-y-2.5">
-              {insights.patterns?.map((p) => (
-                <div key={p.title} className="smarty-card p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <p className="text-sm font-bold text-foreground">{p.title}</p>
-                    <span className="shrink-0 rounded-full bg-secondary px-2 py-0.5 text-[10px] font-semibold uppercase text-muted-foreground">
-                      {p.confidence}
-                    </span>
-                  </div>
-                  <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">{p.detail}</p>
-                </div>
-              ))}
-            </div>
-          </section>
+          {insights.overview && (
+            <section className="smarty-card animate-fade-up p-5">
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">Right now</p>
+              <p className="mt-2 text-sm leading-relaxed text-foreground">{insights.overview}</p>
+            </section>
+          )}
 
-          <section className="animate-fade-up">
-            <h2 className="mb-3 flex items-center gap-2 text-sm font-bold text-foreground">
-              <Zap className="h-4 w-4 text-warning" /> Predictive intelligence
-            </h2>
-            <div className="space-y-2.5">
-              {insights.predictions?.map((p) => (
-                <div key={p.title} className="glass rounded-3xl p-4 shadow-soft">
-                  <p className="text-sm font-bold text-foreground">{p.title}</p>
-                  <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">{p.detail}</p>
-                </div>
-              ))}
-            </div>
-          </section>
+          {insights.summaries?.length > 0 && (
+            <section className="animate-fade-up space-y-2.5">
+              <h2 className="mb-1 text-sm font-bold text-foreground">Summaries</h2>
+              {insights.summaries.map((s) => {
+                const mod = getModule(s.module);
+                return (
+                  <div key={s.title} className="smarty-card p-4">
+                    <div className="flex items-center gap-2.5">
+                      <div className={`flex h-8 w-8 items-center justify-center rounded-xl ${mod.tint}`}>
+                        <mod.icon className={`h-4 w-4 ${mod.color}`} />
+                      </div>
+                      <p className="text-sm font-bold text-foreground">{s.title}</p>
+                    </div>
+                    <ul className="mt-2.5 space-y-1.5">
+                      {s.lines?.map((l) => (
+                        <li key={l} className="flex gap-2 text-xs leading-relaxed text-muted-foreground">
+                          <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-primary" />
+                          {l}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                );
+              })}
+            </section>
+          )}
+
+          {insights.attention?.length > 0 && (
+            <section className="animate-fade-up">
+              <h2 className="mb-3 flex items-center gap-2 text-sm font-bold text-foreground">
+                <AlertTriangle className="h-4 w-4 text-warning" /> Needs your attention
+              </h2>
+              <div className="space-y-2.5">
+                {insights.attention.map((p) => (
+                  <div key={p.title} className="glass rounded-3xl p-4 shadow-soft">
+                    <p className="text-sm font-bold text-foreground">{p.title}</p>
+                    <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">{p.detail}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {insights.patterns?.length > 0 && (
+            <section className="animate-fade-up">
+              <h2 className="mb-3 flex items-center gap-2 text-sm font-bold text-foreground">
+                <Brain className="h-4 w-4 text-primary" /> Patterns
+              </h2>
+              <div className="space-y-2.5">
+                {insights.patterns.map((p) => (
+                  <div key={p.title} className="smarty-card p-4">
+                    <p className="text-sm font-bold text-foreground">{p.title}</p>
+                    <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">{p.detail}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
         </>
       ) : null}
 

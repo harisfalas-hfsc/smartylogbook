@@ -45,7 +45,7 @@ export const predictions = [
 
 export const plans = [
   { name: 'Starter', price: '$0', note: 'forever', points: ['Unlimited notes', 'Universal timeline', 'Basic AI search', '1 device'], cta: 'Start free' },
-  { name: 'Pro', price: '$9', note: 'per month', points: ['Unlimited AI capture', 'Predictive insights', 'Daily AI coach', 'All modules', 'Multi-device sync'], cta: 'Go Pro', featured: true },
+  { name: 'Pro', price: '$9', note: 'per month', points: ['Unlimited AI capture', 'Predictive insights', 'Daily assistant brief', 'All modules', 'Multi-device sync'], cta: 'Go Pro', featured: true },
   { name: 'Ecosystem', price: '$19', note: 'per month', points: ['Everything in Pro', 'Smarty Gym + Diet + Move', 'Wearable integrations', 'Priority AI models'], cta: 'Join ecosystem' },
 ];
 

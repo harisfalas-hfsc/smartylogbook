@@ -126,7 +126,7 @@ const AccountPage = () => {
           <Download className="h-4 w-4 text-primary" /> Download your data
         </h2>
         <p className="text-xs text-muted-foreground">
-          A machine-readable JSON file with every entry, score, preference and reminder, plus
+          A machine-readable JSON file with every entry, preference and reminder, plus
           time-limited download links for every document, photo and receipt you uploaded
           (right to data portability, Art. 20 GDPR).
         </p>

@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -25,7 +25,7 @@ import Dashboard from "./pages/Dashboard";
 import TimelinePage from "./pages/TimelinePage";
 import CapturePage from "./pages/CapturePage";
 import AiPage from "./pages/AiPage";
-import CoachPage from "./pages/CoachPage";
+import AssistantPage from "./pages/AssistantPage";
 import InsightsPage from "./pages/InsightsPage";
 import ModulesPage from "./pages/ModulesPage";
 import ModuleDetailPage from "./pages/ModuleDetailPage";
@@ -68,7 +68,8 @@ const App = () => (
               <Route index element={<Dashboard />} />
               <Route path="timeline" element={<TimelinePage />} />
               <Route path="capture" element={<CapturePage />} />
-              <Route path="coach" element={<CoachPage />} />
+              <Route path="assistant" element={<AssistantPage />} />
+              <Route path="coach" element={<Navigate to="/app/assistant" replace />} />
               <Route path="ai" element={<AiPage />} />
               <Route path="search" element={<AiPage />} />
               <Route path="insights" element={<InsightsPage />} />

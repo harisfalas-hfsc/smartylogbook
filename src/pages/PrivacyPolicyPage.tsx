@@ -41,7 +41,7 @@ const PrivacyPolicyPage = () => (
 
     <LegalSection title="4. Automated processing and AI">
       <p>
-        Smarty Coach and the insight engine analyse your entries to generate summaries, tags, patterns and
+        Smarty Assistant and the insight engine analyse your entries to generate summaries, tags, patterns and
         recommendations. This is decision support, not automated decision-making producing legal or similarly
         significant effects within the meaning of Art. 22 GDPR. Content you send to the AI features is
         transmitted to our AI processing provider solely to generate a response and is not used to train

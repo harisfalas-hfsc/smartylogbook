@@ -4,13 +4,19 @@ import { useAuth } from '@/contexts/AuthContext';
 import type { Memory } from '@/lib/memories';
 import type { Preferences } from '@/lib/preferences';
 
-export interface CoachCard {
+export interface BriefAlert {
+  title: string;
+  detail: string;
+}
+
+export interface DailyBrief {
   id: string;
   for_date: string;
   headline: string;
   action: string;
   reason: string | null;
   module: string | null;
+  alerts: BriefAlert[];
   done: boolean;
   done_at: string | null;
 }
@@ -20,13 +26,26 @@ const todayKey = () => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 };
 
+const toAlerts = (value: unknown): BriefAlert[] =>
+  Array.isArray(value)
+    ? value
+        .filter((a) => a && typeof a === 'object')
+        .slice(0, 3)
+        .map((a) => ({
+          title: String((a as Record<string, unknown>).title ?? ''),
+          detail: String((a as Record<string, unknown>).detail ?? ''),
+        }))
+        .filter((a) => a.title)
+    : [];
+
 /**
- * One scheduled AI recommendation per day. It is generated the first time the
- * user opens the app on a new day and persisted so it stays stable all day.
+ * One daily brief from Smarty Assistant: a single recommendation plus proactive
+ * alerts. Generated the first time the user opens the app on a new day and
+ * persisted so it stays stable all day. No scores, ever.
  */
-export const useCoachCard = (memories: Memory[], prefs: Preferences | null, ready: boolean) => {
+export const useDailyBrief = (memories: Memory[], prefs: Preferences | null, ready: boolean) => {
   const { user } = useAuth();
-  const [card, setCard] = useState<CoachCard | null>(null);
+  const [brief, setBrief] = useState<DailyBrief | null>(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const generatedFor = useRef<string | null>(null);
@@ -41,7 +60,7 @@ export const useCoachCard = (memories: Memory[], prefs: Preferences | null, read
       try {
         const { data } = await supabase.functions.invoke('ai-brain', {
           body: {
-            mode: 'coach',
+            mode: 'brief',
             preferences: prefs
               ? { goals: prefs.goals, focus: prefs.focus_modules, tone: prefs.tone }
               : null,
@@ -67,6 +86,7 @@ export const useCoachCard = (memories: Memory[], prefs: Preferences | null, read
               action: String(data.action ?? ''),
               reason: data.reason ? String(data.reason) : null,
               module: data.module ? String(data.module) : null,
+              alerts: toAlerts(data.alerts) as never,
               done: false,
               done_at: null,
             },
@@ -74,7 +94,7 @@ export const useCoachCard = (memories: Memory[], prefs: Preferences | null, read
           )
           .select('*')
           .maybeSingle();
-        if (saved) setCard(saved as CoachCard);
+        if (saved) setBrief({ ...(saved as unknown as DailyBrief), alerts: toAlerts((saved as Record<string, unknown>).alerts) });
       } finally {
         setGenerating(false);
       }
@@ -84,7 +104,7 @@ export const useCoachCard = (memories: Memory[], prefs: Preferences | null, read
 
   const load = useCallback(async () => {
     if (!user) {
-      setCard(null);
+      setBrief(null);
       setLoading(false);
       return;
     }
@@ -94,7 +114,7 @@ export const useCoachCard = (memories: Memory[], prefs: Preferences | null, read
       .eq('user_id', user.id)
       .eq('for_date', todayKey())
       .maybeSingle();
-    setCard((data as CoachCard) ?? null);
+    setBrief(data ? { ...(data as unknown as DailyBrief), alerts: toAlerts((data as Record<string, unknown>).alerts) } : null);
     setLoading(false);
     if (!data && ready) generate();
   }, [user, ready, generate]);
@@ -105,14 +125,14 @@ export const useCoachCard = (memories: Memory[], prefs: Preferences | null, read
   }, [ready, load]);
 
   const toggleDone = async () => {
-    if (!card) return;
-    const next = !card.done;
-    setCard({ ...card, done: next, done_at: next ? new Date().toISOString() : null });
+    if (!brief) return;
+    const next = !brief.done;
+    setBrief({ ...brief, done: next, done_at: next ? new Date().toISOString() : null });
     await supabase
       .from('coach_cards')
       .update({ done: next, done_at: next ? new Date().toISOString() : null })
-      .eq('id', card.id);
+      .eq('id', brief.id);
   };
 
-  return { card, loading, generating, toggleDone, regenerate: () => generate(true) };
+  return { brief, loading, generating, toggleDone, regenerate: () => generate(true) };
 };

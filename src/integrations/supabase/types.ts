@@ -41,6 +41,7 @@ export type Database = {
       coach_cards: {
         Row: {
           action: string
+          alerts: Json
           created_at: string
           done: boolean
           done_at: string | null
@@ -54,6 +55,7 @@ export type Database = {
         }
         Insert: {
           action: string
+          alerts?: Json
           created_at?: string
           done?: boolean
           done_at?: string | null
@@ -67,6 +69,7 @@ export type Database = {
         }
         Update: {
           action?: string
+          alerts?: Json
           created_at?: string
           done?: boolean
           done_at?: string | null
@@ -75,60 +78,6 @@ export type Database = {
           id?: string
           module?: string | null
           reason?: string | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      daily_scores: {
-        Row: {
-          created_at: string
-          date: string
-          finance: number | null
-          id: string
-          learning: number | null
-          mental: number | null
-          movement: number | null
-          nutrition: number | null
-          productivity: number | null
-          recovery: number | null
-          relationships: number | null
-          score: number
-          sleep: number | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          date?: string
-          finance?: number | null
-          id?: string
-          learning?: number | null
-          mental?: number | null
-          movement?: number | null
-          nutrition?: number | null
-          productivity?: number | null
-          recovery?: number | null
-          relationships?: number | null
-          score?: number
-          sleep?: number | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          date?: string
-          finance?: number | null
-          id?: string
-          learning?: number | null
-          mental?: number | null
-          movement?: number | null
-          nutrition?: number | null
-          productivity?: number | null
-          recovery?: number | null
-          relationships?: number | null
-          score?: number
-          sleep?: number | null
           updated_at?: string
           user_id?: string
         }
@@ -149,6 +98,8 @@ export type Database = {
           module: string
           mood: number | null
           occurred_at: string
+          related_ids: string[]
+          relation_note: string | null
           summary: string | null
           title: string
           updated_at: string
@@ -168,6 +119,8 @@ export type Database = {
           module?: string
           mood?: number | null
           occurred_at?: string
+          related_ids?: string[]
+          relation_note?: string | null
           summary?: string | null
           title: string
           updated_at?: string
@@ -187,6 +140,8 @@ export type Database = {
           module?: string
           mood?: number | null
           occurred_at?: string
+          related_ids?: string[]
+          relation_note?: string | null
           summary?: string | null
           title?: string
           updated_at?: string
