@@ -23,7 +23,7 @@ const readAsDataUrl = (file: File | Blob) =>
   });
 
 const CoachPage = () => {
-  const { memories, loading } = useMemories({ limit: 60 });
+  const { memories, loading, create, reload } = useMemories({ limit: 60 });
   const { prefs } = usePreferences();
   const { card, generating, toggleDone, regenerate } = useCoachCard(memories, prefs, !loading);
 
