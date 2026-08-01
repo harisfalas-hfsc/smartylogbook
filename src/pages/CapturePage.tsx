@@ -476,6 +476,7 @@ const CapturePage = () => {
       </section>
 
       {showOverride && (
+      <>
       <section className="animate-fade-up">
         <p className="mb-2.5 text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">Type (optional)</p>
         <div className="flex flex-wrap gap-2">
@@ -513,6 +514,7 @@ const CapturePage = () => {
           ))}
         </div>
       </section>
+      </>
       )}
 
       <section className="animate-fade-up">
