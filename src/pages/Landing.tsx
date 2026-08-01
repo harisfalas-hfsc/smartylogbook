@@ -18,7 +18,8 @@ const Landing = () => {
             <Sparkles className="h-3.5 w-3.5 text-primary" /> Smarty Wellness ecosystem
           </span>
           <h1 className="mx-auto mt-5 animate-fade-up text-[30px] font-extrabold leading-[1.1] tracking-tight text-foreground md:text-5xl">
-            The AI that remembers <span className="gradient-text">your life</span> better than you do.
+            The <span className="gradient-text">Smarty Logbook</span> that remembers{' '}
+            <span className="gradient-text">your life</span> better than you do.
           </h1>
           <p className="mx-auto mt-4 max-w-md animate-fade-up text-sm leading-relaxed text-muted-foreground md:text-base">
             Capture anything. It organises, understands and connects the rest.
