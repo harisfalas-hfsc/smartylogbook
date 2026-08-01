@@ -1,9 +1,10 @@
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  Bell, ChevronRight, FileText, Fingerprint, LogOut, Moon, Shield, Sparkles, Target, User,
+  Bell, ChevronRight, FileText, Fingerprint, LogOut, Moon, Shield, ShieldCheck, Sparkles, Target, User,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIsAdmin } from '@/lib/admin';
 import { useMemories } from '@/lib/memories';
 import { usePreferences } from '@/lib/preferences';
 import { requestNotificationPermission } from '@/lib/reminders';
@@ -22,6 +23,7 @@ const SettingsPage = () => {
   const { memories } = useMemories();
   const { prefs, update } = usePreferences();
   const navigate = useNavigate();
+  const { isAdmin } = useIsAdmin();
 
   const toggleNotify = async (key: string, value: boolean) => {
     if (value) {
@@ -63,6 +65,18 @@ const SettingsPage = () => {
           <p className="mt-1 text-[11px] font-semibold text-primary">{memories.length} memories stored</p>
         </div>
       </section>
+
+      {isAdmin && (
+        <Link
+          to="/app/admin"
+          className="smarty-card animate-fade-up flex items-center gap-3 border-primary/40 px-4 py-3.5 transition-smooth active:scale-[0.99]"
+        >
+          <ShieldCheck className="h-4.5 w-4.5 text-primary" />
+          <span className="flex-1 text-sm font-bold text-foreground">Admin panel</span>
+          <span className="rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-primary">Admin</span>
+          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+        </Link>
+      )}
 
       <section className="smarty-card animate-fade-up divide-y divide-border p-2">
         {rows.map((r) => (
