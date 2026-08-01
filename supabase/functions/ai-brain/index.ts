@@ -7,9 +7,11 @@ const corsHeaders = {
 const MODEL = "google/gemini-3.6-flash";
 
 interface Body {
-  mode: "classify" | "coach" | "search" | "insights" | "extract";
+  mode: "classify" | "coach" | "search" | "insights" | "extract" | "transcribe";
   input?: string;
   image?: string;
+  audio?: string;
+  audioFormat?: string;
   memories?: Array<Record<string, unknown>>;
   preferences?: { goals?: string[]; focus?: string[]; tone?: string } | null;
 }
@@ -31,13 +33,14 @@ Return at most 4 patterns and 3 predictions. If there is too little data, return
   extract: `You read photos and receipts for Smarty Logbook. Look at the image and return STRICT JSON only, no markdown:
 {"title":"short title max 60 chars","summary":"one sentence of what this is","module":"health|fitness|nutrition|finance|business|documents|personal","kind":"photo|receipt|document|medical|meal|expense","ai_tags":["max 4 short lowercase tags"],"amount":number or null,"currency":"3-letter code or null","merchant":"string or null","date":"YYYY-MM-DD or null","category":"string or null","items":["max 6 line items"]}
 For receipts always try to read the total amount, the merchant and the date. Use null when a value is genuinely not visible.`,
+  transcribe: `You are a speech-to-text engine. Transcribe the audio verbatim in its original language. Return ONLY the transcript text, with no quotes, no markdown and no commentary. If the audio contains no speech, return an empty string.`,
 };
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { mode, input, image, memories, preferences }: Body = await req.json();
+    const { mode, input, image, audio, audioFormat, memories, preferences }: Body = await req.json();
     if (!mode || !prompts[mode]) {
       return new Response(JSON.stringify({ error: "Invalid mode" }), {
         status: 400,
@@ -73,10 +76,27 @@ Deno.serve(async (req) => {
           ],
         },
       ]
-      : [
-        { role: "system", content: prompts[mode] },
-        { role: "user", content: userContent },
-      ];
+      : mode === "transcribe"
+        ? [
+          { role: "system", content: prompts.transcribe },
+          {
+            role: "user",
+            content: [
+              { type: "text", text: "Transcribe this audio." },
+              {
+                type: "input_audio",
+                input_audio: {
+                  data: (audio ?? "").replace(/^data:[^,]+,/, ""),
+                  format: audioFormat ?? "webm",
+                },
+              },
+            ],
+          },
+        ]
+        : [
+          { role: "system", content: prompts[mode] },
+          { role: "user", content: userContent },
+        ];
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -113,6 +133,12 @@ Deno.serve(async (req) => {
 
     if (mode === "search") {
       return new Response(JSON.stringify({ answer: raw.trim() }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (mode === "transcribe") {
+      return new Response(JSON.stringify({ text: raw.trim().replace(/^"|"$/g, "") }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }

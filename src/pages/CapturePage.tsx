@@ -1,6 +1,6 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Camera, Loader2, Mic, Receipt, Sparkles, X } from 'lucide-react';
+import { Camera, FileText, Loader2, Mic, Paperclip, Sparkles, Square, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -30,7 +30,7 @@ interface Extracted {
   items?: string[];
 }
 
-const readAsDataUrl = (file: File) =>
+const readAsDataUrl = (file: File | Blob) =>
   new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(String(reader.result));
@@ -46,50 +46,152 @@ const CapturePage = () => {
   const [kind, setKind] = useState<CaptureKind | null>(null);
   const [module, setModule] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+
   const [listening, setListening] = useState(false);
+  const [recording, setRecording] = useState(false);
+  const [transcribing, setTranscribing] = useState(false);
+  const recorderRef = useRef<MediaRecorder | null>(null);
 
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [extracting, setExtracting] = useState(false);
   const [extracted, setExtracted] = useState<Extracted | null>(null);
-  const photoInput = useRef<HTMLInputElement>(null);
-  const receiptInput = useRef<HTMLInputElement>(null);
+  const cameraInput = useRef<HTMLInputElement>(null);
+  const fileInput = useRef<HTMLInputElement>(null);
 
-  const startVoice = () => {
-    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SR) {
-      toast.error('Voice input is not supported in this browser');
+  useEffect(() => () => {
+    recorderRef.current?.stream.getTracks().forEach((t) => t.stop());
+  }, []);
+
+  /* ---------- voice ---------- */
+
+  const transcribeBlob = async (blob: Blob, mime: string) => {
+    setTranscribing(true);
+    try {
+      const dataUrl = await readAsDataUrl(blob);
+      const format = mime.includes('mp4') || mime.includes('m4a') ? 'mp4' : mime.includes('ogg') ? 'ogg' : 'webm';
+      const { data, error } = await supabase.functions.invoke('ai-brain', {
+        body: { mode: 'transcribe', audio: dataUrl, audioFormat: format },
+      });
+      if (error) throw error;
+      const transcript = String(data?.text ?? '').trim();
+      if (!transcript) {
+        toast.error('No speech detected — try again a bit closer to the mic');
+        return;
+      }
+      setText((prev) => (prev ? `${prev} ${transcript}` : transcript));
+      setKind('voice');
+      toast.success('Transcribed');
+    } catch {
+      toast.error('Could not transcribe that recording');
+    } finally {
+      setTranscribing(false);
+    }
+  };
+
+  const startRecording = async () => {
+    if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') {
+      toast.error('Recording is not supported in this browser');
       return;
     }
-    const recognition = new SR();
-    recognition.lang = 'en-US';
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mime = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg'].find(
+        (m) => MediaRecorder.isTypeSupported?.(m)
+      );
+      const recorder = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined);
+      const chunks: BlobPart[] = [];
+      recorder.ondataavailable = (e) => { if (e.data.size) chunks.push(e.data); };
+      recorder.onstop = async () => {
+        stream.getTracks().forEach((t) => t.stop());
+        setRecording(false);
+        const type = recorder.mimeType || mime || 'audio/webm';
+        const blob = new Blob(chunks, { type });
+        if (blob.size < 1200) {
+          toast.error('That recording was too short');
+          return;
+        }
+        await transcribeBlob(blob, type);
+      };
+      recorderRef.current = recorder;
+      recorder.start();
+      setRecording(true);
+      toast.info('Recording — tap the square to stop');
+    } catch {
+      toast.error('Microphone access was blocked. Allow it in your browser settings.');
+    }
+  };
+
+  const stopRecording = () => {
+    recorderRef.current?.stop();
+    recorderRef.current = null;
+  };
+
+  const startVoice = () => {
+    if (recording) { stopRecording(); return; }
+    if (transcribing) return;
+
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SR) { void startRecording(); return; }
+
+    let gotResult = false;
+    let recognition: any;
+    try {
+      recognition = new SR();
+    } catch {
+      void startRecording();
+      return;
+    }
+    recognition.lang = navigator.language || 'en-US';
     recognition.interimResults = false;
     recognition.onstart = () => setListening(true);
     recognition.onend = () => setListening(false);
-    recognition.onerror = () => { setListening(false); toast.error('Could not hear that — try again'); };
+    recognition.onerror = (e: any) => {
+      setListening(false);
+      if (e?.error === 'not-allowed' || e?.error === 'service-not-allowed') {
+        toast.error('Microphone access was blocked. Allow it in your browser settings.');
+        return;
+      }
+      if (!gotResult) void startRecording(); // fall back to record + AI transcription
+    };
     recognition.onresult = (e: any) => {
+      gotResult = true;
       const transcript = Array.from(e.results).map((r: any) => r[0].transcript).join(' ');
       setText((prev) => (prev ? `${prev} ${transcript}` : transcript));
       setKind('voice');
     };
-    recognition.start();
+    try {
+      recognition.start();
+    } catch {
+      void startRecording();
+    }
   };
+
+  /* ---------- files ---------- */
 
   const pickFile = async (chosen: File | undefined, asKind: CaptureKind) => {
     if (!chosen) return;
-    if (!chosen.type.startsWith('image/')) {
-      toast.error('Please choose an image');
+    const isImage = chosen.type.startsWith('image/');
+    const isPdf = chosen.type === 'application/pdf';
+    if (!isImage && !isPdf) {
+      toast.error('Choose an image or a PDF');
       return;
     }
     if (chosen.size > 8 * 1024 * 1024) {
-      toast.error('Image is larger than 8 MB');
+      toast.error('File is larger than 8 MB');
       return;
     }
-    const dataUrl = await readAsDataUrl(chosen);
     setFile(chosen);
-    setPreview(dataUrl);
-    setKind(asKind);
+    setKind(isPdf ? 'document' : asKind);
     setExtracted(null);
+
+    if (!isImage) {
+      setPreview(null);
+      return;
+    }
+
+    const dataUrl = await readAsDataUrl(chosen);
+    setPreview(dataUrl);
     setExtracting(true);
     try {
       const { data } = await supabase.functions.invoke('ai-brain', {
@@ -98,6 +200,7 @@ const CapturePage = () => {
       if (data && !data.error) {
         setExtracted(data as Extracted);
         if (data.module) setModule(data.module as string);
+        if (data.kind === 'receipt' || data.kind === 'expense') setKind('receipt');
         if (!text.trim() && data.summary) setText(String(data.summary));
       } else if (data?.error) {
         toast.error(String(data.error));
@@ -113,7 +216,10 @@ const CapturePage = () => {
     setFile(null);
     setPreview(null);
     setExtracted(null);
+    if (cameraInput.current) cameraInput.current.value = '';
+    if (fileInput.current) fileInput.current.value = '';
   };
+
 
   const save = async () => {
     if (!text.trim() && !file) {
@@ -246,8 +352,18 @@ const CapturePage = () => {
           </div>
         )}
 
+        {file && !preview && (
+          <div className="mt-3 flex items-center gap-2 rounded-2xl border border-border bg-secondary/50 px-3 py-2.5">
+            <FileText className="h-4 w-4 text-primary" />
+            <span className="flex-1 truncate text-xs font-semibold text-foreground">{file.name}</span>
+            <button onClick={clearFile} aria-label="Remove file" className="text-muted-foreground">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        )}
+
         <input
-          ref={photoInput}
+          ref={cameraInput}
           type="file"
           accept="image/*"
           capture="environment"
@@ -255,38 +371,49 @@ const CapturePage = () => {
           onChange={(e) => pickFile(e.target.files?.[0], 'photo')}
         />
         <input
-          ref={receiptInput}
+          ref={fileInput}
           type="file"
-          accept="image/*"
+          accept="image/*,application/pdf"
           hidden
-          onChange={(e) => pickFile(e.target.files?.[0], 'receipt')}
+          onChange={(e) => pickFile(e.target.files?.[0], 'photo')}
         />
 
-        <div className="mt-3 flex items-center gap-2 border-t border-border pt-3">
+        <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-border pt-3">
           <button
             onClick={startVoice}
-            aria-label="Voice capture"
+            disabled={transcribing}
+            aria-label={recording ? 'Stop recording' : 'Voice capture'}
             className={cn(
-              'flex h-11 w-11 items-center justify-center rounded-2xl transition-smooth active:scale-95',
-              listening ? 'bg-destructive text-destructive-foreground' : 'bg-secondary text-secondary-foreground'
+              'flex items-center gap-1.5 rounded-2xl px-3 py-2.5 text-xs font-semibold transition-smooth active:scale-95 disabled:opacity-60',
+              listening || recording
+                ? 'bg-destructive text-destructive-foreground'
+                : 'bg-secondary text-secondary-foreground'
             )}
           >
-            <Mic className="h-5 w-5" />
+            {transcribing ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : recording ? (
+              <Square className="h-4 w-4" />
+            ) : (
+              <Mic className="h-4 w-4" />
+            )}
+            {transcribing ? 'Transcribing' : recording ? 'Stop' : listening ? 'Listening' : 'Voice'}
           </button>
           <button
-            onClick={() => photoInput.current?.click()}
-            aria-label="Photo capture"
-            className="flex h-11 w-11 items-center justify-center rounded-2xl bg-secondary text-secondary-foreground transition-smooth active:scale-95"
+            onClick={() => cameraInput.current?.click()}
+            aria-label="Take a photo"
+            className="flex items-center gap-1.5 rounded-2xl bg-secondary px-3 py-2.5 text-xs font-semibold text-secondary-foreground transition-smooth active:scale-95"
           >
-            <Camera className="h-5 w-5" />
+            <Camera className="h-4 w-4" /> Camera
           </button>
           <button
-            onClick={() => receiptInput.current?.click()}
-            aria-label="Receipt upload"
-            className="flex h-11 w-11 items-center justify-center rounded-2xl bg-secondary text-secondary-foreground transition-smooth active:scale-95"
+            onClick={() => fileInput.current?.click()}
+            aria-label="Upload a photo, receipt or PDF"
+            className="flex items-center gap-1.5 rounded-2xl bg-secondary px-3 py-2.5 text-xs font-semibold text-secondary-foreground transition-smooth active:scale-95"
           >
-            <Receipt className="h-5 w-5" />
+            <Paperclip className="h-4 w-4" /> File
           </button>
+
           <button
             onClick={save}
             disabled={saving || extracting}
