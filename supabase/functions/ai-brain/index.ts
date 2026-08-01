@@ -76,10 +76,27 @@ Deno.serve(async (req) => {
           ],
         },
       ]
-      : [
-        { role: "system", content: prompts[mode] },
-        { role: "user", content: userContent },
-      ];
+      : mode === "transcribe"
+        ? [
+          { role: "system", content: prompts.transcribe },
+          {
+            role: "user",
+            content: [
+              { type: "text", text: "Transcribe this audio." },
+              {
+                type: "input_audio",
+                input_audio: {
+                  data: (audio ?? "").replace(/^data:[^,]+,/, ""),
+                  format: audioFormat ?? "webm",
+                },
+              },
+            ],
+          },
+        ]
+        : [
+          { role: "system", content: prompts[mode] },
+          { role: "user", content: userContent },
+        ];
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
