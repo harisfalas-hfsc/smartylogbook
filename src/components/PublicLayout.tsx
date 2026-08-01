@@ -22,6 +22,8 @@ const discoverLinks = [
 const PublicLayout = () => {
   const [open, setOpen] = useState(false);
   const { pathname } = useLocation();
+  const { user, profile } = useAuth();
+  const initial = (profile?.username ?? user?.email ?? '').charAt(0).toUpperCase();
 
   useEffect(() => {
     setOpen(false);
@@ -33,6 +35,7 @@ const PublicLayout = () => {
       <header className="sticky top-0 z-50 bg-background">
         <div className="mx-auto flex h-11 max-w-6xl items-center justify-between gap-2 px-3">
           <div className="flex items-center gap-2">
+            <BackButton />
             <Sheet open={open} onOpenChange={setOpen}>
               <SheetTrigger asChild>
                 <button
