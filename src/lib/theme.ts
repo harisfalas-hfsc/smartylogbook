@@ -13,13 +13,13 @@ const apply = (theme: Theme) => {
 };
 
 export const initTheme = () => {
-  const stored = (localStorage.getItem(KEY) as Theme | null) ?? 'system';
+  const stored = (localStorage.getItem(KEY) as Theme | null) ?? 'light';
   apply(stored);
 };
 
 export const useTheme = () => {
   const [theme, setThemeState] = useState<Theme>(
-    () => (localStorage.getItem(KEY) as Theme | null) ?? 'system'
+    () => (localStorage.getItem(KEY) as Theme | null) ?? 'light'
   );
 
   useEffect(() => {
