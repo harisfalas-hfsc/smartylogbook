@@ -1,6 +1,7 @@
+import { Link } from 'react-router-dom';
 import {
-  Brain, Camera, Clock, Fingerprint, Layers, LineChart, Lock, Search, Shield,
-  Sparkles, Wand2, Zap,
+  Brain, Camera, Clock, Fingerprint, Layers, Bell, Lock, Search, Shield,
+  Sparkles, Wand2, Link2, MessageCircle, FileText, Mic,
 } from 'lucide-react';
 
 export const problems = [
@@ -11,19 +12,27 @@ export const problems = [
 ];
 
 export const steps = [
-  { icon: Camera, title: 'Capture', text: 'One tap. Text, voice, photo, receipt, report — anything.' },
-  { icon: Wand2, title: 'Understand', text: 'The AI classifies, summarises and tags it instantly.' },
-  { icon: Layers, title: 'Connect', text: 'Every memory joins one continuous life timeline.' },
-  { icon: LineChart, title: 'Guide', text: 'Patterns become insight, insight becomes better decisions.' },
+  { icon: Camera, emoji: '📥', title: 'Capture', text: 'Type it, say it, or snap it. Text, voice, photo, receipt, PDF — one tap, no forms.' },
+  { icon: Wand2, emoji: '🧠', title: 'Understand', text: 'The Smarty Assistant reads it, extracts dates, amounts and details, and classifies it. You never pick a category.' },
+  { icon: Link2, emoji: '🔗', title: 'Connect', text: 'It links the new entry to what already exists — a scan to an old injury, a receipt to a recurring bill.' },
+  { icon: Bell, emoji: '⏰', title: 'Remind', text: 'Follow-ups, renewals, appointments and important dates are scheduled automatically.' },
+  { icon: MessageCircle, emoji: '💬', title: 'Ask', text: 'Ask anything in plain language. The Assistant searches your whole logbook and answers.' },
+  { icon: Sparkles, emoji: '☀️', title: 'Guide', text: 'Every morning a short brief: what matters today, what is coming, what changed.' },
 ];
 
 export const features = [
-  { icon: Sparkles, title: 'Quick Capture', text: 'Voice, camera and text capture always one thumb away.' },
-  { icon: Clock, title: 'Universal Timeline', text: 'Everything in chronological order. Like Instagram, for your life.' },
-  { icon: Search, title: 'Ask anything', text: '"How much did I spend on restaurants?" Natural language search.' },
-  { icon: Brain, title: 'Behaviour intelligence', text: 'It notices what you never would — patterns across months.' },
-  { icon: Zap, title: 'Predictive AI', text: 'Warns you before recovery drops or the budget breaks.' },
-  { icon: Shield, title: 'Privacy first', text: 'Encrypted storage, biometric lock, your data stays yours.' },
+  { icon: Sparkles, emoji: '⚡', title: 'Quick Capture', text: 'Text, voice, camera and files — always one thumb away.' },
+  { icon: Mic, emoji: '🎙️', title: 'Voice to memory', text: 'Speak naturally. It is transcribed, understood and stored.' },
+  { icon: FileText, emoji: '🧾', title: 'Document intelligence', text: 'Receipts, lab results and invoices: key details extracted for you.' },
+  { icon: Wand2, emoji: '🪄', title: 'Auto-classification', text: 'No folders, no tags, no category picker. Ever.' },
+  { icon: Link2, emoji: '🔗', title: 'Relationship engine', text: 'New entries connect to related ones and build your knowledge graph.' },
+  { icon: Clock, emoji: '🕰️', title: 'Universal timeline', text: 'One chronological feed, filtered by day, week, month or year.' },
+  { icon: Search, emoji: '🔍', title: 'Ask anything', text: '"What did the doctor say in March?" Plain-language search.' },
+  { icon: MessageCircle, emoji: '🤖', title: 'Smarty Assistant', text: 'A real assistant that answers, asks follow-ups and never guesses.' },
+  { icon: Brain, emoji: '💡', title: 'Pattern insights', text: 'Plain-language observations. No scores, no charts to decode.' },
+  { icon: Bell, emoji: '🔔', title: 'Proactive reminders', text: 'Bills, check-ups, birthdays and overdue tests surface on time.' },
+  { icon: Layers, emoji: '🗂️', title: 'Life modules', text: 'Health, fitness, nutrition, finance, business, documents, personal.' },
+  { icon: Shield, emoji: '🔒', title: 'Privacy first', text: 'Encrypted storage, your data, export or delete any time.' },
 ];
 
 export const insights = [
@@ -35,18 +44,45 @@ export const insights = [
 ];
 
 export const predictions = [
-  'Recovery is declining',
-  'Hydration is low',
-  'Stress is increasing',
-  'Budget will be exceeded',
-  'Fatigue likely within 2 days',
+  'A blood test is due again this month',
+  'Your insurance renews in 12 days',
+  'Two subscriptions charge on the same day',
+  "You haven't logged a workout in 9 days",
+  'A follow-up appointment was never booked',
   "You haven't contacted an important client",
 ];
 
 export const plans = [
-  { name: 'Starter', price: '$0', note: 'forever', points: ['Unlimited notes', 'Universal timeline', 'Basic AI search', '1 device'], cta: 'Start free' },
-  { name: 'Pro', price: '$9', note: 'per month', points: ['Unlimited AI capture', 'Predictive insights', 'Daily assistant brief', 'All modules', 'Multi-device sync'], cta: 'Go Pro', featured: true },
-  { name: 'Ecosystem', price: '$19', note: 'per month', points: ['Everything in Pro', 'Smarty Gym + Diet + Move', 'Wearable integrations', 'Priority AI models'], cta: 'Join ecosystem' },
+  {
+    name: 'Free',
+    price: '€0',
+    note: 'forever',
+    points: [
+      'Capture text, voice and photos',
+      'Universal timeline',
+      'Manual organisation',
+      'Basic keyword search',
+    ],
+    cta: 'Start free',
+    tagline: 'A clean place to keep your life.',
+  },
+  {
+    name: 'Premium',
+    price: '€9.99',
+    note: 'per month',
+    points: [
+      'Everything in Free',
+      'Smarty Assistant — chat, ask anything',
+      'Automatic AI classification',
+      'Document & receipt extraction',
+      'Relationship engine & connections',
+      'Proactive reminders and alerts',
+      'Daily brief and pattern insights',
+    ],
+    cta: 'Get Premium',
+    featured: true,
+    tagline: 'The full second brain, with the Assistant.',
+  },
 ];
 
 export const testimonials = [
@@ -57,10 +93,11 @@ export const testimonials = [
 
 export const faqs = [
   { q: 'Is Smarty Logbook another note app?', a: 'No. Notes store text. Smarty Logbook understands it — classifying, connecting and analysing everything you capture into one intelligent life timeline.' },
-  { q: 'Do I need to organise anything?', a: 'Never. No folders, no tags, no manual filing. Capture it and the AI takes care of the rest.' },
-  { q: 'How private is my data?', a: 'Privacy-first architecture with encrypted storage, biometric unlock and full export or deletion at any time.' },
-  { q: 'Does it work with my watch?', a: 'Apple Health, Google Health Connect, Garmin, Polar, Whoop, Oura and Fitbit integrations are modular and rolling out continuously.' },
-  { q: 'How does it fit the Smarty ecosystem?', a: 'Smarty Gym, Diet and Move feed the Logbook. The Logbook analyses everything and returns personalised recommendations to each app.' },
+  { q: 'Do I need to organise anything?', a: 'Never. No folders, no tags, no manual filing. Capture it and the Smarty Assistant takes care of the rest.' },
+  { q: 'What is the Smarty Assistant?', a: 'Your personal assistant inside the logbook. It classifies everything you capture, links related entries, reminds you proactively and answers any question about your own life in plain language.' },
+  { q: 'What is the difference between Free and Premium?', a: 'Free lets you capture and keep everything in a timeline. Premium adds the Smarty Assistant: automatic classification, document extraction, connections, proactive reminders and plain-language answers — €9.99 per month.' },
+  { q: 'How private is my data?', a: 'Privacy-first architecture with encrypted storage and full export or deletion at any time.' },
+  { q: 'Are there scores or ratings?', a: 'No. Scores were removed on purpose. The Assistant writes plain-language summaries instead of numbers you have to interpret.' },
 ];
 
 export const securityPoints = [
@@ -79,9 +116,28 @@ export const PageHeader = ({ eyebrow, title, subtitle }: { eyebrow: string; titl
   </div>
 );
 
-export const Block = ({ title, children }: { title?: string; children: React.ReactNode }) => (
+export const Block = ({ title, subtitle, children }: { title?: string; subtitle?: string; children: React.ReactNode }) => (
   <section className="mb-10">
-    {title && <h2 className="mb-4 text-lg font-extrabold tracking-tight text-foreground md:text-2xl">{title}</h2>}
+    {title && <h2 className="mb-1 text-lg font-extrabold tracking-tight text-foreground md:text-2xl">{title}</h2>}
+    {subtitle && <p className="mb-4 text-xs text-muted-foreground md:text-sm">{subtitle}</p>}
+    {!subtitle && title && <div className="mb-4" />}
     {children}
+  </section>
+);
+
+export const CtaCard = ({ title, text }: { title?: string; text?: string }) => (
+  <section className="smarty-card mt-2 p-7 text-center">
+    <h2 className="text-lg font-extrabold tracking-tight text-foreground md:text-2xl">
+      {title ?? 'Start remembering everything.'}
+    </h2>
+    <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+      {text ?? 'Free to begin. Capture your first memory in under ten seconds.'}
+    </p>
+    <Link
+      to="/auth"
+      className="mt-5 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-primary-foreground transition hover:opacity-90"
+    >
+      Create your logbook →
+    </Link>
   </section>
 );

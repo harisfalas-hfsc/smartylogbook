@@ -9,7 +9,7 @@ const PrivacyPolicyPage = () => (
     <LegalSection title="1. Who we are">
       <p>
         Smarty Logbook ("we", "us") is the data controller for the personal data processed through this
-        application. Smarty Logbook is part of the Smarty Wellness ecosystem. For any privacy question or to
+        application. For any privacy question or to
         exercise your rights, contact us through the in-app support channel.
       </p>
     </LegalSection>
