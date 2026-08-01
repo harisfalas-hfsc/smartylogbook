@@ -35,16 +35,20 @@ import RemindersPage from "./pages/RemindersPage";
 import OnboardingPage from "./pages/OnboardingPage";
 import NotFound from "./pages/NotFound";
 import AnalyticsTracker from "./components/AnalyticsTracker";
+import RouteSeo from "./components/RouteSeo";
+import { HelmetProvider } from "react-helmet-async";
 
 const queryClient = new QueryClient();
 
 const App = () => (
+  <HelmetProvider>
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
+          <RouteSeo />
           <AnalyticsTracker />
           <Routes>
             <Route element={<PublicLayout />}>
@@ -87,6 +91,7 @@ const App = () => (
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
+  </HelmetProvider>
 );
 
 export default App;

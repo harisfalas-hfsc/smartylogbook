@@ -48,7 +48,7 @@ const PublicLayout = () => {
                 <div className="mb-1 flex h-10 shrink-0 items-center">
                   <Logo />
                 </div>
-                <nav className="flex-1 overflow-y-auto px-1 pb-6">
+                <nav aria-label="Site sections" className="flex-1 overflow-y-auto px-1 pb-6">
                   <div className="px-2 pb-1.5 pt-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
                     Discover
                   </div>
@@ -111,7 +111,7 @@ const PublicLayout = () => {
       </header>
 
 
-      <main className="flex-1">
+      <main id="main-content" className="flex-1">
         <Outlet />
       </main>
 

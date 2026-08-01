@@ -1,9 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://smartylogbook.com/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://smartylogbook.com/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://smartylogbook.com/"/>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://smartylogbook.com/social-image.png</image:loc>
+      <image:title>Smarty Logbook — AI digital logbook and life operating system</image:title>
+    </image:image>
   </url>
   <url>
     <loc>https://smartylogbook.com/about</loc>
@@ -28,27 +36,22 @@
   <url>
     <loc>https://smartylogbook.com/testimonials</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smartylogbook.com/security</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://smartylogbook.com/auth</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smartylogbook.com/privacy-policy</loc>
     <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
+    <priority>0.4</priority>
   </url>
   <url>
     <loc>https://smartylogbook.com/terms-and-conditions</loc>
     <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
+    <priority>0.4</priority>
   </url>
   <url>
     <loc>https://smartylogbook.com/disclaimer</loc>
