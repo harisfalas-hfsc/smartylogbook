@@ -352,8 +352,18 @@ const CapturePage = () => {
           </div>
         )}
 
+        {file && !preview && (
+          <div className="mt-3 flex items-center gap-2 rounded-2xl border border-border bg-secondary/50 px-3 py-2.5">
+            <FileText className="h-4 w-4 text-primary" />
+            <span className="flex-1 truncate text-xs font-semibold text-foreground">{file.name}</span>
+            <button onClick={clearFile} aria-label="Remove file" className="text-muted-foreground">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        )}
+
         <input
-          ref={photoInput}
+          ref={cameraInput}
           type="file"
           accept="image/*"
           capture="environment"
@@ -361,38 +371,49 @@ const CapturePage = () => {
           onChange={(e) => pickFile(e.target.files?.[0], 'photo')}
         />
         <input
-          ref={receiptInput}
+          ref={fileInput}
           type="file"
-          accept="image/*"
+          accept="image/*,application/pdf"
           hidden
-          onChange={(e) => pickFile(e.target.files?.[0], 'receipt')}
+          onChange={(e) => pickFile(e.target.files?.[0], 'photo')}
         />
 
-        <div className="mt-3 flex items-center gap-2 border-t border-border pt-3">
+        <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-border pt-3">
           <button
             onClick={startVoice}
-            aria-label="Voice capture"
+            disabled={transcribing}
+            aria-label={recording ? 'Stop recording' : 'Voice capture'}
             className={cn(
-              'flex h-11 w-11 items-center justify-center rounded-2xl transition-smooth active:scale-95',
-              listening ? 'bg-destructive text-destructive-foreground' : 'bg-secondary text-secondary-foreground'
+              'flex items-center gap-1.5 rounded-2xl px-3 py-2.5 text-xs font-semibold transition-smooth active:scale-95 disabled:opacity-60',
+              listening || recording
+                ? 'bg-destructive text-destructive-foreground'
+                : 'bg-secondary text-secondary-foreground'
             )}
           >
-            <Mic className="h-5 w-5" />
+            {transcribing ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : recording ? (
+              <Square className="h-4 w-4" />
+            ) : (
+              <Mic className="h-4 w-4" />
+            )}
+            {transcribing ? 'Transcribing' : recording ? 'Stop' : listening ? 'Listening' : 'Voice'}
           </button>
           <button
-            onClick={() => photoInput.current?.click()}
-            aria-label="Photo capture"
-            className="flex h-11 w-11 items-center justify-center rounded-2xl bg-secondary text-secondary-foreground transition-smooth active:scale-95"
+            onClick={() => cameraInput.current?.click()}
+            aria-label="Take a photo"
+            className="flex items-center gap-1.5 rounded-2xl bg-secondary px-3 py-2.5 text-xs font-semibold text-secondary-foreground transition-smooth active:scale-95"
           >
-            <Camera className="h-5 w-5" />
+            <Camera className="h-4 w-4" /> Camera
           </button>
           <button
-            onClick={() => receiptInput.current?.click()}
-            aria-label="Receipt upload"
-            className="flex h-11 w-11 items-center justify-center rounded-2xl bg-secondary text-secondary-foreground transition-smooth active:scale-95"
+            onClick={() => fileInput.current?.click()}
+            aria-label="Upload a photo, receipt or PDF"
+            className="flex items-center gap-1.5 rounded-2xl bg-secondary px-3 py-2.5 text-xs font-semibold text-secondary-foreground transition-smooth active:scale-95"
           >
-            <Receipt className="h-5 w-5" />
+            <Paperclip className="h-4 w-4" /> File
           </button>
+
           <button
             onClick={save}
             disabled={saving || extracting}
