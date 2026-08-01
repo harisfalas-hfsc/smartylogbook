@@ -7,20 +7,27 @@ const corsHeaders = {
 const MODEL = "google/gemini-3.6-flash";
 
 interface Body {
-  mode: "classify" | "coach" | "search" | "insights" | "extract" | "transcribe";
+  mode: "classify" | "coach" | "search" | "insights" | "extract" | "transcribe" | "chat";
   input?: string;
   image?: string;
   audio?: string;
   audioFormat?: string;
   memories?: Array<Record<string, unknown>>;
   preferences?: { goals?: string[]; focus?: string[]; tone?: string } | null;
+  history?: Array<{ role: "user" | "assistant"; content: string }>;
+  attachments?: Array<{ url: string; name?: string }>;
 }
 
 const prompts: Record<Body["mode"], string> = {
   classify: `You are the classification engine of Smarty Logbook, an AI personal operating system.
 Given a raw capture from the user, return STRICT JSON only, no markdown:
 {"title":"short title max 60 chars","summary":"one sentence summary","module":"health|fitness|nutrition|finance|business|documents|personal","kind":"text|voice|photo|receipt|document|medical|workout|meal|expense|task|reminder|idea|journal|mood|location","ai_tags":["max 4 short lowercase tags"],"amount":number or null,"location":"string or null"}`,
-  coach: `You are the Daily AI Coach of Smarty Logbook. Given the user's recent memories, return STRICT JSON only:
+  chat: `You are Smarty Coach, the personal coach inside Smarty Logbook.
+You talk with the user like a knowledgeable, warm human coach across health, fitness, nutrition, finance, business and personal life.
+You may receive images or documents (blood tests, receipts, reports, photos). Read them carefully, explain in plain language what they show, flag anything that looks out of range or important, and give practical next steps.
+Never diagnose or replace a doctor: state clearly when something should be checked by a professional.
+Use the user's memories and preferences for context. Be concise (max ~150 words), concrete, and end with one clear next action. Plain text, no markdown headers.`,
+  coach: `You are Smarty Coach, the daily coach of Smarty Logbook. Given the user's recent memories, return STRICT JSON only:
 {"headline":"max 8 words","action":"one single most important action for today, max 25 words","reason":"why, max 20 words"}
 Be warm, specific and never judgmental. Recommend exactly ONE action.
 Optionally include "module" with the most relevant module id.
@@ -40,7 +47,7 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { mode, input, image, audio, audioFormat, memories, preferences }: Body = await req.json();
+    const { mode, input, image, audio, audioFormat, memories, preferences, history, attachments }: Body = await req.json();
     if (!mode || !prompts[mode]) {
       return new Response(JSON.stringify({ error: "Invalid mode" }), {
         status: 400,
@@ -65,7 +72,23 @@ Deno.serve(async (req) => {
         ? `${context}\n\nQuestion: ${input ?? ""}`
         : `${context}\n\n${prefsText}\n\nToday: ${new Date().toISOString()}`;
 
-    const messages = mode === "extract"
+    const chatMessages = mode === "chat"
+      ? [
+        { role: "system", content: `${prompts.chat}\n\n${context}\n\n${prefsText}\n\nToday: ${new Date().toISOString()}` },
+        ...(history ?? []).slice(-10).map((m) => ({ role: m.role, content: m.content })),
+        {
+          role: "user",
+          content: attachments?.length
+            ? [
+              { type: "text", text: input?.trim() || "What do you see in this? What should I do?" },
+              ...attachments.map((a) => ({ type: "image_url", image_url: { url: a.url } })),
+            ]
+            : input ?? "",
+        },
+      ]
+      : null;
+
+    const messages = chatMessages ?? (mode === "extract"
       ? [
         { role: "system", content: prompts.extract },
         {
@@ -96,7 +119,7 @@ Deno.serve(async (req) => {
         : [
           { role: "system", content: prompts[mode] },
           { role: "user", content: userContent },
-        ];
+        ]);
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -131,7 +154,7 @@ Deno.serve(async (req) => {
     const data = await response.json();
     const raw: string = data.choices?.[0]?.message?.content ?? "";
 
-    if (mode === "search") {
+    if (mode === "search" || mode === "chat") {
       return new Response(JSON.stringify({ answer: raw.trim() }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });

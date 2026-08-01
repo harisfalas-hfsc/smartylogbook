@@ -1,5 +1,7 @@
+import { useEffect, useState } from 'react';
 import { Link, NavLink, Navigate, Outlet, useLocation } from 'react-router-dom';
-import { Bell, Search, Sparkles } from 'lucide-react';
+import { Bell, Compass, LogOut, Search, Sparkles } from 'lucide-react';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import BottomNav from '@/components/BottomNav';
 import Logo from '@/components/Logo';
 import { MORE_LINKS, NAV_TABS } from '@/lib/constants';
@@ -10,12 +12,17 @@ import { useNotificationEngine } from '@/lib/reminders';
 
 const AppShell = () => {
   const { pathname } = useLocation();
-  const { profile, user } = useAuth();
+  const { profile, user, signOut } = useAuth();
   const { prefs, loading: prefsLoading } = usePreferences();
+  const [menuOpen, setMenuOpen] = useState(false);
   useNotificationEngine(prefs);
   const initial = (profile?.username ?? user?.email ?? 'S').charAt(0).toUpperCase();
 
   const desktopLinks = [...NAV_TABS.filter((t) => t.path !== '/app/capture'), ...MORE_LINKS];
+
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [pathname]);
 
   if (!prefsLoading && prefs && !prefs.onboarding_completed) {
     return <Navigate to="/onboarding" replace />;
@@ -56,16 +63,67 @@ const AppShell = () => {
 
       {/* Top bar */}
       <header className="sticky top-0 z-30 border-b border-border/60 bg-background/80 backdrop-blur-xl md:pl-64">
-        <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-3">
-          <div className="md:hidden">
-            <Logo compact />
+        <div className="mx-auto flex max-w-3xl items-center justify-between gap-2 px-4 py-3">
+          <div className="flex items-center gap-2 md:hidden">
+            <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+              <SheetTrigger asChild>
+                <button
+                  type="button"
+                  aria-label="Discover"
+                  className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-border bg-card text-primary shadow-soft transition-smooth active:scale-95"
+                >
+                  <Compass className="h-5 w-5" />
+                </button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-[86%] max-w-[330px] border-0 p-4">
+                <div className="mb-5 mt-1">
+                  <Logo />
+                </div>
+                <p className="mb-2 px-1 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Discover</p>
+                <nav className="space-y-1">
+                  {desktopLinks.map((link) => (
+                    <NavLink
+                      key={link.path}
+                      to={link.path}
+                      end={link.path === '/app'}
+                      className={({ isActive }) =>
+                        cn(
+                          'flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold transition-smooth',
+                          isActive ? 'bg-secondary text-primary' : 'text-foreground hover:bg-secondary/60'
+                        )
+                      }
+                    >
+                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-secondary text-primary">
+                        <link.icon className="h-4 w-4" />
+                      </span>
+                      {link.label}
+                    </NavLink>
+                  ))}
+                </nav>
+                <Link
+                  to="/app/capture"
+                  className="mt-5 flex items-center justify-center gap-2 rounded-2xl bg-gradient-primary px-4 py-3 text-sm font-semibold text-primary-foreground shadow-glow"
+                >
+                  <Sparkles className="h-4 w-4" /> Quick Capture
+                </Link>
+                <button
+                  onClick={() => signOut()}
+                  className="mt-2 flex w-full items-center justify-center gap-2 rounded-2xl bg-secondary px-4 py-3 text-sm font-semibold text-secondary-foreground"
+                >
+                  <LogOut className="h-4 w-4" /> Sign out
+                </button>
+              </SheetContent>
+            </Sheet>
+            <Link to="/app" aria-label="Smarty Logbook home">
+              <Logo compact size="lg" />
+            </Link>
           </div>
           <div className="hidden md:block">
             <p className="text-sm font-semibold text-foreground">
               {desktopLinks.find((l) => l.path === pathname)?.label ?? 'Smarty Logbook'}
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-1.5">
             <Link
               to="/app/search"
               aria-label="Search"

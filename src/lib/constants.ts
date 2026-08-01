@@ -88,11 +88,12 @@ export const NAV_TABS = [
   { path: '/app', icon: Home, label: 'Home' },
   { path: '/app/timeline', icon: Clock, label: 'Timeline' },
   { path: '/app/capture', icon: Plus, label: 'Capture' },
-  { path: '/app/ai', icon: Sparkles, label: 'AI' },
+  { path: '/app/coach', icon: Sparkles, label: 'Coach' },
   { path: '/app/insights', icon: BarChart3, label: 'Insights' },
 ];
 
 export const MORE_LINKS = [
+  { path: '/app/ai', icon: Brain, label: 'Ask your life' },
   { path: '/app/search', icon: Search, label: 'Search' },
   { path: '/app/reminders', icon: Bell, label: 'Reminders' },
   { path: '/app/modules', icon: Activity, label: 'Modules' },
