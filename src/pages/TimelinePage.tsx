@@ -1,27 +1,61 @@
 import { useMemo, useState } from 'react';
-import { Loader2, Sparkles } from 'lucide-react';
+import { Loader2, Search, Sparkles, X } from 'lucide-react';
 import { groupByDay, useMemories } from '@/lib/memories';
 import MemoryCard from '@/components/MemoryCard';
 import { MODULES } from '@/lib/constants';
+import { describeQuery, parsePlainLanguage } from '@/lib/nlSearch';
 import { cn } from '@/lib/utils';
 
 const RANGES = [
-  { id: 'day', label: 'Day', days: 1 },
+  { id: 'today', label: 'Today', days: 1 },
   { id: 'week', label: 'Week', days: 7 },
   { id: 'month', label: 'Month', days: 31 },
   { id: 'year', label: 'Year', days: 365 },
   { id: 'all', label: 'All', days: 0 },
 ] as const;
 
+const EXAMPLES = [
+  'show me my expenses last month',
+  'show me workouts this week',
+  'show me health notes this year',
+];
+
 const TimelinePage = () => {
   const { memories, loading, remove } = useMemories();
   const [range, setRange] = useState<(typeof RANGES)[number]['id']>('week');
   const [module, setModule] = useState<string | null>(null);
   const [query, setQuery] = useState('');
+  const [ask, setAsk] = useState('');
+  const [applied, setApplied] = useState<string | null>(null);
+
+  const runPlainLanguage = (raw: string) => {
+    const parsed = parsePlainLanguage(raw);
+    if (!parsed.matched) {
+      setApplied(null);
+      return;
+    }
+    if (parsed.range) setRange(parsed.range === 'today' ? 'today' : parsed.range);
+    setModule(parsed.module);
+    setQuery(parsed.keywords);
+    setApplied(describeQuery(parsed));
+  };
+
+  const clearPlainLanguage = () => {
+    setAsk('');
+    setApplied(null);
+    setQuery('');
+    setModule(null);
+    setRange('week');
+  };
 
   const filtered = useMemo(() => {
     const days = RANGES.find((r) => r.id === range)?.days ?? 0;
-    const cutoff = days ? Date.now() - days * 86400000 : 0;
+    let cutoff = days ? Date.now() - days * 86400000 : 0;
+    if (range === 'today') {
+      const start = new Date();
+      start.setHours(0, 0, 0, 0);
+      cutoff = start.getTime();
+    }
     return memories.filter((m) => {
       if (cutoff && new Date(m.occurred_at).getTime() < cutoff) return false;
       if (module && m.module !== module) return false;
@@ -42,12 +76,44 @@ const TimelinePage = () => {
         <p className="mt-1 text-sm text-muted-foreground">Everything you've lived, in order.</p>
       </header>
 
-      <input
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        placeholder="Filter memories…"
-        className="w-full rounded-2xl border border-border bg-card px-4 py-3 text-sm text-foreground outline-none transition-smooth placeholder:text-muted-foreground focus:border-primary/50"
-      />
+      <div className="animate-fade-up space-y-2">
+        <div className="flex items-center gap-2 rounded-2xl border border-border bg-card px-4 py-3 focus-within:border-primary/50">
+          <Search className="h-4 w-4 shrink-0 text-primary" />
+          <input
+            value={ask}
+            onChange={(e) => setAsk(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && runPlainLanguage(ask)}
+            placeholder="Show me my expenses last month…"
+            className="min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
+          />
+          {ask ? (
+            <button onClick={clearPlainLanguage} aria-label="Clear search" className="text-muted-foreground">
+              <X className="h-4 w-4" />
+            </button>
+          ) : null}
+          <button
+            onClick={() => runPlainLanguage(ask)}
+            className="shrink-0 rounded-xl bg-gradient-primary px-3 py-1.5 text-[11px] font-bold text-primary-foreground"
+          >
+            Show
+          </button>
+        </div>
+        {applied ? (
+          <p className="px-1 text-[11px] font-semibold text-primary">{applied}</p>
+        ) : (
+          <div className="-mx-4 flex gap-2 overflow-x-auto px-4 scrollbar-hide">
+            {EXAMPLES.map((e) => (
+              <button
+                key={e}
+                onClick={() => { setAsk(e); runPlainLanguage(e); }}
+                className="shrink-0 rounded-2xl border border-border bg-card px-3 py-1.5 text-[11px] text-muted-foreground transition-smooth active:scale-95"
+              >
+                {e}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
 
       <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 scrollbar-hide">
         {RANGES.map((r) => (

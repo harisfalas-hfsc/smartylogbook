@@ -1,17 +1,25 @@
-import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
+import { Link, NavLink, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { Bell, Search, Sparkles } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import Logo from '@/components/Logo';
 import { MORE_LINKS, NAV_TABS } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
+import { usePreferences } from '@/lib/preferences';
+import { useNotificationEngine } from '@/lib/reminders';
 
 const AppShell = () => {
   const { pathname } = useLocation();
   const { profile, user } = useAuth();
+  const { prefs, loading: prefsLoading } = usePreferences();
+  useNotificationEngine(prefs);
   const initial = (profile?.username ?? user?.email ?? 'S').charAt(0).toUpperCase();
 
   const desktopLinks = [...NAV_TABS.filter((t) => t.path !== '/app/capture'), ...MORE_LINKS];
+
+  if (!prefsLoading && prefs && !prefs.onboarding_completed) {
+    return <Navigate to="/onboarding" replace />;
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -66,7 +74,7 @@ const AppShell = () => {
               <Search className="h-4.5 w-4.5" />
             </Link>
             <Link
-              to="/app/settings"
+              to="/app/reminders"
               aria-label="Notifications"
               className="flex h-10 w-10 items-center justify-center rounded-2xl bg-secondary text-secondary-foreground transition-smooth active:scale-95"
             >

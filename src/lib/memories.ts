@@ -63,7 +63,10 @@ export const useMemories = (options?: { module?: string; limit?: number }) => {
       ai_tags: memory.ai_tags ?? [],
       mood: memory.mood ?? null,
       amount: memory.amount ?? null,
+      currency: memory.currency ?? null,
       location: memory.location ?? null,
+      attachment_url: memory.attachment_url ?? null,
+      metadata: (memory.metadata ?? {}) as never,
       occurred_at: memory.occurred_at ?? new Date().toISOString(),
     });
     if (!error) await load();

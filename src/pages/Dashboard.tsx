@@ -1,10 +1,12 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Camera, Loader2, Mic, Plus, Sparkles, Wallet, Dumbbell, Activity } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useMemories, timeOf } from '@/lib/memories';
-import { supabase } from '@/integrations/supabase/client';
 import LifeScoreRing from '@/components/LifeScoreRing';
+import DailyCoachCard from '@/components/DailyCoachCard';
+import { usePreferences } from '@/lib/preferences';
+import { useCoachCard } from '@/lib/coach';
 import MemoryCard from '@/components/MemoryCard';
 import { MODULES, kindIcon, getModule } from '@/lib/constants';
 
@@ -15,13 +17,11 @@ const greeting = () => {
   return 'Good evening';
 };
 
-interface Coach { headline: string; action: string; reason: string }
-
 const Dashboard = () => {
   const { profile, user } = useAuth();
   const { memories, loading } = useMemories({ limit: 60 });
-  const [coach, setCoach] = useState<Coach | null>(null);
-  const [coachLoading, setCoachLoading] = useState(false);
+  const { prefs } = usePreferences();
+  const { card, generating, toggleDone, regenerate } = useCoachCard(memories, prefs, !loading);
 
   const name = profile?.username ?? user?.email?.split('@')[0] ?? 'there';
   const todayKey = new Date().toDateString();
@@ -42,28 +42,22 @@ const Dashboard = () => {
   const workouts = week.filter((m) => m.module === 'fitness').length;
   const health = week.filter((m) => m.module === 'health').length;
 
-  const score = Math.min(100, 42 + today.length * 6 + workouts * 4 + Math.min(12, memories.length));
+  const focus = prefs?.focus_modules ?? [];
+  const focusToday = today.filter((m) => focus.includes(m.module)).length;
+  const score = Math.min(
+    100,
+    42 +
+      today.length * 6 +
+      workouts * 4 +
+      Math.min(12, memories.length) +
+      focusToday * 4 +
+      (card?.done ? 8 : 0)
+  );
 
-  useEffect(() => {
-    if (loading || memories.length === 0) return;
-    let cancelled = false;
-    setCoachLoading(true);
-    supabase.functions
-      .invoke('ai-brain', {
-        body: {
-          mode: 'coach',
-          memories: memories.slice(0, 30).map((m) => ({
-            title: m.title, summary: m.summary, module: m.module, kind: m.kind,
-            amount: m.amount, occurred_at: m.occurred_at, tags: m.ai_tags,
-          })),
-        },
-      })
-      .then(({ data }) => {
-        if (!cancelled && data && !data.error) setCoach(data as Coach);
-      })
-      .finally(() => !cancelled && setCoachLoading(false));
-    return () => { cancelled = true; };
-  }, [loading, memories]);
+  const orderedModules = focus.length
+    ? [...MODULES].sort((a, b) => Number(focus.includes(b.id)) - Number(focus.includes(a.id)))
+    : MODULES;
+
 
   return (
     <div className="space-y-5">
@@ -74,33 +68,26 @@ const Dashboard = () => {
         </h1>
       </header>
 
-      {/* Life score + coach */}
+      {/* Life score */}
       <section className="smarty-card animate-fade-up overflow-hidden">
         <div className="flex flex-col items-center gap-5 p-6 sm:flex-row sm:items-center">
           <LifeScoreRing score={score} />
           <div className="min-w-0 flex-1 text-center sm:text-left">
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">Daily AI Coach</p>
-            {coachLoading ? (
-              <p className="mt-2 flex items-center justify-center gap-2 text-sm text-muted-foreground sm:justify-start">
-                <Loader2 className="h-4 w-4 animate-spin" /> Reading your last few days…
-              </p>
-            ) : coach ? (
-              <>
-                <p className="mt-1.5 text-base font-bold text-foreground">{coach.headline}</p>
-                <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{coach.action}</p>
-                <p className="mt-1 text-xs text-muted-foreground/80">{coach.reason}</p>
-              </>
-            ) : (
-              <>
-                <p className="mt-1.5 text-base font-bold text-foreground">Capture your first memory</p>
-                <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
-                  The coach needs a little of your life to learn from. Log one thing and it starts thinking.
-                </p>
-              </>
-            )}
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">Life Score</p>
+            <p className="mt-1.5 text-base font-bold text-foreground">
+              {prefs?.goals?.length ? prefs.goals.slice(0, 2).join(' · ') : 'Tuned to your day'}
+            </p>
+            <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+              {focus.length
+                ? `Weighted towards ${focus.slice(0, 3).join(', ')}.`
+                : 'Set your goals in onboarding to personalise this.'}
+            </p>
           </div>
         </div>
       </section>
+
+      {/* Daily AI coach */}
+      <DailyCoachCard card={card} generating={generating} onToggleDone={toggleDone} onRegenerate={regenerate} />
 
       {/* Quick capture */}
       <section className="animate-fade-up">
@@ -166,7 +153,7 @@ const Dashboard = () => {
       <section className="animate-fade-up">
         <h2 className="mb-3 text-sm font-bold text-foreground">Your modules</h2>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {MODULES.map((m) => (
+          {orderedModules.map((m) => (
             <Link key={m.id} to={`/app/module/${m.id}`} className="smarty-card p-4 transition-smooth active:scale-95">
               <div className={`flex h-9 w-9 items-center justify-center rounded-2xl ${m.tint}`}>
                 <m.icon className={`h-4.5 w-4.5 ${m.color}`} />

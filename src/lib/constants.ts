@@ -94,6 +94,7 @@ export const NAV_TABS = [
 
 export const MORE_LINKS = [
   { path: '/app/search', icon: Search, label: 'Search' },
+  { path: '/app/reminders', icon: Bell, label: 'Reminders' },
   { path: '/app/modules', icon: Activity, label: 'Modules' },
   { path: '/app/settings', icon: Settings, label: 'Settings' },
 ];
