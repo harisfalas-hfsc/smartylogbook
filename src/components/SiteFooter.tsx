@@ -15,7 +15,7 @@ const legal = [
 
 const SiteFooter = () => (
   <footer className="mt-auto bg-background px-4 py-4">
-    <div className="mx-auto flex max-w-7xl flex-col items-center gap-2">
+    <div className="flex w-full flex-col items-center gap-2">
       <div className="flex items-center gap-4">
         {socials.map(({ href, label, Icon }) => (
           <a

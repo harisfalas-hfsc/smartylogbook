@@ -33,7 +33,7 @@ const PublicLayout = () => {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <header className="sticky top-0 z-50 bg-background">
-        <div className="mx-auto flex h-11 max-w-6xl items-center justify-between gap-2 px-3">
+        <div className="flex h-11 w-full items-center justify-between gap-2 px-3 md:px-6">
           <div className="flex items-center gap-2">
             <Sheet open={open} onOpenChange={setOpen}>
               <SheetTrigger asChild>
