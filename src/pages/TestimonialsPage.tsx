@@ -3,7 +3,7 @@ import { PageHeader, testimonials } from '@/lib/marketing';
 
 const TestimonialsPage = () => (
   <div className="mx-auto max-w-3xl px-5 py-10">
-    <PageHeader eyebrow="Testimonials" title="People who stopped forgetting." subtitle="Real stories from the Smarty Wellness community." />
+    <PageHeader eyebrow="Testimonials" title="People who stopped forgetting." subtitle="Real stories from people who use Smarty Logbook every day." />
     <div className="grid gap-2.5 md:grid-cols-3">
       {testimonials.map((t) => (
         <div key={t.name} className="smarty-card p-5">
