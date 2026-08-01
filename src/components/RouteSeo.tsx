@@ -8,6 +8,7 @@ import {
   getSeoForPath,
   globalSchema,
 } from "@/lib/seo";
+import { faqs } from "@/lib/marketing";
 
 /**
  * Renders per-route <head> metadata and JSON-LD.
@@ -18,8 +19,23 @@ export default function RouteSeo() {
   const seo = getSeoForPath(pathname);
   const canonical = `${SITE_URL}${pathname === "/" ? "/" : pathname.replace(/\/$/, "")}`;
 
+  const faqSchema =
+    pathname.replace(/\/$/, "") === "/faq"
+      ? [
+          {
+            "@type": "FAQPage",
+            mainEntity: faqs.map((f) => ({
+              "@type": "Question",
+              name: f.q,
+              acceptedAnswer: { "@type": "Answer", text: f.a },
+            })),
+          },
+        ]
+      : [];
+
   const graph = [
     ...globalSchema,
+    ...faqSchema,
     ...(seo.breadcrumb ? [buildBreadcrumb(seo.breadcrumb)] : []),
     ...(seo.schema ?? []),
   ];
