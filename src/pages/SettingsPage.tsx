@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  Bell, ChevronRight, Fingerprint, Link2, LogOut, Moon, Shield, Sparkles, Target, User,
+  Bell, ChevronRight, FileText, Fingerprint, LogOut, Moon, Shield, Sparkles, Target, User,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
@@ -16,12 +16,6 @@ const NOTIFY_ROWS = [
   { key: 'notify_health', label: 'Health check-ins', sub: 'Medication, appointments, symptoms' },
   { key: 'notify_events', label: 'Upcoming events', sub: 'Anything on your calendar list' },
 ] as const;
-
-const INTEGRATIONS = [
-  'Apple Health', 'Google Health Connect', 'Garmin', 'Polar', 'Suunto', 'Fitbit',
-  'Whoop', 'Oura', 'Google Calendar', 'Apple Calendar', 'Outlook', 'Google Drive',
-  'Dropbox', 'OneDrive', 'Stripe',
-];
 
 const SettingsPage = () => {
   const { user, profile, signOut } = useAuth();
@@ -40,10 +34,16 @@ const SettingsPage = () => {
   };
 
   const rows = [
-    { icon: User, label: 'Account', value: user?.email ?? '' },
-    { icon: Fingerprint, label: 'Biometric lock', value: 'Native app' },
-    { icon: Shield, label: 'Privacy & security', value: 'Encrypted' },
-    { icon: Moon, label: 'Appearance', value: 'System' },
+    { icon: User, label: 'Account & data', value: user?.email ?? '', to: '/app/account' },
+    { icon: Fingerprint, label: 'Biometric lock', value: 'Device', to: '/app/privacy' },
+    { icon: Shield, label: 'Privacy & security', value: 'Encrypted', to: '/app/privacy' },
+    { icon: Moon, label: 'Appearance', value: 'Light / Dark', to: '/app/appearance' },
+  ];
+
+  const legalRows = [
+    { label: 'Privacy Policy', to: '/privacy-policy' },
+    { label: 'Terms & Conditions', to: '/terms-and-conditions' },
+    { label: 'Disclaimer', to: '/disclaimer' },
   ];
 
   return (
@@ -66,16 +66,16 @@ const SettingsPage = () => {
 
       <section className="smarty-card animate-fade-up divide-y divide-border p-2">
         {rows.map((r) => (
-          <button
+          <Link
             key={r.label}
-            onClick={() => toast.info(`${r.label} settings arrive with the native app`)}
+            to={r.to}
             className="flex w-full items-center gap-3 px-3 py-3.5 text-left transition-smooth active:scale-[0.99]"
           >
             <r.icon className="h-4.5 w-4.5 shrink-0 text-primary" />
             <span className="flex-1 text-sm font-medium text-foreground">{r.label}</span>
             <span className="max-w-[40%] truncate text-xs text-muted-foreground">{r.value}</span>
             <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
-          </button>
+          </Link>
         ))}
       </section>
 
@@ -170,13 +170,14 @@ const SettingsPage = () => {
 
       <section className="animate-fade-up">
         <h2 className="mb-3 flex items-center gap-2 text-sm font-bold text-foreground">
-          <Link2 className="h-4 w-4 text-primary" /> Integrations
+          <FileText className="h-4 w-4 text-primary" /> Legal & policies
         </h2>
-        <div className="flex flex-wrap gap-2">
-          {INTEGRATIONS.map((i) => (
-            <span key={i} className="rounded-2xl border border-border bg-card px-3 py-2 text-[11px] font-semibold text-muted-foreground">
-              {i}
-            </span>
+        <div className="smarty-card divide-y divide-border p-2">
+          {legalRows.map((l) => (
+            <Link key={l.to} to={l.to} className="flex items-center gap-3 px-3 py-3.5 text-sm font-medium text-foreground">
+              <span className="flex-1">{l.label}</span>
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            </Link>
           ))}
         </div>
       </section>

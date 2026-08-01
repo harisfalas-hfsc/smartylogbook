@@ -30,6 +30,9 @@ import InsightsPage from "./pages/InsightsPage";
 import ModulesPage from "./pages/ModulesPage";
 import ModuleDetailPage from "./pages/ModuleDetailPage";
 import SettingsPage from "./pages/SettingsPage";
+import AccountPage from "./pages/AccountPage";
+import PrivacySecurityPage from "./pages/PrivacySecurityPage";
+import AppearancePage from "./pages/AppearancePage";
 import RemindersPage from "./pages/RemindersPage";
 import OnboardingPage from "./pages/OnboardingPage";
 import NotFound from "./pages/NotFound";
@@ -73,6 +76,9 @@ const App = () => (
               <Route path="module/:id" element={<ModuleDetailPage />} />
               <Route path="reminders" element={<RemindersPage />} />
               <Route path="settings" element={<SettingsPage />} />
+              <Route path="account" element={<AccountPage />} />
+              <Route path="privacy" element={<PrivacySecurityPage />} />
+              <Route path="appearance" element={<AppearancePage />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

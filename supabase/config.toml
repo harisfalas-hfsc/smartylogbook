@@ -2,3 +2,6 @@ project_id = "bjjezupqfoxbnhqlrwrg"
 
 [functions.ai-brain]
 verify_jwt = true
+
+[functions.account]
+verify_jwt = true
