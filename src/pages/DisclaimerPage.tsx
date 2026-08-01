@@ -10,7 +10,7 @@ const DisclaimerPage = () => (
       <p>
         Smarty Logbook is not a medical device within the meaning of Regulation (EU) 2017/745 and is not
         intended to diagnose, treat, cure, monitor or prevent any disease or condition. Health entries,
-        uploaded blood tests or medical reports, and anything Smarty Coach says about them are informational
+        uploaded blood tests or medical reports, and anything Smarty Assistant says about them are informational
         only. Always consult a qualified healthcare professional before making decisions about your health,
         medication, training or nutrition, and never delay seeking medical advice because of something you
         read in this app. In an emergency call your local emergency number.
@@ -52,7 +52,7 @@ const DisclaimerPage = () => (
 
     <LegalSection title="No professional relationship">
       <p>
-        Using Smarty Logbook or Smarty Coach does not create a doctor-patient, coach-client, accountant-client
+        Using Smarty Logbook or Smarty Assistant does not create a doctor-patient, coach-client, accountant-client
         or attorney-client relationship.
       </p>
     </LegalSection>
