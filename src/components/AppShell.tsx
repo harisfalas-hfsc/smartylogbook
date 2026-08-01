@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink, Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Bell, LogOut, Menu, Search, Sparkles } from 'lucide-react';
+import { Bell, LogOut, Menu, Search, ShieldCheck, Sparkles } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import BottomNav from '@/components/BottomNav';
 import SiteFooter from '@/components/SiteFooter';
@@ -9,6 +9,7 @@ import BackButton, { resetNavDepth } from '@/components/BackButton';
 import { MORE_LINKS, NAV_TABS } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIsAdmin } from '@/lib/admin';
 import { usePreferences } from '@/lib/preferences';
 import { useNotificationEngine } from '@/lib/reminders';
 
@@ -18,6 +19,7 @@ const AppShell = () => {
   const { profile, user, signOut } = useAuth();
   const { prefs, loading: prefsLoading } = usePreferences();
   const [menuOpen, setMenuOpen] = useState(false);
+  const { isAdmin } = useIsAdmin();
   useNotificationEngine(prefs);
   const initial = (profile?.username ?? user?.email ?? 'S').charAt(0).toUpperCase();
 
@@ -131,6 +133,18 @@ const AppShell = () => {
                     <div className="px-2 pb-1.5 pt-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
                       Account
                     </div>
+                    {isAdmin && (
+                      <button
+                        type="button"
+                        onClick={() => { navigate('/app/admin'); setMenuOpen(false); }}
+                        className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-sm font-semibold text-foreground transition-colors hover:bg-primary/10"
+                      >
+                        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+                          <ShieldCheck className="h-4 w-4" />
+                        </span>
+                        Admin panel
+                      </button>
+                    )}
                     <button
                       type="button"
                       onClick={() => signOut()}

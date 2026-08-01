@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { AlertTriangle, ArrowLeft, Download, FileText, KeyRound, Loader2, Mail, ShieldCheck, Trash2, UserCircle } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, Download, FileText, KeyRound, Loader2, Mail, ShieldCheck, ShieldCheck, Trash2, UserCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIsAdmin } from '@/lib/admin';
 
 const LEGAL = [
   { to: '/privacy-policy', label: 'Privacy Policy' },
@@ -14,6 +15,7 @@ const LEGAL = [
 const AccountPage = () => {
   const { user, profile, signOut } = useAuth();
   const navigate = useNavigate();
+  const { isAdmin } = useIsAdmin();
   const [roles, setRoles] = useState<string[]>([]);
   const [busy, setBusy] = useState<'export' | 'delete' | 'password' | null>(null);
   const [confirmText, setConfirmText] = useState('');
@@ -120,6 +122,17 @@ const AccountPage = () => {
           </span>
         </div>
       </section>
+
+      {isAdmin && (
+        <Link
+          to="/app/admin"
+          className="smarty-card animate-fade-up flex items-center gap-3 border-primary/40 px-4 py-3.5 transition-smooth active:scale-[0.99]"
+        >
+          <ShieldCheck className="h-4.5 w-4.5 text-primary" />
+          <span className="flex-1 text-sm font-bold text-foreground">Admin panel</span>
+          <span className="rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-primary">Admin</span>
+        </Link>
+      )}
 
       <section className="smarty-card animate-fade-up space-y-3 p-5">
         <h2 className="flex items-center gap-2 text-sm font-bold text-foreground">
