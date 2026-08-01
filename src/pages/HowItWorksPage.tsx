@@ -1,5 +1,5 @@
 import { Wand2, Brain, Bell, MessageCircle } from 'lucide-react';
-import { Panel, SubCard, MiniRow, Divider, PageHeader, CtaCard, insights, predictions, steps } from '@/lib/marketing';
+import { Panel, SubCard, MiniRow, Divider, DesktopOnly, PageHeader, CtaCard, insights, predictions, steps } from '@/lib/marketing';
 
 const captureTypes = [
   { e: '✍️', t: 'Text', s: 'A thought, a note, a number.' },
@@ -37,18 +37,22 @@ const HowItWorksPage = () => (
               <MiniRow key={c.t} emoji={c.e} title={c.t} text={c.s} />
             ))}
           </div>
-          <Divider />
-          <p className="text-[12.5px] leading-relaxed text-muted-foreground">
-            Nothing is required except the thing itself. No title, no tags, no folder.
-          </p>
+          <DesktopOnly>
+            <Divider />
+            <p className="text-[12.5px] leading-relaxed text-muted-foreground">
+              Nothing is required except the thing itself. No title, no tags, no folder.
+            </p>
+          </DesktopOnly>
         </SubCard>
-        <SubCard label="What you never do" labelEmoji="🚫">
-          <div className="grid gap-2">
-            <MiniRow emoji="📂" title="Pick a folder" text="The Assistant decides where it belongs." />
-            <MiniRow emoji="🏷️" title="Write tags" text="Generated automatically from the content." />
-            <MiniRow emoji="⌨️" title="Fill in fields" text="Dates and amounts are extracted for you." />
-          </div>
-        </SubCard>
+        <DesktopOnly>
+          <SubCard label="What you never do" labelEmoji="🚫">
+            <div className="grid gap-2">
+              <MiniRow emoji="📂" title="Pick a folder" text="The Assistant decides where it belongs." />
+              <MiniRow emoji="🏷️" title="Write tags" text="Generated automatically from the content." />
+              <MiniRow emoji="⌨️" title="Fill in fields" text="Dates and amounts are extracted for you." />
+            </div>
+          </SubCard>
+        </DesktopOnly>
       </div>
     </Panel>
 
@@ -70,7 +74,7 @@ const HowItWorksPage = () => (
               <span className="text-base leading-none">{s.emoji}</span>
             </div>
             <p className="mt-2.5 text-sm font-bold text-foreground">{s.title}</p>
-            <p className="mt-1 text-[11.5px] leading-relaxed text-muted-foreground">{s.text}</p>
+            <p className="mt-1 hidden text-[11.5px] leading-relaxed text-muted-foreground sm:block">{s.text}</p>
           </div>
         ))}
       </div>
@@ -83,18 +87,21 @@ const HowItWorksPage = () => (
       title={<>What you give it, and <span className="gradient-text">what comes back.</span></>}
     >
       <div className="grid gap-2 lg:grid-cols-2">
-        {examples.map((x) => (
-          <div key={x.in} className="rounded-2xl border border-primary/15 bg-card p-3.5">
-            <div className="flex items-start gap-2.5">
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-secondary text-sm">{x.e}</span>
-              <p className="text-[13px] font-bold leading-snug text-foreground">{x.in}</p>
+        {examples.map((x, idx) => {
+          const card = (
+            <div key={x.in} className="rounded-2xl border border-primary/15 bg-card p-3.5">
+              <div className="flex items-start gap-2.5">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-secondary text-sm">{x.e}</span>
+                <p className="text-[13px] font-bold leading-snug text-foreground">{x.in}</p>
+              </div>
+              <div className="mt-2.5 rounded-xl bg-secondary/70 p-2.5">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-primary">Assistant</p>
+                <p className="mt-1 text-[12px] leading-relaxed text-muted-foreground">{x.out}</p>
+              </div>
             </div>
-            <div className="mt-2.5 rounded-xl bg-secondary/70 p-2.5">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-primary">Assistant</p>
-              <p className="mt-1 text-[12px] leading-relaxed text-muted-foreground">{x.out}</p>
-            </div>
-          </div>
-        ))}
+          );
+          return idx < 2 ? card : <DesktopOnly key={x.in}>{card}</DesktopOnly>;
+        })}
       </div>
     </Panel>
 
@@ -108,29 +115,34 @@ const HowItWorksPage = () => (
       <div className="grid gap-3 lg:grid-cols-2">
         <SubCard label="Patterns it finds" labelEmoji="💡">
           <div className="grid gap-2">
-            {insights.map((i) => (
-              <div key={i} className="flex items-start gap-2.5 rounded-2xl border border-primary/15 bg-card p-2.5 sm:p-3">
-                <Brain className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                <p className="text-[12.5px] font-medium leading-snug text-foreground">{i}</p>
-              </div>
-            ))}
+            {insights.map((t, i) => {
+              const row = (
+                <div key={t} className="flex items-start gap-2.5 rounded-2xl border border-primary/15 bg-card p-2.5 sm:p-3">
+                  <Brain className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                  <p className="text-[12.5px] font-medium leading-snug text-foreground">{t}</p>
+                </div>
+              );
+              return i < 3 ? row : <DesktopOnly key={t}>{row}</DesktopOnly>;
+            })}
           </div>
         </SubCard>
-        <SubCard label="What it reminds you of" labelEmoji="⏰">
-          <div className="grid gap-2">
-            {predictions.map((p) => (
-              <div key={p} className="flex items-start gap-2.5 rounded-2xl border border-primary/15 bg-card p-2.5 sm:p-3">
-                <Bell className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
-                <p className="text-[12.5px] font-medium leading-snug text-foreground">{p}</p>
-              </div>
-            ))}
-          </div>
-          <Divider />
-          <p className="text-[12.5px] leading-relaxed text-muted-foreground">
-            If a memory is missing something important — a date, an amount, a name — the Assistant asks one
-            short follow-up question instead of guessing.
-          </p>
-        </SubCard>
+        <DesktopOnly>
+          <SubCard label="What it reminds you of" labelEmoji="⏰">
+            <div className="grid gap-2">
+              {predictions.map((p) => (
+                <div key={p} className="flex items-start gap-2.5 rounded-2xl border border-primary/15 bg-card p-2.5 sm:p-3">
+                  <Bell className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
+                  <p className="text-[12.5px] font-medium leading-snug text-foreground">{p}</p>
+                </div>
+              ))}
+            </div>
+            <Divider />
+            <p className="text-[12.5px] leading-relaxed text-muted-foreground">
+              If a memory is missing something important — a date, an amount, a name — the Assistant asks one
+              short follow-up question instead of guessing.
+            </p>
+          </SubCard>
+        </DesktopOnly>
       </div>
     </Panel>
 
