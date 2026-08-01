@@ -161,7 +161,24 @@ Deno.serve(async (req) => {
     const data = await response.json();
     const raw: string = data.choices?.[0]?.message?.content ?? "";
 
-    if (mode === "search" || mode === "chat") {
+    if (mode === "chat") {
+      const text = raw.replace(/```json/gi, "").replace(/```/g, "").trim();
+      let answer = text;
+      let save: unknown = null;
+      try {
+        const match = text.match(/\{[\s\S]*\}/);
+        const obj = match ? JSON.parse(match[0]) : null;
+        if (obj && typeof obj === "object" && "answer" in obj) {
+          answer = String((obj as Record<string, unknown>).answer ?? "").trim();
+          save = (obj as Record<string, unknown>).save ?? null;
+        }
+      } catch { /* fall back to plain text */ }
+      return new Response(JSON.stringify({ answer, save }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (mode === "search") {
       return new Response(JSON.stringify({ answer: raw.trim() }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
