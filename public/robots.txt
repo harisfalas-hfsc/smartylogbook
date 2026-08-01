@@ -12,3 +12,8 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /app
+Disallow: /onboarding
+Disallow: /reset-password
+
+Sitemap: https://smartylogbook.com/sitemap.xml
