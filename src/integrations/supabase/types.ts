@@ -14,6 +14,120 @@ export type Database = {
   }
   public: {
     Tables: {
+      daily_scores: {
+        Row: {
+          created_at: string
+          date: string
+          finance: number | null
+          id: string
+          learning: number | null
+          mental: number | null
+          movement: number | null
+          nutrition: number | null
+          productivity: number | null
+          recovery: number | null
+          relationships: number | null
+          score: number
+          sleep: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          date?: string
+          finance?: number | null
+          id?: string
+          learning?: number | null
+          mental?: number | null
+          movement?: number | null
+          nutrition?: number | null
+          productivity?: number | null
+          recovery?: number | null
+          relationships?: number | null
+          score?: number
+          sleep?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          finance?: number | null
+          id?: string
+          learning?: number | null
+          mental?: number | null
+          movement?: number | null
+          nutrition?: number | null
+          productivity?: number | null
+          recovery?: number | null
+          relationships?: number | null
+          score?: number
+          sleep?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      memories: {
+        Row: {
+          ai_tags: string[]
+          amount: number | null
+          attachment_url: string | null
+          content: string | null
+          created_at: string
+          currency: string | null
+          id: string
+          kind: string
+          location: string | null
+          metadata: Json
+          module: string
+          mood: number | null
+          occurred_at: string
+          summary: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ai_tags?: string[]
+          amount?: number | null
+          attachment_url?: string | null
+          content?: string | null
+          created_at?: string
+          currency?: string | null
+          id?: string
+          kind?: string
+          location?: string | null
+          metadata?: Json
+          module?: string
+          mood?: number | null
+          occurred_at?: string
+          summary?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ai_tags?: string[]
+          amount?: number | null
+          attachment_url?: string | null
+          content?: string | null
+          created_at?: string
+          currency?: string | null
+          id?: string
+          kind?: string
+          location?: string | null
+          metadata?: Json
+          module?: string
+          mood?: number | null
+          occurred_at?: string
+          summary?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

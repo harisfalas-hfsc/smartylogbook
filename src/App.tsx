@@ -4,22 +4,20 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
-import Index from "./pages/Index";
-import CategoriesPage from "./pages/CategoriesPage";
-import InsightsPage from "./pages/InsightsPage";
-import ProfilePage from "./pages/ProfilePage";
-import CategoryPage from "./pages/CategoryPage";
+import ProtectedRoute from "./components/ProtectedRoute";
+import AppShell from "./components/AppShell";
+import Landing from "./pages/Landing";
 import AuthPage from "./pages/AuthPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
-import AccountPage from "./pages/AccountPage";
-import NotificationsPage from "./pages/NotificationsPage";
-import PrivacyPage from "./pages/PrivacyPage";
-import TermsPage from "./pages/TermsPage";
-import HelpPage from "./pages/HelpPage";
+import Dashboard from "./pages/Dashboard";
+import TimelinePage from "./pages/TimelinePage";
+import CapturePage from "./pages/CapturePage";
+import AiPage from "./pages/AiPage";
+import InsightsPage from "./pages/InsightsPage";
+import ModulesPage from "./pages/ModulesPage";
+import ModuleDetailPage from "./pages/ModuleDetailPage";
+import SettingsPage from "./pages/SettingsPage";
 import NotFound from "./pages/NotFound";
-import BottomNav from "./components/BottomNav";
-import AppHeader from "./components/AppHeader";
-import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -30,23 +28,23 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <AppHeader />
           <Routes>
+            <Route path="/" element={<Landing />} />
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
-            <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-            <Route path="/categories" element={<ProtectedRoute><CategoriesPage /></ProtectedRoute>} />
-            <Route path="/insights" element={<ProtectedRoute><InsightsPage /></ProtectedRoute>} />
-            <Route path="/settings" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-            <Route path="/category/:id" element={<ProtectedRoute><CategoryPage /></ProtectedRoute>} />
-            <Route path="/profile/account" element={<ProtectedRoute><AccountPage /></ProtectedRoute>} />
-            <Route path="/profile/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
-            <Route path="/profile/privacy" element={<ProtectedRoute><PrivacyPage /></ProtectedRoute>} />
-            <Route path="/profile/terms" element={<ProtectedRoute><TermsPage /></ProtectedRoute>} />
-            <Route path="/profile/help" element={<ProtectedRoute><HelpPage /></ProtectedRoute>} />
+            <Route path="/app" element={<ProtectedRoute><AppShell /></ProtectedRoute>}>
+              <Route index element={<Dashboard />} />
+              <Route path="timeline" element={<TimelinePage />} />
+              <Route path="capture" element={<CapturePage />} />
+              <Route path="ai" element={<AiPage />} />
+              <Route path="search" element={<AiPage />} />
+              <Route path="insights" element={<InsightsPage />} />
+              <Route path="modules" element={<ModulesPage />} />
+              <Route path="module/:id" element={<ModuleDetailPage />} />
+              <Route path="settings" element={<SettingsPage />} />
+            </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
-          <BottomNav />
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

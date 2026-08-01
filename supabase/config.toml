@@ -1,1 +1,4 @@
 project_id = "bjjezupqfoxbnhqlrwrg"
+
+[functions.ai-brain]
+verify_jwt = true
