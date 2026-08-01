@@ -3,6 +3,7 @@ import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import { Menu, ArrowRight, Home, Info, Sparkles, Layers, Tag, MessageSquareQuote, Users, HelpCircle, ShieldCheck } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import Logo from '@/components/Logo';
+import SiteFooter from '@/components/SiteFooter';
 
 const discoverLinks = [
   { to: '/', label: 'Home', icon: Home },
@@ -95,22 +96,7 @@ const PublicLayout = () => {
         <Outlet />
       </main>
 
-      <footer className="border-t border-border bg-card/50">
-        <div className="mx-auto max-w-6xl px-5 py-8">
-          <Logo />
-          <p className="mt-3 max-w-xs text-xs leading-relaxed text-muted-foreground">
-            An AI-powered personal operating system. Part of the Smarty Wellness ecosystem.
-          </p>
-          <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-xs text-muted-foreground">
-            {discoverLinks.slice(1).map((l) => (
-              <Link key={l.to} to={l.to} className="hover:text-foreground">{l.label}</Link>
-            ))}
-          </div>
-        </div>
-        <div className="border-t border-border px-5 py-4 text-center text-[11px] text-muted-foreground">
-          © {new Date().getFullYear()} Smarty Wellness. All rights reserved.
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 };

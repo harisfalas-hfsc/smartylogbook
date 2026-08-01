@@ -16,6 +16,9 @@ import TestimonialsPage from "./pages/TestimonialsPage";
 import CommunityPage from "./pages/CommunityPage";
 import FaqPage from "./pages/FaqPage";
 import SecurityPage from "./pages/SecurityPage";
+import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
+import TermsPage from "./pages/TermsPage";
+import DisclaimerPage from "./pages/DisclaimerPage";
 import AuthPage from "./pages/AuthPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import Dashboard from "./pages/Dashboard";
@@ -51,6 +54,9 @@ const App = () => (
               <Route path="/community" element={<CommunityPage />} />
               <Route path="/faq" element={<FaqPage />} />
               <Route path="/security" element={<SecurityPage />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+              <Route path="/terms-and-conditions" element={<TermsPage />} />
+              <Route path="/disclaimer" element={<DisclaimerPage />} />
             </Route>
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
