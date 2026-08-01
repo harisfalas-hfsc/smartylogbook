@@ -5,6 +5,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import BottomNav from '@/components/BottomNav';
 import SiteFooter from '@/components/SiteFooter';
 import Logo from '@/components/Logo';
+import BackButton from '@/components/BackButton';
 import { MORE_LINKS, NAV_TABS } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -39,9 +40,12 @@ const AppShell = () => {
     <div className="min-h-screen bg-background">
       {/* Desktop sidebar */}
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-border bg-card/60 px-4 py-6 md:flex">
-        <Link to="/app" className="mb-8 px-2">
-          <Logo />
-        </Link>
+        <div className="mb-8 flex items-center gap-2 px-2">
+          <BackButton className="-ml-1" />
+          <Link to="/app">
+            <Logo />
+          </Link>
+        </div>
         <nav className="flex flex-1 flex-col gap-1">
           {desktopLinks.map((link) => (
             <NavLink
