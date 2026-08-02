@@ -88,8 +88,9 @@ const AssistantMemoryCard = () => {
               {profile.habits.slice(0, 6).map((h) => (
                 <span
                   key={h}
-                  className="rounded-full border border-primary/25 px-3 py-1 text-[11px] font-semibold text-muted-foreground"
+                  className="flex items-center gap-1.5 rounded-full border border-primary/25 bg-primary/5 px-3 py-1 text-[11px] font-semibold text-foreground"
                 >
+                  <Repeat className="h-3 w-3 text-primary" />
                   {h}
                 </span>
               ))}
@@ -97,8 +98,10 @@ const AssistantMemoryCard = () => {
           )}
 
           {profile.open_questions.length > 0 && (
-            <div className="space-y-1">
-              <p className="text-xs font-bold text-foreground">To know you better it needs</p>
+            <div className="space-y-1.5 rounded-2xl border border-mod-business/25 bg-mod-business/5 p-3">
+              <p className="flex items-center gap-2 text-xs font-bold text-foreground">
+                <HelpCircle className="h-3.5 w-3.5 text-mod-business" /> To know you better it needs
+              </p>
               {profile.open_questions.slice(0, 3).map((q) => (
                 <p key={q} className="text-xs text-muted-foreground">• {q}</p>
               ))}
