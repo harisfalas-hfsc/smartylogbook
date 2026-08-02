@@ -241,7 +241,12 @@ const AssistantPage = () => {
         </p>
       </header>
 
-      <DailyBriefCard brief={brief} generating={generating} onToggleDone={toggleDone} onRegenerate={regenerate} />
+      <DailyBriefCard
+        brief={brief}
+        generating={generating}
+        onRegenerate={regenerate}
+        onAsk={(t) => setInput(t)}
+      />
 
       <AssistantMemoryCard />
 
