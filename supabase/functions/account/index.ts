@@ -31,6 +31,56 @@ Deno.serve(async (req) => {
     const { action, confirm } = await req.json().catch(() => ({ action: "" }));
     const admin = createClient(supabaseUrl, serviceKey);
 
+    /* Immediate renewal / top-up.
+     * Restarts the billing cycle from today so the monthly conversation
+     * allowance resets straight away. The payment row is recorded as pending
+     * until a payment provider confirms the charge. */
+    if (action === "renew") {
+      const { data: cfgRow } = await admin.from("pricing_config").select("config").eq("id", 1).maybeSingle();
+      const cfg = (cfgRow?.config ?? {}) as Record<string, unknown>;
+      const plans = (Array.isArray(cfg.plans) ? cfg.plans : []) as Array<{ key: string; price: number }>;
+      const planKey = plans[0]?.key ?? "premium";
+      const price = plans[0]?.price ?? 9.99;
+
+      const { data: existing } = await admin
+        .from("subscriptions")
+        .select("*")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (!existing || existing.status !== "active" || existing.plan === "free") {
+        return json({ error: "No active plan to renew. Please subscribe first." }, 400);
+      }
+
+      const start = new Date();
+      const end = new Date(start);
+      end.setMonth(end.getMonth() + 1);
+
+      const { error } = await admin.from("subscriptions").upsert(
+        {
+          user_id: user.id,
+          plan: "premium",
+          plan_key: planKey,
+          status: "active",
+          source: existing.source === "admin_grant" ? "admin_grant" : "paid",
+          amount_eur: price,
+          current_period_start: start.toISOString(),
+          current_period_end: end.toISOString(),
+        },
+        { onConflict: "user_id" },
+      );
+      if (error) return json({ error: error.message }, 400);
+
+      await admin.from("payments").insert({
+        user_id: user.id,
+        amount_eur: price,
+        currency: "EUR",
+        status: "pending",
+        description: "Early renewal — billing cycle restarted",
+      });
+
+      return json({ ok: true, current_period_start: start.toISOString(), current_period_end: end.toISOString() });
+    }
+
     if (action === "export") {
       const tables = ["profiles", "memories", "user_preferences", "coach_cards", "reminders", "user_roles", "account_requests"];
       const data: Record<string, unknown> = {};

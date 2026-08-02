@@ -276,7 +276,10 @@ async function enforceAssistantAccess(
   mode: Mode,
   billable: boolean,
   input: string,
-): Promise<{ allowance: number; used: number; conversationId: string | null } | { error: string; upgrade: true; reason: string }> {
+): Promise<
+  | { allowance: number; used: number; conversationId: string | null }
+  | { error: string; upgrade: true; reason: string; resetsAt?: string | null; allowance?: number; used?: number }
+> {
   const db = await userClient(authHeader);
   const { data: auth } = await db.auth.getUser();
   const uid = auth?.user?.id;
