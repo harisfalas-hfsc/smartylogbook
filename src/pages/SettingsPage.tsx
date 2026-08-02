@@ -145,8 +145,8 @@ const SettingsPage = () => {
             );
           })}
 
-          <div className="flex items-center gap-3 px-3 py-3">
-            <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 px-3 py-3">
+            <div className="min-w-[9rem] flex-1">
               <p className="text-sm font-semibold text-foreground">Morning brief time</p>
               <p className="text-[11px] text-muted-foreground">When today's recommendation lands</p>
             </div>
@@ -154,28 +154,30 @@ const SettingsPage = () => {
               type="time"
               value={prefs?.coach_time ?? '07:30'}
               onChange={(e) => update({ coach_time: e.target.value })}
-              className="bg-transparent text-sm font-semibold text-primary outline-none"
+              className="shrink-0 rounded-xl bg-secondary px-2 py-1 text-sm font-semibold text-primary outline-none"
             />
           </div>
 
-          <div className="flex items-center gap-3 px-3 py-3">
-            <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 px-3 py-3">
+            <div className="min-w-[9rem] flex-1">
               <p className="text-sm font-semibold text-foreground">Quiet hours</p>
               <p className="text-[11px] text-muted-foreground">No notifications in this window</p>
             </div>
-            <input
-              type="time"
-              value={prefs?.quiet_hours_start ?? '22:00'}
-              onChange={(e) => update({ quiet_hours_start: e.target.value })}
-              className="bg-transparent text-sm font-semibold text-primary outline-none"
-            />
-            <span className="text-xs text-muted-foreground">–</span>
-            <input
-              type="time"
-              value={prefs?.quiet_hours_end ?? '07:00'}
-              onChange={(e) => update({ quiet_hours_end: e.target.value })}
-              className="bg-transparent text-sm font-semibold text-primary outline-none"
-            />
+            <div className="flex shrink-0 items-center gap-2">
+              <input
+                type="time"
+                value={prefs?.quiet_hours_start ?? '22:00'}
+                onChange={(e) => update({ quiet_hours_start: e.target.value })}
+                className="rounded-xl bg-secondary px-2 py-1 text-sm font-semibold text-primary outline-none"
+              />
+              <span className="text-xs text-muted-foreground">–</span>
+              <input
+                type="time"
+                value={prefs?.quiet_hours_end ?? '07:00'}
+                onChange={(e) => update({ quiet_hours_end: e.target.value })}
+                className="rounded-xl bg-secondary px-2 py-1 text-sm font-semibold text-primary outline-none"
+              />
+            </div>
           </div>
         </div>
 
