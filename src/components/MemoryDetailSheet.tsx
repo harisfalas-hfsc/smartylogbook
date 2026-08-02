@@ -33,6 +33,7 @@ const MemoryDetailSheet = ({
   const [draft, setDraft] = useState<Partial<Memory>>({});
   const [tagsText, setTagsText] = useState('');
   const [saving, setSaving] = useState(false);
+  const { categories, getCategory } = useCategories();
 
   useEffect(() => {
     if (!memory) return;
