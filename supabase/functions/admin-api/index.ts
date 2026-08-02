@@ -280,6 +280,45 @@ Deno.serve(async (req) => {
       return json({ ok: true });
     }
 
+    if (action === "create_user") {
+      const email = String(body?.email ?? "").trim().toLowerCase();
+      const password = String(body?.password ?? "");
+      const username = String(body?.username ?? "").trim() || email.split("@")[0];
+      const months = Number(body?.months ?? 0);
+      if (!email || !email.includes("@")) return json({ error: "A valid email is required" }, 400);
+      if (password.length < 8) return json({ error: "Password must be at least 8 characters" }, 400);
+
+      const { data: created, error: createErr } = await admin.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true, // created by an admin: no verification email needed
+        user_metadata: { username },
+      });
+      if (createErr) return json({ error: createErr.message }, 400);
+      const newId = created?.user?.id;
+      if (!newId) return json({ error: "User could not be created" }, 400);
+
+      if (Number.isFinite(months) && months >= 1) {
+        const end = new Date();
+        end.setMonth(end.getMonth() + Math.min(60, Math.round(months)));
+        await admin.from("subscriptions").upsert(
+          {
+            user_id: newId,
+            plan: "premium",
+            plan_key: String(body?.planKey ?? "premium"),
+            status: "active",
+            source: "admin_grant",
+            amount_eur: 0,
+            current_period_start: new Date().toISOString(),
+            current_period_end: end.toISOString(),
+            granted_by: caller.id,
+          },
+          { onConflict: "user_id" },
+        );
+      }
+      return json({ ok: true, userId: newId });
+    }
+
     if (action === "recent_payments") {
       const { data } = await admin
         .from("payments")
