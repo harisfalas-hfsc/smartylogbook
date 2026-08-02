@@ -2,6 +2,9 @@ import { useRef, useState } from 'react';
 import { ArrowUp, Loader2, Sparkles } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useMemories } from '@/lib/memories';
+import { useSubscription } from '@/lib/subscription';
+import AssistantUpgrade from '@/components/AssistantUpgrade';
+import ConversationMeter from '@/components/ConversationMeter';
 
 const EXAMPLES = [
   'When did my knee pain begin?',
@@ -16,6 +19,9 @@ interface Turn { role: 'user' | 'ai'; text: string }
 
 const AiPage = () => {
   const { memories } = useMemories({ limit: 200 });
+  const {
+    pricing, plan, active, allowance, used, canUseAssistant, renewsAt, loading: subLoading, reload: reloadSub,
+  } = useSubscription();
   const [turns, setTurns] = useState<Turn[]>([]);
   const [question, setQuestion] = useState('');
   const [loading, setLoading] = useState(false);
@@ -45,6 +51,7 @@ const AiPage = () => {
       setTurns((t) => [...t, { role: 'ai', text: answer }]);
     } finally {
       setLoading(false);
+      void reloadSub();
       setTimeout(() => endRef.current?.scrollIntoView({ behavior: 'smooth' }), 60);
     }
   };
@@ -58,7 +65,13 @@ const AiPage = () => {
         </p>
       </header>
 
-      {turns.length === 0 && (
+      {!subLoading && !canUseAssistant && <AssistantUpgrade pricing={pricing} exhausted={active} />}
+
+      {canUseAssistant && (
+        <ConversationMeter used={used} allowance={allowance} planName={plan?.name} renewsAt={renewsAt} />
+      )}
+
+      {canUseAssistant && turns.length === 0 && (
         <div className="animate-fade-up space-y-2">
           {EXAMPLES.map((e) => (
             <button
@@ -93,6 +106,7 @@ const AiPage = () => {
         <div ref={endRef} />
       </div>
 
+      {canUseAssistant && (
       <div className="sticky bottom-24 z-20 md:bottom-4">
         <form
           onSubmit={(e) => { e.preventDefault(); ask(question); }}
@@ -114,6 +128,7 @@ const AiPage = () => {
           </button>
         </form>
       </div>
+      )}
     </div>
   );
 };

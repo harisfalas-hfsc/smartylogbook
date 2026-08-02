@@ -7,6 +7,9 @@ import { usePreferences } from '@/lib/preferences';
 import { useDailyBrief } from '@/lib/assistant';
 import DailyBriefCard from '@/components/DailyBriefCard';
 import AssistantMemoryCard from '@/components/AssistantMemoryCard';
+import AssistantUpgrade from '@/components/AssistantUpgrade';
+import ConversationMeter from '@/components/ConversationMeter';
+import { useSubscription } from '@/lib/subscription';
 import { cn } from '@/lib/utils';
 
 interface ChatMessage {
@@ -26,7 +29,10 @@ const readAsDataUrl = (file: File | Blob) =>
 const AssistantPage = () => {
   const { memories, loading, create, reload } = useMemories({ limit: 60 });
   const { prefs } = usePreferences();
-  const { brief, generating, regenerate } = useDailyBrief(memories, prefs, !loading);
+  const {
+    pricing, plan, active, allowance, used, canUseAssistant, renewsAt, loading: subLoading, reload: reloadSub,
+  } = useSubscription();
+  const { brief, generating, regenerate } = useDailyBrief(memories, prefs, !loading && canUseAssistant);
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
@@ -220,6 +226,7 @@ const AssistantPage = () => {
       setMessages((prev) => [...prev, { role: 'assistant', content: 'Something went wrong reaching me just now. Please try again.' }]);
     } finally {
       setThinking(false);
+      void reloadSub();
     }
   };
 
@@ -241,15 +248,28 @@ const AssistantPage = () => {
         </p>
       </header>
 
-      <DailyBriefCard
-        brief={brief}
-        generating={generating}
-        onRegenerate={regenerate}
-        onAsk={(t) => setInput(t)}
-      />
+      {!subLoading && !canUseAssistant && (
+        <AssistantUpgrade pricing={pricing} exhausted={active} />
+      )}
 
-      <AssistantMemoryCard />
+      {canUseAssistant && (
+        <ConversationMeter used={used} allowance={allowance} planName={plan?.name} renewsAt={renewsAt} />
+      )}
 
+      {canUseAssistant && (
+        <>
+          <DailyBriefCard
+            brief={brief}
+            generating={generating}
+            onRegenerate={regenerate}
+            onAsk={(t) => setInput(t)}
+          />
+
+          <AssistantMemoryCard />
+        </>
+      )}
+
+      {canUseAssistant && (
       <div className="space-y-3">
         {messages.length === 0 && (
           <div className="grid gap-2 sm:grid-cols-2">
@@ -297,8 +317,10 @@ const AssistantPage = () => {
         )}
         <div ref={endRef} />
       </div>
+      )}
 
       {/* Composer */}
+      {canUseAssistant && (
       <div className="sticky bottom-24 z-20 md:bottom-4">
         <div className="smarty-card space-y-3 p-3">
           {files.length > 0 && (
@@ -371,6 +393,7 @@ const AssistantPage = () => {
           <input ref={fileInput} type="file" accept="image/*,application/pdf" multiple className="hidden" onChange={onPick} />
         </div>
       </div>
+      )}
     </div>
   );
 };

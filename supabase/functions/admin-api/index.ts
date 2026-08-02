@@ -141,12 +141,13 @@ Deno.serve(async (req) => {
       let canceled = 0;
       let granted = 0;
       let paid = 0;
+      let mrr = 0;
       for (const s of (subs ?? []) as Sub[]) {
         const e = effective(s);
         if (e.plan === "premium" && e.status === "active") {
           activePremium++;
           if (e.source === "admin_grant") granted++;
-          if (e.source === "paid") paid++;
+          if (e.source === "paid") { paid++; mrr += Number(s.amount_eur ?? PREMIUM_PRICE); }
         }
         if (s.status === "canceled") canceled++;
       }
@@ -173,7 +174,7 @@ Deno.serve(async (req) => {
         grantedSubscriptions: granted,
         canceledSubscriptions: canceled,
         freeUsers: users.length - activePremium,
-        mrr: Number((paid * PREMIUM_PRICE).toFixed(2)),
+        mrr: Number(mrr.toFixed(2)),
         totalRevenue: Number(totalRevenue.toFixed(2)),
         paymentsCount: succeeded.length,
         currency: "EUR",
@@ -181,8 +182,24 @@ Deno.serve(async (req) => {
       });
     }
 
-    if (action === "grant_premium") {
+    if (action === "get_pricing") {
+      const { data } = await admin.from("pricing_config").select("config").eq("id", 1).maybeSingle();
+      return json({ config: data?.config ?? {} });
+    }
+
+    if (action === "save_pricing") {
+      const config = body?.config;
+      if (!config || typeof config !== "object") return json({ error: "Invalid config" }, 400);
+      const { error } = await admin
+        .from("pricing_config")
+        .upsert({ id: 1, config, updated_at: new Date().toISOString(), updated_by: caller.id }, { onConflict: "id" });
+      if (error) return json({ error: error.message }, 400);
+      return json({ ok: true });
+    }
+
+    if (action === "grant_premium" || action === "grant_plan") {
       const userId = String(body?.userId ?? "");
+      const planKey = String(body?.planKey ?? "intelligence");
       const months = Number(body?.months ?? 1);
       if (!userId || !Number.isFinite(months) || months < 1 || months > 60) {
         return json({ error: "Invalid userId or months" }, 400);
@@ -200,12 +217,18 @@ Deno.serve(async (req) => {
       const end = new Date(base);
       end.setMonth(end.getMonth() + months);
 
+      const { data: cfgRow } = await admin.from("pricing_config").select("config").eq("id", 1).maybeSingle();
+      const cfgPlans = ((cfgRow?.config as Record<string, unknown> | null)?.plans ?? []) as Array<{ key: string; price: number }>;
+      const planPrice = cfgPlans.find((p) => p.key === planKey)?.price ?? PREMIUM_PRICE;
+
       const payload = {
         user_id: userId,
+        plan_key: planKey,
+        current_period_start: new Date().toISOString(),
         plan: "premium",
         status: "active",
         source: existing?.source === "paid" ? "paid" : "admin_grant",
-        amount_eur: existing?.source === "paid" ? PREMIUM_PRICE : 0,
+        amount_eur: existing?.source === "paid" ? planPrice : 0,
         current_period_end: end.toISOString(),
         granted_by: caller.id,
       };
@@ -221,6 +244,7 @@ Deno.serve(async (req) => {
         {
           user_id: userId,
           plan: "free",
+          plan_key: null,
           status: "canceled",
           source: "none",
           amount_eur: 0,

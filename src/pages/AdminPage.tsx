@@ -1,15 +1,18 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import {
-  BadgeCheck, CreditCard, Crown, Loader2, RefreshCw, Search, ShieldCheck, TrendingUp, Users, XCircle,
+  BadgeCheck, CreditCard, Crown, Loader2, RefreshCw, Save, Search, ShieldCheck, SlidersHorizontal, TrendingUp, Users, XCircle,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   AdminPayment, AdminStats, AdminUser, adminApi, euro, useIsAdmin,
 } from '@/lib/admin';
 import { cn } from '@/lib/utils';
+import {
+  DEFAULT_PRICING, PlanConfig, PricingConfig, conversationCost, planAllowance, planMargin,
+} from '@/lib/pricing';
 
-const TABS = ['Overview', 'Customers', 'Subscriptions', 'Payments'] as const;
+const TABS = ['Overview', 'Customers', 'Subscriptions', 'Payments', 'Pricing'] as const;
 type Tab = (typeof TABS)[number];
 
 const fmtDate = (d?: string | null) =>
@@ -53,19 +56,28 @@ const AdminPage = () => {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [pricing, setPricing] = useState<PricingConfig>(DEFAULT_PRICING);
+  const [grantPlan, setGrantPlan] = useState<string>('intelligence');
 
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const [s, u, p] = await Promise.all([
+      const [s, u, p, c] = await Promise.all([
         adminApi<AdminStats>('stats'),
         adminApi<{ users: AdminUser[] }>('list_users'),
         adminApi<{ payments: AdminPayment[] }>('recent_payments'),
+        adminApi<{ config: Partial<PricingConfig> }>('get_pricing'),
       ]);
       setStats(s);
       setUsers(u.users ?? []);
       setPayments(p.payments ?? []);
+      const cfg = c.config ?? {};
+      setPricing({
+        ...DEFAULT_PRICING,
+        ...cfg,
+        plans: Array.isArray(cfg.plans) && cfg.plans.length ? cfg.plans : DEFAULT_PRICING.plans,
+      });
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load admin data');
     } finally {
@@ -102,6 +114,12 @@ const AdminPage = () => {
   const filtered = users.filter((u) => u.email.toLowerCase().includes(search.trim().toLowerCase()));
   const subscribers = users.filter((u) => u.plan === 'premium' || u.subscription_status === 'canceled');
 
+  const updatePlan = (i: number, patch: Partial<PlanConfig>) =>
+    setPricing((prev) => ({
+      ...prev,
+      plans: prev.plans.map((p, idx) => (idx === i ? { ...p, ...patch } : p)),
+    }));
+
   const UserRow = ({ u }: { u: AdminUser }) => (
     <div className="smarty-card p-4">
       <div className="flex flex-wrap items-center gap-2">
@@ -119,11 +137,21 @@ const AdminPage = () => {
         <span>{u.memories} entries · {euro(u.total_spend)}</span>
       </div>
       <div className="mt-3 flex flex-wrap items-center gap-2">
+        <select
+          value={grantPlan}
+          onChange={(e) => setGrantPlan(e.target.value)}
+          className="rounded-2xl border border-border bg-card px-2.5 py-1.5 text-[11px] font-bold text-foreground outline-none"
+          aria-label="Plan to grant"
+        >
+          {pricing.plans.map((p) => (
+            <option key={p.key} value={p.key}>{p.name}</option>
+          ))}
+        </select>
         {[1, 2, 3, 6, 12].map((m) => (
           <button
             key={m}
             disabled={busy !== null}
-            onClick={() => act(`${u.id}-${m}`, () => adminApi('grant_premium', { userId: u.id, months: m }), `Premium granted for ${m} month${m > 1 ? 's' : ''}`)}
+            onClick={() => act(`${u.id}-${m}`, () => adminApi('grant_plan', { userId: u.id, months: m, planKey: grantPlan }), `${pricing.plans.find((p) => p.key === grantPlan)?.name ?? 'Premium'} granted for ${m} month${m > 1 ? 's' : ''}`)}
             className="rounded-2xl border border-primary/30 bg-primary/5 px-3 py-1.5 text-[11px] font-bold text-primary transition-smooth active:scale-95 disabled:opacity-50"
           >
             +{m}m
@@ -195,7 +223,7 @@ const AdminPage = () => {
               <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
                 <StatCard icon={Users} label="Customers" value={String(stats.totalUsers)} sub={`${stats.newUsers30d} new in 30 days`} />
                 <StatCard icon={Crown} label="Active premium" value={String(stats.activeSubscriptions)} sub={`${stats.grantedSubscriptions} granted · ${stats.paidSubscriptions} paid`} />
-                <StatCard icon={TrendingUp} label="MRR" value={euro(stats.mrr)} sub="Paid subscriptions × €9.99" />
+                <StatCard icon={TrendingUp} label="MRR" value={euro(stats.mrr)} sub="Paid subscriptions" />
                 <StatCard icon={CreditCard} label="Total revenue" value={euro(stats.totalRevenue)} sub={`${stats.paymentsCount} payments`} />
               </div>
               <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -266,6 +294,90 @@ const AdminPage = () => {
                   <span className="text-sm font-extrabold text-foreground">{euro(Number(p.amount_eur))}</span>
                 </div>
               ))}
+            </div>
+          )}
+
+          {tab === 'Pricing' && (
+            <div className="space-y-4">
+              <div className="smarty-card p-4">
+                <p className="flex items-center gap-2 text-sm font-bold text-foreground">
+                  <SlidersHorizontal className="h-4 w-4 text-primary" /> Cost model
+                </p>
+                <p className="mt-1 text-[11px] text-muted-foreground">
+                  Allowances are derived from these numbers so every plan keeps the target margin.
+                  One conversation currently costs {euro(conversationCost(pricing))}.
+                </p>
+                <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                  {([
+                    ['targetMargin', 'Target margin (0-1)', 0.01],
+                    ['inputPricePerMTokensUsd', 'Input $ / 1M tokens', 0.01],
+                    ['outputPricePerMTokensUsd', 'Output $ / 1M tokens', 0.01],
+                    ['avgInputTokensPerConversation', 'Avg input tokens', 500],
+                    ['avgOutputTokensPerConversation', 'Avg output tokens', 100],
+                    ['overhead', 'Overhead factor', 0.05],
+                    ['usdToEur', 'USD → EUR', 0.01],
+                    ['conversationWindowMinutes', 'Conversation window (min)', 5],
+                  ] as const).map(([key, label, step]) => (
+                    <label key={key} className="block">
+                      <span className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">{label}</span>
+                      <input
+                        type="number"
+                        step={step}
+                        value={pricing[key] as number}
+                        onChange={(e) => setPricing((prev) => ({ ...prev, [key]: Number(e.target.value) }))}
+                        className="mt-1 w-full rounded-2xl border border-border bg-card px-3 py-2 text-sm font-semibold text-foreground outline-none"
+                      />
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-3">
+                {pricing.plans.map((plan, i) => (
+                  <div key={plan.key} className="smarty-card p-4">
+                    <input
+                      value={plan.name}
+                      onChange={(e) => updatePlan(i, { name: e.target.value })}
+                      className="w-full bg-transparent text-sm font-bold text-foreground outline-none"
+                    />
+                    <label className="mt-3 block">
+                      <span className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">Price € / month</span>
+                      <input
+                        type="number"
+                        step={0.5}
+                        value={plan.price}
+                        onChange={(e) => updatePlan(i, { price: Number(e.target.value) })}
+                        className="mt-1 w-full rounded-2xl border border-border bg-card px-3 py-2 text-sm font-semibold text-foreground outline-none"
+                      />
+                    </label>
+                    <label className="mt-2 block">
+                      <span className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">Allowance override</span>
+                      <input
+                        type="number"
+                        placeholder="auto"
+                        value={plan.allowanceOverride ?? ''}
+                        onChange={(e) => updatePlan(i, { allowanceOverride: e.target.value === '' ? null : Number(e.target.value) })}
+                        className="mt-1 w-full rounded-2xl border border-border bg-card px-3 py-2 text-sm font-semibold text-foreground outline-none"
+                      />
+                    </label>
+                    <div className="mt-3 rounded-2xl bg-primary/5 p-3">
+                      <p className="text-lg font-extrabold text-primary">{planAllowance(pricing, plan)}</p>
+                      <p className="text-[11px] text-muted-foreground">
+                        conversations · margin {(planMargin(pricing, plan) * 100).toFixed(0)}% · AI cost{' '}
+                        {euro(planAllowance(pricing, plan) * conversationCost(pricing))}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <button
+                disabled={busy !== null}
+                onClick={() => act('save-pricing', () => adminApi('save_pricing', { config: pricing }), 'Pricing updated')}
+                className="inline-flex items-center gap-2 rounded-2xl bg-gradient-primary px-5 py-3 text-sm font-bold text-primary-foreground shadow-glow transition-smooth active:scale-95 disabled:opacity-50"
+              >
+                <Save className="h-4 w-4" /> Save pricing
+              </button>
             </div>
           )}
         </>

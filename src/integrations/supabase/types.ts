@@ -38,6 +38,36 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_conversations: {
+        Row: {
+          id: string
+          last_message_at: string
+          messages: number
+          plan: string | null
+          started_at: string
+          topic: string | null
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          last_message_at?: string
+          messages?: number
+          plan?: string | null
+          started_at?: string
+          topic?: string | null
+          user_id: string
+        }
+        Update: {
+          id?: string
+          last_message_at?: string
+          messages?: number
+          plan?: string | null
+          started_at?: string
+          topic?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       assistant_profiles: {
         Row: {
           confidence: string
@@ -413,6 +443,27 @@ export type Database = {
         }
         Relationships: []
       }
+      pricing_config: {
+        Row: {
+          config: Json
+          id: number
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          config?: Json
+          id?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          config?: Json
+          id?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       proactive_alerts: {
         Row: {
           created_at: string
@@ -538,9 +589,11 @@ export type Database = {
           amount_eur: number
           created_at: string
           current_period_end: string | null
+          current_period_start: string | null
           granted_by: string | null
           id: string
           plan: string
+          plan_key: string | null
           source: string
           status: string
           updated_at: string
@@ -550,9 +603,11 @@ export type Database = {
           amount_eur?: number
           created_at?: string
           current_period_end?: string | null
+          current_period_start?: string | null
           granted_by?: string | null
           id?: string
           plan?: string
+          plan_key?: string | null
           source?: string
           status?: string
           updated_at?: string
@@ -562,9 +617,11 @@ export type Database = {
           amount_eur?: number
           created_at?: string
           current_period_end?: string | null
+          current_period_start?: string | null
           granted_by?: string | null
           id?: string
           plan?: string
+          plan_key?: string | null
           source?: string
           status?: string
           updated_at?: string

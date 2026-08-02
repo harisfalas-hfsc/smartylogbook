@@ -230,6 +230,8 @@ const CapturePage = () => {
         if (data.module) setModule(data.module as string);
         if (data.kind === 'receipt' || data.kind === 'expense') setKind('receipt');
         if (!text.trim() && data.summary) setText(String(data.summary));
+      } else if (data?.upgrade) {
+        toast.info('Reading documents is part of Smarty Assistant — your file is still saved.');
       } else if (data?.error) {
         toast.error(String(data.error));
       }

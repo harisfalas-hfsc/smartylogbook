@@ -219,6 +219,144 @@ const userClient = async (authHeader: string) => {
   });
 };
 
+/* ====================== monetisation helpers ====================== */
+
+const serviceClient = async () => {
+  const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2.58.0");
+  return createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, {
+    auth: { persistSession: false },
+  });
+};
+
+const DEFAULT_PRICING = {
+  targetMargin: 0.5,
+  usdToEur: 0.92,
+  overhead: 0.3,
+  inputPricePerMTokensUsd: 0.3,
+  outputPricePerMTokensUsd: 2.5,
+  avgInputTokensPerConversation: 25000,
+  avgOutputTokensPerConversation: 2000,
+  conversationWindowMinutes: 45,
+  roundTo: 10,
+  plans: [
+    { key: "insight", name: "Smarty Insight", price: 6.99 },
+    { key: "intelligence", name: "Smarty Intelligence", price: 9.99 },
+    { key: "genius", name: "Smarty Genius", price: 12.99 },
+  ],
+} as Record<string, any>;
+
+const allowanceFor = (cfg: Record<string, any>, planKey: string): number => {
+  const plan = (cfg.plans ?? []).find((p: any) => p.key === planKey);
+  if (!plan) return 0;
+  if (plan.allowanceOverride != null && plan.allowanceOverride > 0) return Math.round(plan.allowanceOverride);
+  const usd =
+    (cfg.avgInputTokensPerConversation / 1_000_000) * cfg.inputPricePerMTokensUsd +
+    (cfg.avgOutputTokensPerConversation / 1_000_000) * cfg.outputPricePerMTokensUsd;
+  const cost = usd * cfg.usdToEur * (1 + cfg.overhead);
+  if (!Number.isFinite(cost) || cost <= 0) return 0;
+  const step = Math.max(1, cfg.roundTo || 1);
+  return Math.max(step, Math.floor((plan.price * (1 - cfg.targetMargin)) / cost / step) * step);
+};
+
+const periodStartOf = (sub: Record<string, any> | null): Date => {
+  if (sub?.current_period_start) return new Date(sub.current_period_start);
+  if (sub?.current_period_end) {
+    const start = new Date(sub.current_period_end);
+    while (start > new Date()) start.setMonth(start.getMonth() - 1);
+    return start;
+  }
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), 1);
+};
+
+/**
+ * Verifies the caller has an active Smarty Assistant plan and, for billable
+ * modes, opens or continues a conversation within the allowance.
+ */
+async function enforceAssistantAccess(
+  authHeader: string,
+  mode: Mode,
+  billable: boolean,
+  input: string,
+): Promise<{ allowance: number; used: number; conversationId: string | null } | { error: string; upgrade: true; reason: string }> {
+  const db = await userClient(authHeader);
+  const { data: auth } = await db.auth.getUser();
+  const uid = auth?.user?.id;
+  if (!uid) return { error: "Not authenticated", upgrade: true, reason: "auth" };
+
+  const admin = await serviceClient();
+  const [{ data: cfgRow }, { data: sub }] = await Promise.all([
+    admin.from("pricing_config").select("config").eq("id", 1).maybeSingle(),
+    admin.from("subscriptions").select("*").eq("user_id", uid).maybeSingle(),
+  ]);
+  const cfg = { ...DEFAULT_PRICING, ...((cfgRow?.config as Record<string, any>) ?? {}) };
+  if (!Array.isArray(cfg.plans) || !cfg.plans.length) cfg.plans = DEFAULT_PRICING.plans;
+
+  const active =
+    sub &&
+    sub.status === "active" &&
+    sub.plan !== "free" &&
+    (!sub.current_period_end || new Date(sub.current_period_end) > new Date());
+
+  if (!active) {
+    return {
+      error: "Smarty Assistant requires an active plan.",
+      upgrade: true,
+      reason: "no_plan",
+    };
+  }
+
+  const planKey = sub.plan_key ?? (sub.plan === "premium" ? "intelligence" : "intelligence");
+  const allowance = allowanceFor(cfg, planKey);
+  const start = periodStartOf(sub);
+
+  const { count } = await admin
+    .from("ai_conversations")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", uid)
+    .gte("started_at", start.toISOString());
+  const used = count ?? 0;
+
+  if (!billable) return { allowance, used, conversationId: null };
+
+  // Continue the open conversation when the user is still on the same topic/session.
+  const windowMs = Math.max(5, Number(cfg.conversationWindowMinutes ?? 45)) * 60_000;
+  const since = new Date(Date.now() - windowMs).toISOString();
+  const { data: open } = await admin
+    .from("ai_conversations")
+    .select("id, messages")
+    .eq("user_id", uid)
+    .gte("last_message_at", since)
+    .order("last_message_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (open) {
+    await admin
+      .from("ai_conversations")
+      .update({ last_message_at: new Date().toISOString(), messages: Number(open.messages ?? 1) + 1 })
+      .eq("id", open.id);
+    return { allowance, used, conversationId: open.id as string };
+  }
+
+  if (used >= allowance) {
+    return {
+      error: "You have used all AI Conversations included in your plan this month.",
+      upgrade: true,
+      reason: "allowance_exhausted",
+    };
+  }
+
+  const { data: created } = await admin
+    .from("ai_conversations")
+    .insert({ user_id: uid, plan: planKey, topic: input.trim().slice(0, 120) || mode })
+    .select("id")
+    .maybeSingle();
+
+  return { allowance, used: used + 1, conversationId: (created?.id as string) ?? null };
+}
+
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -238,6 +376,31 @@ Deno.serve(async (req) => {
     if (!apiKey) throw new Error("LOVABLE_API_KEY is not configured");
 
     const authHeader = req.headers.get("Authorization") ?? "";
+
+    /* ------------------------------------------------------------------
+     * MONETISATION GATE
+     * The logbook is free forever. Every mode that actually calls an LLM
+     * belongs to Smarty Assistant and requires an active plan.
+     * Only real reasoning conversations consume the monthly allowance —
+     * deterministic work, transcription and plain database queries do not.
+     * ---------------------------------------------------------------- */
+    const PREMIUM_MODES: Mode[] = ["chat", "search", "insights", "brief", "coach", "train", "extract", "classify", "embed"];
+    const BILLABLE_MODES: Mode[] = ["chat", "search"];
+
+    let quota: { allowance: number; used: number; conversationId: string | null } | null = null;
+
+    if (PREMIUM_MODES.includes(mode)) {
+      const gate = await enforceAssistantAccess(authHeader, mode, BILLABLE_MODES.includes(mode), input ?? "");
+      if ("error" in gate) {
+        return new Response(JSON.stringify(gate), {
+          status: 402,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      quota = gate;
+    }
+
+
 
     /* ---- embed mode: index entries so the Assistant can recall the whole history ---- */
     if (mode === "embed") {
@@ -539,13 +702,13 @@ Deno.serve(async (req) => {
           question = (obj as Record<string, unknown>).question ?? null;
         }
       } catch { /* fall back to plain text */ }
-      return new Response(JSON.stringify({ answer, save, question }), {
+      return new Response(JSON.stringify({ answer, save, question, quota }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
     if (mode === "search") {
-      return new Response(JSON.stringify({ answer: raw.trim() }), {
+      return new Response(JSON.stringify({ answer: raw.trim(), quota }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
