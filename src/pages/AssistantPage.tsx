@@ -30,7 +30,7 @@ const AssistantPage = () => {
   const { memories, loading, create, reload } = useMemories({ limit: 60 });
   const { prefs } = usePreferences();
   const {
-    pricing, plan, active, allowance, used, canUseAssistant, renewsAt, loading: subLoading, reload: reloadSub,
+    pricing, plan, active, allowance, used, canUseAssistant, renewsAt, renewNow, loading: subLoading, reload: reloadSub,
   } = useSubscription();
   const { brief, generating, regenerate } = useDailyBrief(memories, prefs, !loading && canUseAssistant);
 
@@ -249,7 +249,7 @@ const AssistantPage = () => {
       </header>
 
       {!subLoading && !canUseAssistant && (
-        <AssistantUpgrade pricing={pricing} exhausted={active} />
+        <AssistantUpgrade pricing={pricing} exhausted={active} allowance={allowance} renewsAt={renewsAt} onRenew={renewNow} />
       )}
 
       {canUseAssistant && (
