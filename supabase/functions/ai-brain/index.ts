@@ -414,11 +414,24 @@ async function enforceAssistantAccess(
   const cfg = { ...DEFAULT_PRICING, ...((cfgRow?.config as Record<string, any>) ?? {}) };
   if (!Array.isArray(cfg.plans) || !cfg.plans.length) cfg.plans = DEFAULT_PRICING.plans;
 
+  const { data: adminRole } = await admin
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", uid)
+    .eq("role", "admin")
+    .maybeSingle();
+  const isAdmin = !!adminRole;
+
   const active =
-    sub &&
-    sub.status === "active" &&
-    sub.plan !== "free" &&
-    (!sub.current_period_end || new Date(sub.current_period_end) > new Date());
+    isAdmin ||
+    (sub &&
+      sub.status === "active" &&
+      sub.plan !== "free" &&
+      (!sub.current_period_end || new Date(sub.current_period_end) > new Date()));
+
+  if (isAdmin) {
+    return { allowance: Number.MAX_SAFE_INTEGER, used: 0, conversationId: null };
+  }
 
   if (!active) {
     return {

@@ -1,6 +1,6 @@
 {
   "name": "Smarty Logbook",
-  "short_name": "Logbook",
+  "short_name": "Smarty Logbook",
   "description": "The Smarty Logbook that remembers your life better than you do.",
   "start_url": "/app",
   "scope": "/",
