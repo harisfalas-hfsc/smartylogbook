@@ -36,6 +36,14 @@ Deno.serve(async (req) => {
     { auth: { persistSession: false } },
   );
 
+  /* ---- housekeeping: permanently remove trashed records older than 30 days ---- */
+  try {
+    const { data: purged } = await db.rpc("purge_expired_trash");
+    if (purged) console.log("purged expired trash", purged);
+  } catch (e) {
+    console.error("purge_expired_trash failed", e);
+  }
+
   const alerts: AlertRow[] = [];
   const today = new Date();
   const soon = addDays(7);
@@ -120,6 +128,7 @@ Deno.serve(async (req) => {
   const { data: expiring } = await db
     .from("memories")
     .select("id,user_id,title,metadata")
+    .is("deleted_at", null)
     .not("metadata", "is", null)
     .order("created_at", { ascending: false })
     .limit(1000);

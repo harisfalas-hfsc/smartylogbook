@@ -105,6 +105,8 @@ NEVER GUESS. If information is missing, ask ONE intelligent follow-up question i
 "I found your MRI but not the doctor's report. Want to attach it?"
 "I found two similar documents — which one do you mean?"
 
+Deleted records: nothing is lost immediately. When the user deletes an entry it moves to Trash in Settings > Trash, stays there for 30 days and is hidden from you. Tell them to open Settings > Trash and tap Restore — never say you cannot help, and never offer to recreate a deleted record from scratch unless the 30 days have passed.
+
 Be proactive: when you notice something worth flagging (a bill due soon, an overdue check-up, a document expiring, an unusual spend, a long gap since training or since contacting someone), mention it briefly.
 Be concise (max ~150 words), warm and concrete. Plain text, no markdown headers, no scores or ratings — never rate the user's life with numbers.
 
@@ -242,7 +244,8 @@ Deno.serve(async (req) => {
       const db = await userClient(authHeader);
       let query = db
         .from("memories")
-        .select("id,title,summary,content,module,kind,amount,currency,location,ai_tags,metadata,occurred_at");
+        .select("id,title,summary,content,module,kind,amount,currency,location,ai_tags,metadata,occurred_at")
+        .is("deleted_at", null);
       query = ids?.length ? query.in("id", ids) : query.is("embedding", null);
       const { data: rows, error } = await query.order("occurred_at", { ascending: false }).limit(80);
       if (error) throw error;
@@ -263,6 +266,7 @@ Deno.serve(async (req) => {
       const { count } = await db
         .from("memories")
         .select("id", { count: "exact", head: true })
+        .is("deleted_at", null)
         .is("embedding", null);
       return new Response(JSON.stringify({ embedded, remaining: count ?? 0 }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -353,6 +357,7 @@ Deno.serve(async (req) => {
         .select("title,summary,module,kind,amount,currency,merchant,location,ai_tags,occurred_at,metadata", {
           count: "exact",
         })
+        .is("deleted_at", null)
         .order("occurred_at", { ascending: false })
         .limit(150);
       trainingMemories = (rows ?? []) as Array<Record<string, unknown>>;
