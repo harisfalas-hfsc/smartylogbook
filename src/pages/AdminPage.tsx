@@ -353,7 +353,27 @@ const AdminPage = () => {
 
           {tab === 'Pricing' && (
             <div className="space-y-4">
+              <div className="smarty-card border-primary/40 p-4">
+                <p className="text-sm font-bold text-foreground">What this tab does</p>
+                <ul className="mt-2 space-y-1.5 text-[12px] leading-relaxed text-muted-foreground">
+                  <li>
+                    <strong className="text-foreground">Cost model</strong> — what one Smarty Assistant conversation
+                    actually costs you in AI usage. Change these numbers only if model prices change.
+                  </li>
+                  <li>
+                    <strong className="text-foreground">Plans</strong> — the price customers pay and how many
+                    conversations they get each month. Leave “allowance override” empty to let the target margin decide
+                    it automatically, or type a fixed number (currently 300).
+                  </li>
+                  <li>
+                    Whatever you save here is what the public pricing page, the plan page and the conversation meter
+                    show — nothing is hardcoded.
+                  </li>
+                </ul>
+              </div>
+
               <div className="smarty-card p-4">
+
                 <p className="flex items-center gap-2 text-sm font-bold text-foreground">
                   <SlidersHorizontal className="h-4 w-4 text-primary" /> Cost model
                 </p>
