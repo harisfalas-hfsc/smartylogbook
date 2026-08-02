@@ -98,8 +98,8 @@ const AboutPage = () => (
       eyebrow="Everything it does"
       eyebrowEmoji="⚡"
       badge={Layers}
-      title={<>Twelve things you <span className="gradient-text">never do again.</span></>}
-      lead="No setup, no maintenance, no organising — the whole feature set works in the background."
+      title={<>Everything it does <span className="gradient-text">for you.</span></>}
+      lead="No setup, no maintenance, no organising — it all works in the background while you get on with your day."
     >
       <div className="grid gap-3 lg:grid-cols-2">
         <SubCard label="Capture & understand" labelEmoji="📥">
