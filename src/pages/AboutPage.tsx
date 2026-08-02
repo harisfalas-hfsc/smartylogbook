@@ -159,7 +159,7 @@ const AboutPage = () => (
       lead="Free to start. Premium unlocks the Smarty Assistant for €9.99 per month."
     >
       <div className="grid gap-3 lg:grid-cols-2">
-        <SubCard label="What you never deal with" labelEmoji="🚫">
+        <SubCard label="What it takes off your hands" labelEmoji="🙌">
           <div className="grid gap-2">
             {promises.map((p) => (
               <MiniRow key={p.t} emoji={p.e} title={p.t} text={p.s} />
