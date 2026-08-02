@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIsAdmin } from '@/lib/admin';
 import { PlanConfig, PricingConfig, planAllowance, usePricing } from '@/lib/pricing';
 
 export interface SubscriptionRow {
