@@ -318,7 +318,31 @@ Deno.serve(async (req) => {
       }
     }
 
+    /* ---- the user's own category corrections: hard rules the classifier must respect ---- */
+    let correctionsText = "";
+    if (["classify", "extract", "train", "chat"].includes(mode)) {
+      try {
+        const db = await userClient(authHeader);
+        const { data: corr } = await db
+          .from("classification_corrections")
+          .select("title,summary,ai_tags,kind,from_module,to_module,note")
+          .order("created_at", { ascending: false })
+          .limit(40);
+        if (corr?.length) {
+          const lines = (corr as Array<Record<string, unknown>>).map((c) =>
+            `"${c.title ?? ""}"${c.kind ? ` (${c.kind})` : ""}${Array.isArray(c.ai_tags) && c.ai_tags.length ? ` [${(c.ai_tags as string[]).join(", ")}]` : ""}: you filed it under ${c.from_module}, the user moved it to ${c.to_module}${c.note ? ` — "${c.note}"` : ""}`
+          );
+          correctionsText =
+            `USER CORRECTIONS — the user has re-filed entries you classified. These are RULES, not suggestions.\n` +
+            `Learn the pattern behind each correction and apply it to anything similar from now on. When a new capture resembles a corrected one, use the category the USER chose.\n${lines.join("\n")}\n\n`;
+        }
+      } catch (e) {
+        console.error("corrections context failed", e);
+      }
+    }
+
     /* ---- training pulls the user's own history server-side ---- */
+
     let trainingMemories: Array<Record<string, unknown>> = [];
     let trainingCount = 0;
     if (mode === "train") {
