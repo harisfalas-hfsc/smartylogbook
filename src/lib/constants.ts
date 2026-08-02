@@ -2,7 +2,7 @@ import {
   Activity, Apple, Brain, Briefcase, Camera, CreditCard, Dumbbell, FileText,
   Heart, Home, Image, Lightbulb, MapPin, Mic, NotebookPen, Receipt, Search,
   Smile, Sparkles, Timer, Utensils, Wallet, CheckSquare, Bell, Stethoscope,
-  User, Settings, BarChart3, Clock, Plus,
+  User, Settings, BarChart3, Clock, Plus, CalendarClock,
 } from 'lucide-react';
 
 export type ModuleId =
@@ -95,6 +95,7 @@ export const NAV_TABS = [
 export const MORE_LINKS = [
   { path: '/app/ai', icon: Brain, label: 'Ask your logbook' },
   { path: '/app/search', icon: Search, label: 'Search' },
+  { path: '/app/calendar', icon: CalendarClock, label: 'Calendar' },
   { path: '/app/reminders', icon: Bell, label: 'Reminders' },
   { path: '/app/modules', icon: Activity, label: 'Modules' },
   { path: '/app/settings', icon: Settings, label: 'Settings' },

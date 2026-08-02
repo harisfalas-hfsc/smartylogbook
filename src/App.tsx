@@ -34,6 +34,7 @@ import AccountPage from "./pages/AccountPage";
 import PlanPage from "./pages/PlanPage";
 import PrivacySecurityPage from "./pages/PrivacySecurityPage";
 import AppearancePage from "./pages/AppearancePage";
+import CalendarPage from "./pages/CalendarPage";
 import RemindersPage from "./pages/RemindersPage";
 import OnboardingPage from "./pages/OnboardingPage";
 import NotFound from "./pages/NotFound";
@@ -83,6 +84,7 @@ const App = () => (
               <Route path="modules" element={<ModulesPage />} />
               <Route path="module/:id" element={<ModuleDetailPage />} />
               <Route path="reminders" element={<RemindersPage />} />
+              <Route path="calendar" element={<CalendarPage />} />
               <Route path="settings" element={<SettingsPage />} />
               <Route path="trash" element={<TrashPage />} />
               <Route path="account" element={<AccountPage />} />

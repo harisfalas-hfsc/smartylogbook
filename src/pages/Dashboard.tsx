@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  AlertTriangle, ArrowRight, Camera, ChevronRight, Loader2, Mic, Paperclip, Plus, RefreshCw, Sparkles,
+  AlertTriangle, ArrowRight, CalendarDays, Camera, ChevronRight, Loader2, Mic, Paperclip, Plus, RefreshCw, Sparkles,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useMemories, timeOf, Memory } from '@/lib/memories';
@@ -165,6 +165,25 @@ const Dashboard = () => {
           <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
         </Link>
       )}
+
+      {/* Calendar shortcut */}
+      <Link
+        to="/app/calendar"
+        className="smarty-card flex animate-fade-up items-center gap-3 p-3.5 transition-smooth active:scale-95"
+      >
+        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl bg-primary/10 text-primary">
+          <CalendarDays className="h-4.5 w-4.5" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-bold text-foreground">Calendar</p>
+          <p className="truncate text-[11px] text-muted-foreground">
+            Scheduled and logged days, month by month
+          </p>
+        </div>
+        <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+      </Link>
+
+
 
       {/* Categories — always a clean 4-across grid */}
       <section className="animate-fade-up">
