@@ -247,7 +247,7 @@ const AssistantPage = () => {
     { q: 'When was my last blood test?', icon: Stethoscope, color: 'text-mod-health', tint: 'bg-mod-health/10' },
     { q: 'Read this report and explain it', icon: FileText, color: 'text-mod-documents', tint: 'bg-mod-documents/10' },
     { q: 'How much did I spend on groceries last month?', icon: Wallet, color: 'text-mod-finance', tint: 'bg-mod-finance/10' },
-    { q: 'What do I need to deal with this week?', icon: CalendarClock, color: 'text-mod-business', tint: 'bg-mod-business/10' },
+    { q: 'Schedule my dentist next Tuesday at 10:00', icon: CalendarClock, color: 'text-mod-business', tint: 'bg-mod-business/10' },
   ];
 
   return (
