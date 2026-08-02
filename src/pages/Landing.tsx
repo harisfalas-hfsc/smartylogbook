@@ -58,6 +58,29 @@ const Landing = () => {
         </div>
       </section>
 
+      {/* You put in → it gives back */}
+      <section className="mx-auto w-full max-w-5xl px-5 md:px-8 pb-14">
+        <div className="grid gap-2.5 md:grid-cols-2">
+          {[
+            { label: 'You put in', emoji: '📥', items: givesIn },
+            { label: 'It gives back', emoji: '✨', items: givesBack },
+          ].map((col) => (
+            <div key={col.label} className="smarty-card p-4">
+              <div className="mb-3 flex items-center gap-2">
+                <span className="text-sm leading-none">{col.emoji}</span>
+                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary">{col.label}</p>
+              </div>
+              <div className="grid gap-2">
+                {col.items.map((i) => (
+                  <MiniRow key={i.t} emoji={i.e} title={i.t} text={i.s} />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+
     </div>
   );
 };
