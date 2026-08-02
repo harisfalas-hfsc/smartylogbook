@@ -300,6 +300,54 @@ export type Database = {
         }
         Relationships: []
       }
+      proactive_alerts: {
+        Row: {
+          created_at: string
+          dedupe_key: string
+          detail: string | null
+          dismissed: boolean
+          due_at: string | null
+          id: string
+          kind: string
+          notified_at: string | null
+          seen: boolean
+          severity: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          dedupe_key: string
+          detail?: string | null
+          dismissed?: boolean
+          due_at?: string | null
+          id?: string
+          kind?: string
+          notified_at?: string | null
+          seen?: boolean
+          severity?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          dedupe_key?: string
+          detail?: string | null
+          dismissed?: boolean
+          due_at?: string | null
+          id?: string
+          kind?: string
+          notified_at?: string | null
+          seen?: boolean
+          severity?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
