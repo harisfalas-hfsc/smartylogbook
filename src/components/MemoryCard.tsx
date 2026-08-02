@@ -1,6 +1,7 @@
 import { Check, Link2, MapPin, Trash2, FolderInput } from 'lucide-react';
 import { toast } from 'sonner';
-import { getModule, kindIcon, MODULES } from '@/lib/constants';
+import { kindIcon } from '@/lib/constants';
+import { useCategories } from '@/lib/categories';
 import { Memory, timeOf } from '@/lib/memories';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
@@ -15,7 +16,8 @@ interface Props {
 }
 
 const MemoryCard = ({ memory, onDelete, onMove, onOpen }: Props) => {
-  const module = getModule(memory.module);
+  const { categories, getCategory } = useCategories();
+  const module = getCategory(memory.module);
   const Icon = kindIcon(memory.kind);
 
   return (
@@ -56,7 +58,7 @@ const MemoryCard = ({ memory, onDelete, onMove, onOpen }: Props) => {
                 <DropdownMenuContent align="start" className="w-56" onClick={(e) => e.stopPropagation()}>
                   <DropdownMenuLabel className="text-xs">Move to category</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  {MODULES.map((m) => {
+                  {categories.map((m) => {
                     const MIcon = m.icon;
                     return (
                       <DropdownMenuItem

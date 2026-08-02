@@ -4,7 +4,8 @@ import { toast } from 'sonner';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { getModule, kindIcon, MODULES } from '@/lib/constants';
+import { kindIcon } from '@/lib/constants';
+import { useCategories } from '@/lib/categories';
 import { Memory } from '@/lib/memories';
 import { cn } from '@/lib/utils';
 
@@ -48,7 +49,7 @@ const MemoryDetailSheet = ({
   }, [memory]);
 
   if (!memory) return null;
-  const module = getModule(memory.module);
+  const module = getCategory(memory.module);
   const Icon = kindIcon(memory.kind);
   const related = allMemories.filter((m) => memory.related_ids?.includes(m.id));
 
@@ -219,7 +220,7 @@ const MemoryDetailSheet = ({
             <div className="space-y-2">
               <p className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">Category</p>
               <div className="flex flex-wrap gap-2">
-                {MODULES.map((m) => (
+                {categories.map((m) => (
                   <button
                     key={m.id}
                     onClick={async () => {
