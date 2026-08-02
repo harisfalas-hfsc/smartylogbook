@@ -13,6 +13,7 @@ import { useIsAdmin } from '@/lib/admin';
 import { usePreferences } from '@/lib/preferences';
 import { useNotificationEngine } from '@/lib/reminders';
 import { useMemoryIndex } from '@/lib/semantic';
+import { useUnreadMessages } from '@/lib/messages';
 
 const AppShell = () => {
   const { pathname } = useLocation();
@@ -23,6 +24,7 @@ const AppShell = () => {
   const { isAdmin } = useIsAdmin();
   useNotificationEngine(prefs);
   useMemoryIndex(!prefsLoading && !!user);
+  const unread = useUnreadMessages();
   const initial = (profile?.username ?? user?.email ?? 'S').charAt(0).toUpperCase();
 
   const desktopLinks = [...NAV_TABS.filter((t) => t.path !== '/app/capture'), ...MORE_LINKS];
@@ -182,11 +184,16 @@ const AppShell = () => {
               <Search className="h-4 w-4" />
             </Link>
             <Link
-              to="/app/reminders"
-              aria-label="Notifications"
-              className="inline-flex h-8 w-8 items-center justify-center rounded-full border-2 border-primary bg-background text-primary"
+              to="/app/messages"
+              aria-label="Message center"
+              className="relative inline-flex h-8 w-8 items-center justify-center rounded-full border-2 border-primary bg-background text-primary"
             >
               <Bell className="h-4 w-4" />
+              {unread > 0 && (
+                <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-destructive px-1 text-[9px] font-bold text-destructive-foreground">
+                  {unread > 9 ? '9+' : unread}
+                </span>
+              )}
             </Link>
             <Link
               to="/app/settings"
@@ -214,11 +221,16 @@ const AppShell = () => {
               <Search className="h-4.5 w-4.5" />
             </Link>
             <Link
-              to="/app/reminders"
-              aria-label="Notifications"
-              className="flex h-10 w-10 items-center justify-center rounded-2xl bg-secondary text-secondary-foreground transition-smooth active:scale-95"
+              to="/app/messages"
+              aria-label="Message center"
+              className="relative flex h-10 w-10 items-center justify-center rounded-2xl bg-secondary text-secondary-foreground transition-smooth active:scale-95"
             >
               <Bell className="h-4.5 w-4.5" />
+              {unread > 0 && (
+                <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-destructive px-1 text-[9px] font-bold text-destructive-foreground">
+                  {unread > 9 ? '9+' : unread}
+                </span>
+              )}
             </Link>
             <Link
               to="/app/settings"
