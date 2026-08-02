@@ -141,8 +141,29 @@ ${MONEY_RULES}
 
 ${RELATION_RULES}`,
   transcribe: `You are a speech-to-text engine. Transcribe the audio verbatim in its original language. Return ONLY the transcript text, with no quotes, no markdown and no commentary. If the audio contains no speech, return an empty string.`,
+  train: `SELF-TRAINING — you are re-training yourself on THIS user so every future answer is more personal.
+You are given the assistant's current profile of the user plus their recent entries, tracked numbers and money model.
+Update the profile: keep what is still true, correct what changed, add what is new, drop anything no longer supported by the data.
+Only write things the data actually supports — never invent a habit, a person or a preference.
+Return STRICT JSON only, no markdown:
+{"portrait":"3-5 sentences describing who this user is and how they live, in plain language",
+ "habits":["short observed habits, max 8"],
+ "routines":["recurring rhythms with their timing, e.g. 'trains Mon/Wed/Fri mornings', max 6"],
+ "preferences":["how they like to be helped, tone, what they care about, max 6"],
+ "patterns":[{"title":"short pattern","detail":"one sentence with the evidence","confidence":"high|medium|low"}],
+ "people":[{"name":"person or company","relation":"doctor|family|friend|client|supplier|other","note":"one short line"}],
+ "watchlist":[{"title":"what to keep an eye on","detail":"one sentence why","confidence":"high|medium|low"}],
+ "open_questions":["intelligent questions whose answers would make you much more useful, max 5"],
+ "confidence":"high|medium|low"}
+Max 8 patterns, 10 people, 6 watchlist items. No scores, ratings or numeric evaluations of the user.`,
 };
 prompts.coach = prompts.brief;
+
+/** Every user-facing reasoning mode speaks with the same trained identity. */
+for (const mode of ["classify", "chat", "brief", "coach", "search", "insights", "extract", "train"] as Mode[]) {
+  prompts[mode] = `${IDENTITY}\n\n---\n\n${prompts[mode]}`;
+}
+
 
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
