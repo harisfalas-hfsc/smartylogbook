@@ -1,13 +1,6 @@
 import { Wand2, Brain, Bell, MessageCircle } from 'lucide-react';
 import { Panel, SubCard, MiniRow, Divider, DesktopOnly, PageHeader, CtaCard, insights, predictions, steps, givesIn, givesBack } from '@/lib/marketing';
 
-const captureTypes = [
-  { e: '✍️', t: 'Text', s: 'A thought, a note, a number.' },
-  { e: '🎙️', t: 'Voice', s: 'Say it out loud, hands free.' },
-  { e: '📷', t: 'Photo', s: 'Receipts, labels, whiteboards.' },
-  { e: '📄', t: 'Documents', s: 'PDFs, reports, invoices.' },
-];
-
 const examples = [
   { e: '🩺', in: 'Photo of a blood test', out: 'Filed under Health, values extracted, linked to your last test, follow-up reminder set.' },
   { e: '🧾', in: 'Photo of a receipt', out: 'Amount, merchant and date extracted, filed under Finance, matched to monthly spending.' },
@@ -56,7 +49,7 @@ const HowItWorksPage = () => (
 
 
     <Panel
-      eyebrow="Step 2 — the flow"
+      eyebrow="What happens next"
       eyebrowEmoji="🔄"
       badge={Brain}
       title={<>What happens the <span className="gradient-text">moment you save.</span></>}
@@ -80,7 +73,7 @@ const HowItWorksPage = () => (
     </Panel>
 
     <Panel
-      eyebrow="Step 3 — real examples"
+      eyebrow="Real examples"
       eyebrowEmoji="🎬"
       badge={MessageCircle}
       title={<>What you give it, and <span className="gradient-text">what comes back.</span></>}
@@ -105,7 +98,7 @@ const HowItWorksPage = () => (
     </Panel>
 
     <Panel
-      eyebrow="Step 4 — it speaks first"
+      eyebrow="It speaks first"
       eyebrowEmoji="🔔"
       badge={Bell}
       title={<>It notices what <span className="gradient-text">you never would.</span></>}
