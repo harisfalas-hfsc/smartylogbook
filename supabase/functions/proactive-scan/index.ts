@@ -169,8 +169,56 @@ Deno.serve(async (req) => {
     inserted = data?.length ?? 0;
   }
 
-  console.log(`proactive-scan: ${alerts.length} candidates, ${inserted} new alerts`);
-  return new Response(JSON.stringify({ candidates: alerts.length, inserted }), {
+  /* ---- subscription renewals and cancellations ---- */
+  try {
+    const { data: subs } = await db
+      .from("subscriptions")
+      .select("user_id,plan,plan_key,status,current_period_end,cancel_at_period_end")
+      .eq("status", "active")
+      .not("current_period_end", "is", null)
+      .lte("current_period_end", addDays(7).toISOString());
+    for (const sub of subs ?? []) {
+      const end = String(sub.current_period_end).slice(0, 10);
+      alerts.push({
+        user_id: sub.user_id as string,
+        kind: "plan",
+        title: sub.cancel_at_period_end ? "Your Smarty Premium ends soon" : "Your Smarty Premium renews soon",
+        detail: sub.cancel_at_period_end
+          ? `Access to Smarty Assistant stops on ${end}. You can resume any time in My plan.`
+          : `Your plan renews on ${end} and your conversation allowance resets.`,
+        severity: "normal",
+        due_at: new Date(`${end}T09:00:00Z`).toISOString(),
+        dedupe_key: `plan:${sub.user_id}:${end}`,
+      });
+    }
+  } catch (e) {
+    console.error("subscription alerts failed", e);
+  }
+
+  /* ---- mirror everything into each user's Message Center ---- */
+  let messaged = 0;
+  if (alerts.length) {
+    const rows = alerts.map((a) => ({
+      user_id: a.user_id,
+      kind: a.kind === "plan" ? "plan" : a.kind,
+      title: a.title,
+      body: a.detail,
+      level: a.severity === "high" ? "high" : "normal",
+      related_at: a.due_at,
+      action_label: a.kind === "plan" ? "My plan" : "Open calendar",
+      action_url: a.kind === "plan" ? "/app/plan" : "/app/calendar",
+      dedupe_key: `scan:${a.dedupe_key}`,
+    }));
+    const { data, error } = await db
+      .from("messages")
+      .upsert(rows, { onConflict: "user_id,dedupe_key", ignoreDuplicates: true })
+      .select("id");
+    if (error) console.error("insert messages failed", error);
+    messaged = data?.length ?? 0;
+  }
+
+  console.log(`proactive-scan: ${alerts.length} candidates, ${inserted} new alerts, ${messaged} messages`);
+  return new Response(JSON.stringify({ candidates: alerts.length, inserted, messaged }), {
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 });

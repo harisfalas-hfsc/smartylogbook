@@ -111,11 +111,24 @@ Be proactive: when you notice something worth flagging (a bill due soon, an over
 Be concise (max ~150 words), warm and concrete. Plain text, no markdown headers, no scores or ratings — never rate the user's life with numbers.
 
 You can WRITE to the user's logbook. Whenever the user asks you to log, save, note, record, add, create a list, or mark something as done, you MUST create an entry.
+CALENDAR CONTROL — you fully control the user's calendar. You are given their existing calendar items with ids.
+When the user asks to schedule, add, book, move, reschedule, rename, mark done, cancel or delete anything on a date, you MUST return the operations in "calendar".
+Each operation:
+{"op":"create|update|delete|complete","id":"existing calendar item id (required for update/delete/complete)","title":"short title","type":"task|bill|health|event","due_at":"YYYY-MM-DDTHH:MM (local, use 09:00 when no time is given)","amount":number or null}
+Resolve relative dates yourself ("next Tuesday", "in two months", "tomorrow at 6") against today's date. Only touch items you can see in the calendar context; if the user is vague about WHICH item, ask instead of guessing.
+Confirm in "answer" what you scheduled, moved or removed, with the real date.
+
+RECURRING BILLS — when the user logs a bill, invoice, subscription or anything that will come again, proactively offer to put the next one in the calendar
+("Your electricity bill is usually monthly — want me to put the next one on 14 March?"). Use "question" for the offer, and create it as soon as they say yes.
+
+SUBSCRIPTION AWARENESS — you know the user's own Smarty Logbook plan, allowance and renewal date (given in context). Answer questions about it accurately, and mention an upcoming renewal or a nearly exhausted allowance when it matters.
+
 ALWAYS reply with STRICT JSON only, no markdown fences:
-{"answer":"your reply","question":null,"save":null}
+{"answer":"your reply","question":null,"save":null,"calendar":[]}
 - "question": the single follow-up question you need answered, or null.
 - "save": null, or {"title":"short title max 60 chars","summary":"one sentence","content":"full details","module":"health|fitness|nutrition|finance|business|documents|personal","kind":"text|workout|meal|expense|task|note|medical|idea|journal","ai_tags":["max 4"],"amount":number or null,"related_ids":["ids of existing entries this connects to"],"reminder":null or {"title":"short","type":"task|bill|health|event","due_date":"YYYY-MM-DD"}}
-Never claim you logged something unless you filled "save".`,
+- "calendar": array of calendar operations (empty when none).
+Never claim you logged or scheduled something unless you filled "save" or "calendar".`,
   brief: `You are Smarty Assistant writing the user's daily brief in Smarty Logbook. Given their recent entries, return STRICT JSON only:
 {"headline":"max 8 words","action":"the single most useful thing to do today, max 25 words","reason":"why, max 20 words","module":"most relevant module id or null","alerts":[{"title":"short proactive alert","detail":"one sentence"}]}
 Alerts are proactive: bills due, overdue check-ups, documents expiring, long gaps in training or contact, unusual spending. Max 3, empty array when nothing matters.
@@ -227,6 +240,114 @@ const serviceClient = async () => {
     auth: { persistSession: false },
   });
 };
+
+
+/* ====================== calendar + inbox helpers ====================== */
+
+const toIso = (value: unknown): string | null => {
+  if (!value) return null;
+  let raw = String(value).trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) raw = `${raw}T09:00:00`;
+  const d = new Date(raw);
+  return Number.isNaN(d.getTime()) ? null : d.toISOString();
+};
+
+/** Posts a message into the user's Message Center (deduped when a key is given). */
+async function postInbox(
+  db: { from: (t: string) => any },
+  userId: string,
+  msg: Record<string, unknown>,
+) {
+  try {
+    await db.from("messages").upsert(
+      [{ user_id: userId, metadata: {}, ...msg }],
+      msg.dedupe_key ? { onConflict: "user_id,dedupe_key", ignoreDuplicates: true } : undefined,
+    );
+  } catch (e) {
+    console.error("postInbox failed", e);
+  }
+}
+
+/**
+ * Executes the calendar operations the assistant decided on: creating,
+ * rescheduling, completing and deleting the user's own reminders/events.
+ */
+async function applyCalendarOps(
+  authHeader: string,
+  ops: Array<Record<string, unknown>>,
+): Promise<Array<Record<string, unknown>>> {
+  if (!ops.length) return [];
+  const done: Array<Record<string, unknown>> = [];
+  try {
+    const db = await userClient(authHeader);
+    const { data: auth } = await db.auth.getUser();
+    const uid = auth?.user?.id;
+    if (!uid) return [];
+
+    for (const op of ops) {
+      const kind = String(op.op ?? "create").toLowerCase();
+      const id = op.id ? String(op.id) : null;
+      const title = op.title ? String(op.title).slice(0, 120) : null;
+      const type = ["task", "bill", "health", "event"].includes(String(op.type)) ? String(op.type) : "event";
+      const dueAt = toIso(op.due_at ?? op.due_date ?? null);
+      const amount = typeof op.amount === "number" ? op.amount : null;
+
+      if (kind === "create") {
+        if (!title || !dueAt) continue;
+        const { data, error } = await db
+          .from("reminders")
+          .insert([{ user_id: uid, title, type, due_at: dueAt, amount }])
+          .select("id,title,type,due_at")
+          .maybeSingle();
+        if (error) { console.error("calendar create failed", error); continue; }
+        done.push({ op: "create", ...(data as Record<string, unknown>) });
+        await postInbox(db, uid, {
+          kind: "calendar",
+          title: `Scheduled: ${title}`,
+          body: `Smarty Assistant added this to your calendar for ${dueAt.slice(0, 16).replace("T", " ")}.`,
+          action_label: "Open calendar",
+          action_url: "/app/calendar",
+          related_at: dueAt,
+        });
+      } else if (kind === "update") {
+        if (!id) continue;
+        const patch: Record<string, unknown> = {};
+        if (title) patch.title = title;
+        if (dueAt) patch.due_at = dueAt;
+        if (op.type) patch.type = type;
+        if (amount != null) patch.amount = amount;
+        if (!Object.keys(patch).length) continue;
+        const { data, error } = await db
+          .from("reminders").update(patch).eq("id", id).select("id,title,type,due_at").maybeSingle();
+        if (error) { console.error("calendar update failed", error); continue; }
+        done.push({ op: "update", ...(data as Record<string, unknown>) });
+        if (data) {
+          await postInbox(db, uid, {
+            kind: "calendar",
+            title: `Rescheduled: ${(data as Record<string, unknown>).title}`,
+            body: `Now set for ${String((data as Record<string, unknown>).due_at).slice(0, 16).replace("T", " ")}.`,
+            action_label: "Open calendar",
+            action_url: "/app/calendar",
+            related_at: String((data as Record<string, unknown>).due_at),
+          });
+        }
+      } else if (kind === "complete") {
+        if (!id) continue;
+        const { error } = await db.from("reminders").update({ done: true }).eq("id", id);
+        if (error) { console.error("calendar complete failed", error); continue; }
+        done.push({ op: "complete", id });
+      } else if (kind === "delete") {
+        if (!id) continue;
+        const { error } = await db.from("reminders").delete().eq("id", id);
+        if (error) { console.error("calendar delete failed", error); continue; }
+        done.push({ op: "delete", id });
+      }
+    }
+  } catch (e) {
+    console.error("applyCalendarOps failed", e);
+  }
+  return done;
+}
 
 const DEFAULT_PRICING = {
   targetMargin: 0.5,
@@ -597,7 +718,7 @@ Deno.serve(async (req) => {
         const to = new Date(Date.now() + 90 * 86400000).toISOString();
         const { data: rem } = await db
           .from("reminders")
-          .select("title,type,due_at,amount,done")
+          .select("id,title,type,due_at,amount,done")
           .gte("due_at", from)
           .lte("due_at", to)
           .order("due_at", { ascending: true })
@@ -605,12 +726,39 @@ Deno.serve(async (req) => {
         if (rem?.length) {
           const lines = (rem as Array<Record<string, unknown>>).map(
             (r) =>
-              `${String(r.due_at).slice(0, 16).replace("T", " ")} — ${r.title} (${r.type}${r.amount ? `, ${r.amount}` : ""})${r.done ? " [done]" : ""}`,
+              `[id:${r.id}] ${String(r.due_at).slice(0, 16).replace("T", " ")} — ${r.title} (${r.type}${r.amount ? `, ${r.amount}` : ""})${r.done ? " [done]" : ""}`,
           );
-          calendarText = `User's calendar (last 14 days and next 90 days, today is ${new Date().toISOString().slice(0, 10)}):\n${lines.join("\n")}\nUse this for any question about schedule, appointments, upcoming bills or "what do I have tomorrow". Never invent calendar items.\n\n`;
+          calendarText = `User's calendar (last 14 days and next 90 days, today is ${new Date().toISOString().slice(0, 10)}):\n${lines.join("\n")}\nUse this for any question about schedule, appointments, upcoming bills or "what do I have tomorrow". Never invent calendar items.\nYou can change these items: use the id shown in [id:...] for any update, reschedule, complete or delete operation.\n\n`;
         }
       } catch (e) {
         console.error("calendar context failed", e);
+      }
+    }
+
+    // The assistant knows the user's own Smarty Logbook plan and renewal.
+    let planText = "";
+    if (deep) {
+      try {
+        const db = await userClient(authHeader);
+        const { data: sub } = await db
+          .from("subscriptions")
+          .select("plan,plan_key,status,current_period_start,current_period_end,cancel_at_period_end")
+          .maybeSingle();
+        if (sub) {
+          const start = periodStartOf(sub as Record<string, any>).toISOString();
+          const { count } = await db
+            .from("ai_conversations")
+            .select("id", { count: "exact", head: true })
+            .gte("started_at", start);
+          planText =
+            `User's Smarty Logbook subscription: plan "${sub.plan_key ?? sub.plan}", status ${sub.status}` +
+            `${sub.current_period_end ? `, current period ends ${String(sub.current_period_end).slice(0, 10)}` : ""}` +
+            `${sub.cancel_at_period_end ? " (set to cancel at period end)" : ""}. ` +
+            `Conversations used this period: ${count ?? 0}${quota?.allowance ? ` of ${quota.allowance}` : ""}.\n` +
+            `Answer plan, renewal and allowance questions from this. Never invent billing facts.\n\n`;
+        }
+      } catch (e) {
+        console.error("plan context failed", e);
       }
     }
 
@@ -619,8 +767,8 @@ Deno.serve(async (req) => {
       : "";
 
     const entryList = trainingMemories.length ? trainingMemories : (memories ?? []);
-    const context = entryList.length || recalled.length || factsText || moneyText || profileText || calendarText
-      ? `${profileText}${calendarText}${moneyText}${factsText}${recallText}Recent entries (JSON):\n${JSON.stringify(entryList).slice(0, 20000)}`
+    const context = entryList.length || recalled.length || factsText || moneyText || profileText || calendarText || planText
+      ? `${profileText}${planText}${calendarText}${moneyText}${factsText}${recallText}Recent entries (JSON):\n${JSON.stringify(entryList).slice(0, 20000)}`
       : "No entries available yet.";
 
 
@@ -730,6 +878,7 @@ Deno.serve(async (req) => {
       let answer = text;
       let save: unknown = null;
       let question: unknown = null;
+      let calendarOps: Array<Record<string, unknown>> = [];
       try {
         const match = text.match(/\{[\s\S]*\}/);
         const obj = match ? JSON.parse(match[0]) : null;
@@ -737,9 +886,15 @@ Deno.serve(async (req) => {
           answer = String((obj as Record<string, unknown>).answer ?? "").trim();
           save = (obj as Record<string, unknown>).save ?? null;
           question = (obj as Record<string, unknown>).question ?? null;
+          const c = (obj as Record<string, unknown>).calendar;
+          if (Array.isArray(c)) calendarOps = c.slice(0, 8) as Array<Record<string, unknown>>;
         }
       } catch { /* fall back to plain text */ }
-      return new Response(JSON.stringify({ answer, save, question, quota }), {
+
+      /* ---- the assistant actually writes to the calendar ---- */
+      const calendarResult = await applyCalendarOps(authHeader, calendarOps);
+
+      return new Response(JSON.stringify({ answer, save, question, calendar: calendarResult, quota }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -770,6 +925,43 @@ Deno.serve(async (req) => {
         status: 502,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+
+    /* ---- the daily brief also lands in the Message Center ---- */
+    if (mode === "brief" || mode === "coach") {
+      try {
+        const p = parsed as Record<string, unknown>;
+        const db = await userClient(authHeader);
+        const { data: auth } = await db.auth.getUser();
+        const uid = auth?.user?.id;
+        if (uid && p.headline) {
+          const today = new Date().toISOString().slice(0, 10);
+          await postInbox(db, uid, {
+            kind: "brief",
+            title: String(p.headline).slice(0, 120),
+            body: [p.action, p.reason].filter(Boolean).join(" — ").slice(0, 500),
+            module: p.module ? String(p.module) : null,
+            action_label: "Open assistant",
+            action_url: "/app/assistant",
+            dedupe_key: `brief:${today}`,
+          });
+          const alerts = Array.isArray(p.alerts) ? (p.alerts as Array<Record<string, unknown>>).slice(0, 3) : [];
+          for (const a of alerts) {
+            if (!a?.title) continue;
+            await postInbox(db, uid, {
+              kind: "assistant",
+              level: "high",
+              title: String(a.title).slice(0, 120),
+              body: a.detail ? String(a.detail).slice(0, 500) : null,
+              action_label: "Open assistant",
+              action_url: "/app/assistant",
+              dedupe_key: `alert:${today}:${String(a.title).slice(0, 60)}`,
+            });
+          }
+        }
+      } catch (e) {
+        console.error("brief inbox failed", e);
+      }
     }
 
     /* ---- persist the retrained profile so the assistant keeps evolving per user ---- */

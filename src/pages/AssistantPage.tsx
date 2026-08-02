@@ -215,6 +215,19 @@ const AssistantPage = () => {
         if (saveError) toast.error('Could not save that to your timeline');
         else { toast.success('Saved to your timeline'); void reload(); }
       }
+      const calendarOps = Array.isArray(data?.calendar) ? data.calendar : [];
+      if (calendarOps.length) {
+        const created = calendarOps.filter((o: { op?: string }) => o.op === 'create').length;
+        const changed = calendarOps.filter((o: { op?: string }) => o.op === 'update').length;
+        const removed = calendarOps.filter((o: { op?: string }) => o.op === 'delete' || o.op === 'complete').length;
+        const parts = [
+          created ? `${created} added` : '',
+          changed ? `${changed} rescheduled` : '',
+          removed ? `${removed} cleared` : '',
+        ].filter(Boolean);
+        toast.success(`Calendar updated — ${parts.join(', ')}`);
+      }
+
       const question2 = typeof data?.question === 'string' ? data.question.trim() : '';
       const answer = String(data?.answer ?? '').trim();
       const content = question2 && !answer.includes(question2)
@@ -234,7 +247,7 @@ const AssistantPage = () => {
     { q: 'When was my last blood test?', icon: Stethoscope, color: 'text-mod-health', tint: 'bg-mod-health/10' },
     { q: 'Read this report and explain it', icon: FileText, color: 'text-mod-documents', tint: 'bg-mod-documents/10' },
     { q: 'How much did I spend on groceries last month?', icon: Wallet, color: 'text-mod-finance', tint: 'bg-mod-finance/10' },
-    { q: 'What do I need to deal with this week?', icon: CalendarClock, color: 'text-mod-business', tint: 'bg-mod-business/10' },
+    { q: 'Schedule my dentist next Tuesday at 10:00', icon: CalendarClock, color: 'text-mod-business', tint: 'bg-mod-business/10' },
   ];
 
   return (
