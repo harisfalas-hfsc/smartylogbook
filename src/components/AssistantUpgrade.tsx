@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Brain, CheckCircle2, FileSearch, HeartPulse, LineChart, Scale, Sparkles, Wallet,
+  Brain, CalendarClock, CheckCircle2, FileSearch, HeartPulse, LineChart, Loader2, RotateCw, Scale, Sparkles, Wallet,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { PlanConfig, PricingConfig, planAllowance } from '@/lib/pricing';
 import { cn } from '@/lib/utils';
 
@@ -19,7 +21,76 @@ interface Props {
   /** true when the plan is active but the monthly allowance is spent */
   exhausted?: boolean;
   compact?: boolean;
+  allowance?: number;
+  renewsAt?: string | null;
+  onRenew?: () => Promise<{ error: string | null }>;
 }
+
+const fmtDay = (d?: string | null) =>
+  d ? new Date(d).toLocaleDateString(undefined, { day: '2-digit', month: 'long', year: 'numeric' }) : null;
+
+/** Shown when the plan is active but the month's conversations are used up. */
+const OutOfConversations = ({ pricing, allowance, renewsAt, onRenew }: Props) => {
+  const [busy, setBusy] = useState(false);
+  const plan = pricing.plans[0];
+  const resets = fmtDay(renewsAt);
+
+  const renew = async () => {
+    if (!onRenew) return;
+    setBusy(true);
+    const { error } = await onRenew();
+    setBusy(false);
+    if (error) toast.error(error);
+    else toast.success('Renewed — your conversations are available again.');
+  };
+
+  return (
+    <div className="smarty-card overflow-hidden p-0">
+      <div className="bg-gradient-primary px-5 py-6 text-primary-foreground">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-[10px] font-bold uppercase tracking-wider">
+          <Sparkles className="h-3 w-3" /> Allowance used
+        </span>
+        <h2 className="mt-3 text-xl font-extrabold tracking-tight">
+          Your AI Conversations for this month are used up
+        </h2>
+        <p className="mt-1.5 max-w-md text-[13px] leading-relaxed opacity-90">
+          You have used all {allowance ?? planAllowance(pricing, plan)} conversations included in{' '}
+          {plan?.name ?? 'your plan'}. Your logbook keeps working exactly as before — capture, search, filter and
+          organise stay free and unlimited.
+        </p>
+      </div>
+      <div className="space-y-3 p-4">
+        <div className="flex items-start gap-3 rounded-2xl border border-border bg-card p-3">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-sky-500/10 text-sky-500">
+            <CalendarClock className="h-4 w-4" />
+          </span>
+          <p className="text-[12px] leading-relaxed text-muted-foreground">
+            {resets
+              ? <>Wait for your renewal on <span className="font-bold text-foreground">{resets}</span> — your conversations reset automatically.</>
+              : <>Your conversations reset automatically at your next renewal.</>}
+          </p>
+        </div>
+        <div className="flex items-start gap-3 rounded-2xl border border-primary/30 bg-primary/5 p-3">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <RotateCw className="h-4 w-4" />
+          </span>
+          <p className="text-[12px] leading-relaxed text-muted-foreground">
+            Need them now? Renew immediately for €{(plan?.price ?? 9.99).toFixed(2)} — your billing cycle restarts
+            today and you get a full new month of conversations from today.
+          </p>
+        </div>
+        <button
+          onClick={renew}
+          disabled={busy || !onRenew}
+          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-primary px-4 py-3 text-sm font-bold text-primary-foreground shadow-glow transition-smooth active:scale-95 disabled:opacity-60"
+        >
+          {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <RotateCw className="h-4 w-4" />}
+          Renew now for €{(plan?.price ?? 9.99).toFixed(2)}
+        </button>
+      </div>
+    </div>
+  );
+};
 
 export const PlanCard = ({ pricing, plan }: { pricing: PricingConfig; plan: PlanConfig }) => {
   const allowance = planAllowance(pricing, plan);
@@ -60,23 +131,24 @@ export const PlanCard = ({ pricing, plan }: { pricing: PricingConfig; plan: Plan
             : 'border border-border bg-card text-foreground',
         )}
       >
-        Choose {plan.name.replace('Smarty ', '')}
+        Get {plan.name.replace('Smarty ', '')}
       </Link>
     </div>
   );
 };
 
 /** Premium upgrade screen shown when the Assistant is locked. */
-const AssistantUpgrade = ({ pricing, exhausted, compact }: Props) => (
+const AssistantUpgrade = (props: Props) => {
+  const { pricing, exhausted, compact } = props;
+  if (exhausted) return <OutOfConversations {...props} />;
+  return (
   <div className="space-y-5">
     <div className="smarty-card overflow-hidden p-0">
       <div className="bg-gradient-primary px-5 py-6 text-primary-foreground">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-[10px] font-bold uppercase tracking-wider">
           <Sparkles className="h-3 w-3" /> Premium intelligence
         </span>
-        <h2 className="mt-3 text-xl font-extrabold tracking-tight">
-          {exhausted ? 'You have used this month’s AI Conversations' : 'Unlock Smarty Assistant'}
-        </h2>
+        <h2 className="mt-3 text-xl font-extrabold tracking-tight">Unlock Smarty Assistant</h2>
         <p className="mt-1.5 max-w-md text-[13px] leading-relaxed opacity-90">
           Your logbook stays free forever. Smarty Assistant turns everything you have stored into reasoning,
           predictions and recommendations that are only about you.
@@ -95,7 +167,7 @@ const AssistantUpgrade = ({ pricing, exhausted, compact }: Props) => (
     </div>
 
     {!compact && (
-      <div className="grid gap-3 md:grid-cols-3">
+      <div className="mx-auto grid max-w-sm gap-3">
         {pricing.plans.map((p) => (
           <PlanCard key={p.key} pricing={pricing} plan={p} />
         ))}
@@ -111,6 +183,7 @@ const AssistantUpgrade = ({ pricing, exhausted, compact }: Props) => (
       </Link>
     )}
   </div>
-);
+  );
+};
 
 export default AssistantUpgrade;
