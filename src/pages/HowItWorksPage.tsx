@@ -1,5 +1,5 @@
 import { Wand2, Brain, Bell, MessageCircle } from 'lucide-react';
-import { Panel, SubCard, MiniRow, Divider, DesktopOnly, PageHeader, CtaCard, insights, predictions, steps } from '@/lib/marketing';
+import { Panel, SubCard, MiniRow, Divider, DesktopOnly, PageHeader, CtaCard, insights, predictions, steps, givesIn, givesBack } from '@/lib/marketing';
 
 const captureTypes = [
   { e: '✍️', t: 'Text', s: 'A thought, a note, a number.' },
