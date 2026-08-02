@@ -19,7 +19,7 @@ const when = (iso: string) => {
 const MessagesPage = () => {
   const { user } = useAuth();
   const { messages, loading, unread, markRead, markAllRead, archive, reload } = useMessages();
-  const { canUseAssistant, plan, renewsAt } = useSubscription();
+  const { canUseAssistant, plan, renewsAt, isAdmin, loading: planLoading } = useSubscription();
 
   /* First visit: greet the user so the inbox is never empty. */
   useEffect(() => {
