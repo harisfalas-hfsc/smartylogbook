@@ -244,7 +244,7 @@ const MemoryDetailSheet = ({
 
           {onDelete && (
             <button
-              onClick={() => { onDelete(memory.id); onOpenChange(false); toast.success('Record deleted'); }}
+              onClick={() => { onDelete(memory.id); onOpenChange(false); toast.success('Moved to Trash — restore it within 30 days in Settings › Trash'); }}
               className="inline-flex items-center gap-2 rounded-2xl border border-destructive/30 px-4 py-2 text-xs font-semibold text-destructive transition-smooth active:scale-95"
             >
               <Trash2 className="h-3.5 w-3.5" /> Delete record
