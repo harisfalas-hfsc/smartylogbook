@@ -1,8 +1,8 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Camera, Loader2, Mic, Plus, Sparkles, Wallet, Dumbbell, Activity } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useMemories, timeOf } from '@/lib/memories';
+import { useMemories, timeOf, Memory } from '@/lib/memories';
 import DailyBriefCard from '@/components/DailyBriefCard';
 import ProactiveAlerts from '@/components/ProactiveAlerts';
 import { usePreferences } from '@/lib/preferences';
