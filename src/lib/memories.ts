@@ -20,6 +20,7 @@ export interface Memory {
   metadata: Record<string, unknown>;
   related_ids: string[];
   relation_note: string | null;
+  deleted_at?: string | null;
   occurred_at: string;
   created_at: string;
   updated_at: string;
@@ -42,6 +43,7 @@ export const useMemories = (options?: { module?: string; limit?: number }) => {
     let query = supabase
       .from('memories')
       .select('*')
+      .is('deleted_at', null)
       .order('occurred_at', { ascending: false });
     if (options?.module) query = query.eq('module', options.module);
     if (options?.limit) query = query.limit(options.limit);
@@ -121,8 +123,12 @@ export const useMemories = (options?: { module?: string; limit?: number }) => {
     return { error: null };
   };
 
+  /** Soft delete: the record moves to Trash for 30 days and is hidden from the assistant. */
   const remove = async (id: string) => {
-    const { error } = await supabase.from('memories').delete().eq('id', id);
+    const { error } = await supabase
+      .from('memories')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('id', id);
     if (!error) setMemories((prev) => prev.filter((m) => m.id !== id));
     return { error };
   };
@@ -149,3 +155,56 @@ export const groupByDay = (memories: Memory[]) => {
 
 export const timeOf = (iso: string) =>
   new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+export const TRASH_RETENTION_DAYS = 30;
+
+export const daysLeftInTrash = (deletedAt: string) => {
+  const gone = new Date(deletedAt).getTime() + TRASH_RETENTION_DAYS * 86400000;
+  return Math.max(0, Math.ceil((gone - Date.now()) / 86400000));
+};
+
+/** Trash bin: soft-deleted records, kept 30 days then removed for good. */
+export const useTrash = () => {
+  const { user } = useAuth();
+  const [items, setItems] = useState<Memory[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    if (!user) { setItems([]); setLoading(false); return; }
+    setLoading(true);
+    const { data } = await supabase
+      .from('memories')
+      .select('*')
+      .not('deleted_at', 'is', null)
+      .order('deleted_at', { ascending: false });
+    setItems((data ?? []) as unknown as Memory[]);
+    setLoading(false);
+  }, [user]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const restore = async (id: string) => {
+    const { error } = await supabase.from('memories').update({ deleted_at: null }).eq('id', id);
+    if (!error) {
+      setItems((prev) => prev.filter((m) => m.id !== id));
+      void indexMemories([id]);
+    }
+    return { error };
+  };
+
+  const deleteForever = async (id: string) => {
+    const { error } = await supabase.from('memories').delete().eq('id', id);
+    if (!error) setItems((prev) => prev.filter((m) => m.id !== id));
+    return { error };
+  };
+
+  const emptyTrash = async () => {
+    const ids = items.map((m) => m.id);
+    if (!ids.length) return { error: null };
+    const { error } = await supabase.from('memories').delete().in('id', ids);
+    if (!error) setItems([]);
+    return { error };
+  };
+
+  return { items, loading, reload: load, restore, deleteForever, emptyTrash };
+};

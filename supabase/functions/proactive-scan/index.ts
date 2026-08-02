@@ -120,6 +120,7 @@ Deno.serve(async (req) => {
   const { data: expiring } = await db
     .from("memories")
     .select("id,user_id,title,metadata")
+    .is("deleted_at", null)
     .not("metadata", "is", null)
     .order("created_at", { ascending: false })
     .limit(1000);
