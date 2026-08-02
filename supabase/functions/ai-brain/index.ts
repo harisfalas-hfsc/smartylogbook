@@ -927,6 +927,43 @@ Deno.serve(async (req) => {
       });
     }
 
+    /* ---- the daily brief also lands in the Message Center ---- */
+    if (mode === "brief" || mode === "coach") {
+      try {
+        const p = parsed as Record<string, unknown>;
+        const db = await userClient(authHeader);
+        const { data: auth } = await db.auth.getUser();
+        const uid = auth?.user?.id;
+        if (uid && p.headline) {
+          const today = new Date().toISOString().slice(0, 10);
+          await postInbox(db, uid, {
+            kind: "brief",
+            title: String(p.headline).slice(0, 120),
+            body: [p.action, p.reason].filter(Boolean).join(" — ").slice(0, 500),
+            module: p.module ? String(p.module) : null,
+            action_label: "Open assistant",
+            action_url: "/app/assistant",
+            dedupe_key: `brief:${today}`,
+          });
+          const alerts = Array.isArray(p.alerts) ? (p.alerts as Array<Record<string, unknown>>).slice(0, 3) : [];
+          for (const a of alerts) {
+            if (!a?.title) continue;
+            await postInbox(db, uid, {
+              kind: "assistant",
+              level: "high",
+              title: String(a.title).slice(0, 120),
+              body: a.detail ? String(a.detail).slice(0, 500) : null,
+              action_label: "Open assistant",
+              action_url: "/app/assistant",
+              dedupe_key: `alert:${today}:${String(a.title).slice(0, 60)}`,
+            });
+          }
+        }
+      } catch (e) {
+        console.error("brief inbox failed", e);
+      }
+    }
+
     /* ---- persist the retrained profile so the assistant keeps evolving per user ---- */
     if (mode === "train") {
       const p = parsed as Record<string, unknown>;
