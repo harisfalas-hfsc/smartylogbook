@@ -48,9 +48,14 @@ export const DEFAULT_PRICING: PricingConfig = {
   conversationWindowMinutes: 45,
   roundTo: 10,
   plans: [
-    { key: 'insight', name: 'Smarty Insight', price: 6.99, tagline: 'Intelligence when you need it.' },
-    { key: 'intelligence', name: 'Smarty Intelligence', price: 9.99, tagline: 'Your everyday thinking partner.', featured: true },
-    { key: 'genius', name: 'Smarty Genius', price: 12.99, tagline: 'Unlimited-feeling depth.' },
+    {
+      key: 'premium',
+      name: 'Smarty Premium',
+      price: 9.99,
+      tagline: 'Your everyday thinking partner — about 10 conversations a day.',
+      featured: true,
+      allowanceOverride: 300,
+    },
   ],
 };
 
