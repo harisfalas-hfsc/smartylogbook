@@ -241,6 +241,114 @@ const serviceClient = async () => {
   });
 };
 
+
+/* ====================== calendar + inbox helpers ====================== */
+
+const toIso = (value: unknown): string | null => {
+  if (!value) return null;
+  let raw = String(value).trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) raw = `${raw}T09:00:00`;
+  const d = new Date(raw);
+  return Number.isNaN(d.getTime()) ? null : d.toISOString();
+};
+
+/** Posts a message into the user's Message Center (deduped when a key is given). */
+async function postInbox(
+  db: { from: (t: string) => any },
+  userId: string,
+  msg: Record<string, unknown>,
+) {
+  try {
+    await db.from("messages").upsert(
+      [{ user_id: userId, metadata: {}, ...msg }],
+      msg.dedupe_key ? { onConflict: "user_id,dedupe_key", ignoreDuplicates: true } : undefined,
+    );
+  } catch (e) {
+    console.error("postInbox failed", e);
+  }
+}
+
+/**
+ * Executes the calendar operations the assistant decided on: creating,
+ * rescheduling, completing and deleting the user's own reminders/events.
+ */
+async function applyCalendarOps(
+  authHeader: string,
+  ops: Array<Record<string, unknown>>,
+): Promise<Array<Record<string, unknown>>> {
+  if (!ops.length) return [];
+  const done: Array<Record<string, unknown>> = [];
+  try {
+    const db = await userClient(authHeader);
+    const { data: auth } = await db.auth.getUser();
+    const uid = auth?.user?.id;
+    if (!uid) return [];
+
+    for (const op of ops) {
+      const kind = String(op.op ?? "create").toLowerCase();
+      const id = op.id ? String(op.id) : null;
+      const title = op.title ? String(op.title).slice(0, 120) : null;
+      const type = ["task", "bill", "health", "event"].includes(String(op.type)) ? String(op.type) : "event";
+      const dueAt = toIso(op.due_at ?? op.due_date ?? null);
+      const amount = typeof op.amount === "number" ? op.amount : null;
+
+      if (kind === "create") {
+        if (!title || !dueAt) continue;
+        const { data, error } = await db
+          .from("reminders")
+          .insert([{ user_id: uid, title, type, due_at: dueAt, amount }])
+          .select("id,title,type,due_at")
+          .maybeSingle();
+        if (error) { console.error("calendar create failed", error); continue; }
+        done.push({ op: "create", ...(data as Record<string, unknown>) });
+        await postInbox(db, uid, {
+          kind: "calendar",
+          title: `Scheduled: ${title}`,
+          body: `Smarty Assistant added this to your calendar for ${dueAt.slice(0, 16).replace("T", " ")}.`,
+          action_label: "Open calendar",
+          action_url: "/app/calendar",
+          related_at: dueAt,
+        });
+      } else if (kind === "update") {
+        if (!id) continue;
+        const patch: Record<string, unknown> = {};
+        if (title) patch.title = title;
+        if (dueAt) patch.due_at = dueAt;
+        if (op.type) patch.type = type;
+        if (amount != null) patch.amount = amount;
+        if (!Object.keys(patch).length) continue;
+        const { data, error } = await db
+          .from("reminders").update(patch).eq("id", id).select("id,title,type,due_at").maybeSingle();
+        if (error) { console.error("calendar update failed", error); continue; }
+        done.push({ op: "update", ...(data as Record<string, unknown>) });
+        if (data) {
+          await postInbox(db, uid, {
+            kind: "calendar",
+            title: `Rescheduled: ${(data as Record<string, unknown>).title}`,
+            body: `Now set for ${String((data as Record<string, unknown>).due_at).slice(0, 16).replace("T", " ")}.`,
+            action_label: "Open calendar",
+            action_url: "/app/calendar",
+            related_at: String((data as Record<string, unknown>).due_at),
+          });
+        }
+      } else if (kind === "complete") {
+        if (!id) continue;
+        const { error } = await db.from("reminders").update({ done: true }).eq("id", id);
+        if (error) { console.error("calendar complete failed", error); continue; }
+        done.push({ op: "complete", id });
+      } else if (kind === "delete") {
+        if (!id) continue;
+        const { error } = await db.from("reminders").delete().eq("id", id);
+        if (error) { console.error("calendar delete failed", error); continue; }
+        done.push({ op: "delete", id });
+      }
+    }
+  } catch (e) {
+    console.error("applyCalendarOps failed", e);
+  }
+  return done;
+}
+
 const DEFAULT_PRICING = {
   targetMargin: 0.5,
   usdToEur: 0.92,
@@ -770,6 +878,7 @@ Deno.serve(async (req) => {
       let answer = text;
       let save: unknown = null;
       let question: unknown = null;
+      let calendarOps: Array<Record<string, unknown>> = [];
       try {
         const match = text.match(/\{[\s\S]*\}/);
         const obj = match ? JSON.parse(match[0]) : null;
@@ -777,9 +886,15 @@ Deno.serve(async (req) => {
           answer = String((obj as Record<string, unknown>).answer ?? "").trim();
           save = (obj as Record<string, unknown>).save ?? null;
           question = (obj as Record<string, unknown>).question ?? null;
+          const c = (obj as Record<string, unknown>).calendar;
+          if (Array.isArray(c)) calendarOps = c.slice(0, 8) as Array<Record<string, unknown>>;
         }
       } catch { /* fall back to plain text */ }
-      return new Response(JSON.stringify({ answer, save, question, quota }), {
+
+      /* ---- the assistant actually writes to the calendar ---- */
+      const calendarResult = await applyCalendarOps(authHeader, calendarOps);
+
+      return new Response(JSON.stringify({ answer, save, question, calendar: calendarResult, quota }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
