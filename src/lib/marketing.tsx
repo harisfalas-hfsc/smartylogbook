@@ -13,7 +13,7 @@ export const problems = [
 
 export const steps = [
   { icon: Camera, emoji: '📥', title: 'Capture', text: 'Type it, say it, or snap it. Text, voice, photo, receipt, PDF — one tap, no forms.' },
-  { icon: Wand2, emoji: '🧠', title: 'Understand', text: 'The Smarty Assistant reads it, extracts dates, amounts and details, and classifies it. You never pick a category.' },
+  { icon: Wand2, emoji: '🧠', title: 'Understand', text: 'The Smarty Assistant reads it, extracts dates, amounts and details, and files it where it belongs.' },
   { icon: Link2, emoji: '🔗', title: 'Connect', text: 'It links the new entry to what already exists — a scan to an old injury, a receipt to a recurring bill.' },
   { icon: Bell, emoji: '⏰', title: 'Remind', text: 'Follow-ups, renewals, appointments and important dates are scheduled automatically.' },
   { icon: MessageCircle, emoji: '💬', title: 'Ask', text: 'Ask anything in plain language. The Assistant searches your whole logbook and answers.' },
@@ -29,11 +29,27 @@ export const features = [
   { icon: Clock, emoji: '🕰️', title: 'Universal timeline', text: 'One chronological feed, filtered by day, week, month or year.' },
   { icon: Search, emoji: '🔍', title: 'Ask anything', text: '"What did the doctor say in March?" Plain-language search.' },
   { icon: MessageCircle, emoji: '🤖', title: 'Smarty Assistant', text: 'A real assistant that answers, asks follow-ups and never guesses.' },
-  { icon: Brain, emoji: '💡', title: 'Pattern insights', text: 'Plain-language observations. No scores, no charts to decode.' },
+  { icon: Brain, emoji: '💡', title: 'Pattern insights', text: 'Plain-language observations written like a person would say them.' },
   { icon: Bell, emoji: '🔔', title: 'Proactive reminders', text: 'Bills, check-ups, birthdays and overdue tests surface on time.' },
   { icon: Layers, emoji: '🗂️', title: 'Life modules', text: 'Health, fitness, nutrition, finance, business, documents, personal.' },
   { icon: Shield, emoji: '🔒', title: 'Privacy first', text: 'Encrypted storage, your data, export or delete any time.' },
 ];
+
+/* The whole product in two columns: what you put in, what comes back. */
+export const givesIn = [
+  { e: '⌨️', t: 'Type it', s: 'A thought, a number, a note.' },
+  { e: '🎙️', t: 'Say it', s: 'Speak, it gets written down.' },
+  { e: '📷', t: 'Snap it', s: 'A receipt, a label, a screen.' },
+  { e: '📎', t: 'Upload it', s: 'PDFs, reports, invoices.' },
+];
+
+export const givesBack = [
+  { e: '🧠', t: 'Understands', s: 'Reads it and pulls out the details.' },
+  { e: '🔗', t: 'Relates', s: 'Attaches it to what already exists.' },
+  { e: '📌', t: 'Remembers', s: 'Kept for as long as you want it.' },
+  { e: '🔎', t: 'Finds it', s: 'Ask in plain words, get the answer.' },
+];
+
 
 export const insights = [
   'You sleep better on days you train before 6pm.',

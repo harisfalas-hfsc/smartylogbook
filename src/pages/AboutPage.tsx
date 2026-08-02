@@ -3,9 +3,9 @@ import { Panel, SubCard, MiniRow, Divider, DesktopOnly, PageHeader, CtaCard, Bra
 import { MODULES } from '@/lib/constants';
 
 const pillars = [
-  { e: '📥', t: 'Capture anything', s: 'Text, voice, a receipt photo, a lab report, a screenshot.' },
-  { e: '🧠', t: 'It classifies it', s: 'You never pick a category. The Assistant reads and files it.' },
-  { e: '🔗', t: 'It connects it', s: 'A scan links to an old injury. A receipt to a monthly bill.' },
+  { e: '📥', t: 'Put anything in', s: 'Type it, say it, snap it, upload it.' },
+  { e: '🧠', t: 'It understands', s: 'Reads it and pulls out the details itself.' },
+  { e: '🔗', t: 'It relates', s: 'A scan links to an old injury. A receipt to a monthly bill.' },
   { e: '💬', t: 'Ask in plain words', s: '"What did the doctor say in March?" It answers.' },
 ];
 
@@ -26,9 +26,9 @@ const assistantPowers = [
 ];
 
 const promises = [
-  { e: '📂', t: 'No folders', s: 'Nothing to file. Nothing to name.' },
-  { e: '🏷️', t: 'No tags', s: 'The Assistant writes them for you.' },
-  { e: '🔢', t: 'No scores', s: 'Plain language, never numbers to decode.' },
+  { e: '📂', t: 'No filing', s: 'It lands in the right place on its own — and you can move it if you disagree.' },
+  { e: '🏷️', t: 'No busywork', s: 'Tags, dates and amounts are written for you.' },
+  { e: '🗣️', t: 'Plain language', s: 'Summaries you can read, not numbers to decode.' },
 ];
 
 const privacy = [
@@ -41,16 +41,16 @@ const AboutPage = () => (
   <div className="mx-auto max-w-6xl px-3 py-7 sm:px-5 sm:py-10">
     <PageHeader
       eyebrow="About"
-      title="The Smarty Logbook that remembers your life better than you do."
-      subtitle="One place where everything that happens to you is captured, understood and connected — by an AI that does all the organising."
+      title="Smarty Logbook — a logbook with a brain."
+      subtitle="Put anything in: type it, say it, snap it, upload it. It understands it, relates it to the rest of your life, keeps it and finds it the moment you ask."
     />
 
     <Panel
       eyebrow="Our mission"
       eyebrowEmoji="🌱"
       badge={Sparkles}
-      title={<>Your life, <span className="gradient-text">remembered.</span></>}
-      lead="Smarty Logbook takes the work of organising, filing and remembering off your hands. You throw things in; the Smarty Assistant makes sense of them."
+      title={<>A logbook <span className="gradient-text">with a brain.</span></>}
+      lead="Smarty Logbook takes the work of organising, filing and remembering off your hands. You put things in; the Smarty Assistant makes sense of them."
     >
       <div className="grid gap-3 lg:grid-cols-2">
         <SubCard label="How it feels" labelEmoji="✨">
@@ -98,8 +98,8 @@ const AboutPage = () => (
       eyebrow="Everything it does"
       eyebrowEmoji="⚡"
       badge={Layers}
-      title={<>Twelve things you <span className="gradient-text">never do again.</span></>}
-      lead="No setup, no maintenance, no organising — the whole feature set works in the background."
+      title={<>Everything it does <span className="gradient-text">for you.</span></>}
+      lead="No setup, no maintenance, no organising — it all works in the background while you get on with your day."
     >
       <div className="grid gap-3 lg:grid-cols-2">
         <SubCard label="Capture & understand" labelEmoji="📥">
@@ -126,8 +126,8 @@ const AboutPage = () => (
       eyebrow="Life modules"
       eyebrowEmoji="🗂️"
       badge={Layers}
-      title={<>You never choose <span className="gradient-text">where it goes.</span></>}
-      lead="Every memory lands in the right module automatically. These are the areas your life gets filed into."
+      title={<>It files it — <span className="gradient-text">you stay in control.</span></>}
+      lead="Every entry lands in the right area on its own. If you prefer, you can open a module yourself and put something exactly where you want it."
     >
       <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
         {MODULES.map((m) => (
@@ -159,7 +159,7 @@ const AboutPage = () => (
       lead="Free to start. Premium unlocks the Smarty Assistant for €9.99 per month."
     >
       <div className="grid gap-3 lg:grid-cols-2">
-        <SubCard label="What you never deal with" labelEmoji="🚫">
+        <SubCard label="What it takes off your hands" labelEmoji="🙌">
           <div className="grid gap-2">
             {promises.map((p) => (
               <MiniRow key={p.t} emoji={p.e} title={p.t} text={p.s} />

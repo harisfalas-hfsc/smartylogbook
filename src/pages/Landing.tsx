@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, Brain, Clock, Sparkles } from 'lucide-react';
+import { MiniRow, givesIn, givesBack } from '@/lib/marketing';
 
 const highlights = [
   { icon: Sparkles, t: 'Capture in 3 seconds', s: 'Voice, photo or text. No folders, no tags.' },
@@ -18,11 +19,11 @@ const Landing = () => {
             <Sparkles className="h-3.5 w-3.5 text-primary" /> Powered by the Smarty Assistant
           </span>
           <h1 className="mx-auto mt-5 animate-fade-up text-[30px] font-extrabold leading-[1.1] tracking-tight text-foreground md:text-5xl">
-            The <span className="gradient-text">Smarty Logbook</span> that remembers{' '}
-            <span className="gradient-text">your life</span> better than you do.
+            <span className="gradient-text">Smarty Logbook</span> — a logbook{' '}
+            <span className="gradient-text">with a brain.</span>
           </h1>
           <p className="mx-auto mt-4 max-w-md animate-fade-up text-sm leading-relaxed text-muted-foreground md:text-base">
-            Capture anything. It organises, understands and connects the rest.
+            Put anything in. It understands it, connects it, keeps it and finds it when you need it.
           </p>
           <div className="mt-7 flex animate-fade-up flex-col items-center gap-2.5">
             <Link
@@ -57,6 +58,29 @@ const Landing = () => {
           ))}
         </div>
       </section>
+
+      {/* You put in → it gives back */}
+      <section className="mx-auto w-full max-w-5xl px-5 md:px-8 pb-14">
+        <div className="grid gap-2.5 md:grid-cols-2">
+          {[
+            { label: 'You put in', emoji: '📥', items: givesIn },
+            { label: 'It gives back', emoji: '✨', items: givesBack },
+          ].map((col) => (
+            <div key={col.label} className="smarty-card p-4">
+              <div className="mb-3 flex items-center gap-2">
+                <span className="text-sm leading-none">{col.emoji}</span>
+                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary">{col.label}</p>
+              </div>
+              <div className="grid gap-2">
+                {col.items.map((i) => (
+                  <MiniRow key={i.t} emoji={i.e} title={i.t} text={i.s} />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
 
     </div>
   );
