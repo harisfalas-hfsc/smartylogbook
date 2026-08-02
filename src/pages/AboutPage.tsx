@@ -41,8 +41,8 @@ const AboutPage = () => (
   <div className="mx-auto max-w-6xl px-3 py-7 sm:px-5 sm:py-10">
     <PageHeader
       eyebrow="About"
-      title="The Smarty Logbook that remembers your life better than you do."
-      subtitle="One place where everything that happens to you is captured, understood and connected — by an AI that does all the organising."
+      title="Smarty Logbook — a logbook with a brain."
+      subtitle="Put anything in: type it, say it, snap it, upload it. It understands it, relates it to the rest of your life, keeps it and finds it the moment you ask."
     />
 
     <Panel
