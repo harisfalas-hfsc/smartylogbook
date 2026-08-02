@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIsAdmin } from '@/lib/admin';
 import { PlanConfig, PricingConfig, planAllowance, usePricing } from '@/lib/pricing';
 
 export interface SubscriptionRow {
@@ -39,6 +40,7 @@ export const findPlan = (pricing: PricingConfig, key?: string | null): PlanConfi
 
 export const useSubscription = () => {
   const { user } = useAuth();
+  const { isAdmin, loading: adminLoading } = useIsAdmin();
   const { pricing, loading: pricingLoading } = usePricing();
   const [sub, setSub] = useState<SubscriptionRow | null>(null);
   const [used, setUsed] = useState(0);
@@ -71,10 +73,11 @@ export const useSubscription = () => {
 
   useEffect(() => { void load(); }, [load]);
 
-  const active = isActive(sub);
+  /* Administrators always have full Premium access — never show them upsells. */
+  const active = isAdmin || isActive(sub);
   const plan = active ? findPlan(pricing, sub?.plan_key) : null;
   const allowance = active && plan ? planAllowance(pricing, plan) : 0;
-  const remaining = Math.max(0, allowance - used);
+  const remaining = isAdmin ? Math.max(allowance, 1) : Math.max(0, allowance - used);
 
   /**
    * Immediate renewal / top-up: the user pays for another month right away and
@@ -99,11 +102,12 @@ export const useSubscription = () => {
   };
 
   return {
-    loading: loading || pricingLoading,
+    loading: loading || pricingLoading || adminLoading,
     pricing,
     subscription: sub,
     plan,
     active,
+    isAdmin,
     allowance,
     used,
     remaining,

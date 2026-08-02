@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import {
-  BadgeCheck, CreditCard, Crown, Loader2, RefreshCw, Save, Search, ShieldCheck, SlidersHorizontal, TrendingUp, Users, XCircle,
+  BadgeCheck, CreditCard, Crown, Loader2, RefreshCw, Save, Search, ShieldCheck, SlidersHorizontal, TrendingUp, UserPlus, Users, XCircle,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -57,7 +57,8 @@ const AdminPage = () => {
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pricing, setPricing] = useState<PricingConfig>(DEFAULT_PRICING);
-  const [grantPlan, setGrantPlan] = useState<string>('intelligence');
+  const [grantPlan, setGrantPlan] = useState<string>(DEFAULT_PRICING.plans[0]?.key ?? 'premium');
+  const [newUser, setNewUser] = useState({ email: '', password: '', username: '', months: 0 });
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -73,11 +74,9 @@ const AdminPage = () => {
       setUsers(u.users ?? []);
       setPayments(p.payments ?? []);
       const cfg = c.config ?? {};
-      setPricing({
-        ...DEFAULT_PRICING,
-        ...cfg,
-        plans: Array.isArray(cfg.plans) && cfg.plans.length ? cfg.plans : DEFAULT_PRICING.plans,
-      });
+      const plans = Array.isArray(cfg.plans) && cfg.plans.length ? cfg.plans : DEFAULT_PRICING.plans;
+      setPricing({ ...DEFAULT_PRICING, ...cfg, plans });
+      setGrantPlan((prev) => (plans.some((p) => p.key === prev) ? prev : plans[0]?.key ?? 'premium'));
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load admin data');
     } finally {
@@ -136,7 +135,10 @@ const AdminPage = () => {
         <span>Renews {fmtDate(u.current_period_end)}</span>
         <span>{u.memories} entries · {euro(u.total_spend)}</span>
       </div>
-      <div className="mt-3 flex flex-wrap items-center gap-2">
+      <p className="mt-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+        Grant access — pick a plan, then how many months
+      </p>
+      <div className="mt-2 flex flex-wrap items-center gap-2">
         <select
           value={grantPlan}
           onChange={(e) => setGrantPlan(e.target.value)}
@@ -256,13 +258,68 @@ const AdminPage = () => {
 
           {tab === 'Customers' && (
             <div className="space-y-3">
+              <div className="smarty-card p-4">
+                <p className="flex items-center gap-2 text-sm font-bold text-foreground">
+                  <UserPlus className="h-4 w-4 text-primary" /> Create a customer
+                </p>
+                <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
+                  Creates the account immediately with the password you choose — already verified, so the
+                  person can sign in straight away without any confirmation email.
+                </p>
+                <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                  <input
+                    type="email"
+                    value={newUser.email}
+                    onChange={(e) => setNewUser((p) => ({ ...p, email: e.target.value }))}
+                    placeholder="Email"
+                    className="w-full rounded-2xl border border-border bg-card px-3 py-2.5 text-sm text-foreground outline-none"
+                  />
+                  <input
+                    value={newUser.username}
+                    onChange={(e) => setNewUser((p) => ({ ...p, username: e.target.value }))}
+                    placeholder="Username (optional)"
+                    className="w-full rounded-2xl border border-border bg-card px-3 py-2.5 text-sm text-foreground outline-none"
+                  />
+                  <input
+                    type="text"
+                    value={newUser.password}
+                    onChange={(e) => setNewUser((p) => ({ ...p, password: e.target.value }))}
+                    placeholder="Password (min 8 characters)"
+                    className="w-full rounded-2xl border border-border bg-card px-3 py-2.5 text-sm text-foreground outline-none"
+                  />
+                  <select
+                    value={newUser.months}
+                    onChange={(e) => setNewUser((p) => ({ ...p, months: Number(e.target.value) }))}
+                    className="w-full rounded-2xl border border-border bg-card px-3 py-2.5 text-sm font-semibold text-foreground outline-none"
+                    aria-label="Premium months to grant"
+                  >
+                    <option value={0}>Free account</option>
+                    {[1, 2, 3, 6, 12].map((m) => (
+                      <option key={m} value={m}>Premium for {m} month{m > 1 ? 's' : ''}</option>
+                    ))}
+                  </select>
+                </div>
+                <button
+                  disabled={busy !== null}
+                  onClick={() =>
+                    act('create-user', async () => {
+                      await adminApi('create_user', { ...newUser, planKey: grantPlan });
+                      setNewUser({ email: '', password: '', username: '', months: 0 });
+                    }, 'Customer created')
+                  }
+                  className="mt-3 w-full rounded-2xl bg-gradient-primary px-4 py-3 text-sm font-bold text-primary-foreground transition-smooth active:scale-[0.99] disabled:opacity-50 sm:w-auto"
+                >
+                  Create customer
+                </button>
+              </div>
+
               <div className="smarty-card flex items-center gap-2 px-4 py-3">
                 <Search className="h-4 w-4 text-muted-foreground" />
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search by email"
-                  className="flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
+                  className="min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
                 />
               </div>
               {filtered.length === 0 && <p className="px-1 text-sm text-muted-foreground">No customers found.</p>}
@@ -299,7 +356,27 @@ const AdminPage = () => {
 
           {tab === 'Pricing' && (
             <div className="space-y-4">
+              <div className="smarty-card border-primary/40 p-4">
+                <p className="text-sm font-bold text-foreground">What this tab does</p>
+                <ul className="mt-2 space-y-1.5 text-[12px] leading-relaxed text-muted-foreground">
+                  <li>
+                    <strong className="text-foreground">Cost model</strong> — what one Smarty Assistant conversation
+                    actually costs you in AI usage. Change these numbers only if model prices change.
+                  </li>
+                  <li>
+                    <strong className="text-foreground">Plans</strong> — the price customers pay and how many
+                    conversations they get each month. Leave “allowance override” empty to let the target margin decide
+                    it automatically, or type a fixed number (currently 300).
+                  </li>
+                  <li>
+                    Whatever you save here is what the public pricing page, the plan page and the conversation meter
+                    show — nothing is hardcoded.
+                  </li>
+                </ul>
+              </div>
+
               <div className="smarty-card p-4">
+
                 <p className="flex items-center gap-2 text-sm font-bold text-foreground">
                   <SlidersHorizontal className="h-4 w-4 text-primary" /> Cost model
                 </p>

@@ -19,7 +19,7 @@ const when = (iso: string) => {
 const MessagesPage = () => {
   const { user } = useAuth();
   const { messages, loading, unread, markRead, markAllRead, archive, reload } = useMessages();
-  const { canUseAssistant, plan, renewsAt } = useSubscription();
+  const { canUseAssistant, plan, renewsAt, isAdmin, loading: planLoading } = useSubscription();
 
   /* First visit: greet the user so the inbox is never empty. */
   useEffect(() => {
@@ -60,7 +60,7 @@ const MessagesPage = () => {
         )}
       </header>
 
-      {!canUseAssistant && (
+      {!planLoading && !canUseAssistant && (
         <div className="smarty-card p-4">
           <p className="text-sm font-semibold text-foreground">You are on the free Logbook</p>
           <p className="mt-1 text-xs text-muted-foreground">
@@ -75,7 +75,8 @@ const MessagesPage = () => {
 
       {canUseAssistant && plan && (
         <p className="text-xs text-muted-foreground">
-          {plan.name}{renewsAt ? ` — renews ${new Date(renewsAt).toLocaleDateString()}` : ''}
+          {isAdmin ? 'Administrator — full access' : plan.name}
+          {!isAdmin && renewsAt ? ` — renews ${new Date(renewsAt).toLocaleDateString()}` : ''}
         </p>
       )}
 
