@@ -41,13 +41,20 @@ Return a "facts" array (empty when there is nothing measurable). Each item:
 {"name":"snake_case stable key, e.g. cholesterol_total, weight, blood_pressure_systolic, rent, invoice_total, hba1c","label":"human label","value":number,"unit":"mg/dL|kg|EUR|bpm|... or null","category":"health|money|fitness|nutrition|other","date":"YYYY-MM-DD or null"}
 Use the SAME name for the same measurement every time so past and future values line up. Max 20 facts. Never invent values.`;
 
+const MONEY_RULES = `FINANCIAL BRAIN — build the user's money model.
+Return a "money" array (empty when the capture has nothing financial and recurring). Each item:
+{"type":"income|expense|subscription|debt|saving","label":"stable human name, e.g. Salary, Rent, Netflix, Car loan","amount":number,"currency":"3-letter code, default EUR","cadence":"once|weekly|monthly|quarterly|yearly","next_due":"YYYY-MM-DD or null","category":"string or null","notes":"max 20 words or null"}
+Only include real amounts stated in the capture. Use the SAME label for the same salary/bill/subscription every time so it updates instead of duplicating. Max 8 items.`;
+
 const prompts: Record<Mode, string> = {
   classify: `You are the automatic classification engine of Smarty Logbook.
 The user NEVER picks a category. From the raw capture alone you must understand what it is, where it belongs, what to extract and what it connects to.
 Return STRICT JSON only, no markdown:
-{"title":"short title max 60 chars","summary":"one sentence summary","module":"health|fitness|nutrition|finance|business|documents|personal","secondary_modules":["other modules it also belongs to, max 2"],"kind":"text|voice|photo|receipt|document|medical|workout|meal|expense|task|reminder|idea|journal|mood|location","ai_tags":["max 4 short lowercase tags"],"amount":number or null,"currency":"3-letter code or null","merchant":"string or null","date":"YYYY-MM-DD or null","location":"string or null","details":{"any structured facts you extracted, e.g. duration, muscle groups, biomarkers, due date, company"},"related_ids":[],"relation_note":null,"reminder":null,"facts":[]}
+{"title":"short title max 60 chars","summary":"one sentence summary","module":"health|fitness|nutrition|finance|business|documents|personal","secondary_modules":["other modules it also belongs to, max 2"],"kind":"text|voice|photo|receipt|document|medical|workout|meal|expense|task|reminder|idea|journal|mood|location","ai_tags":["max 4 short lowercase tags"],"amount":number or null,"currency":"3-letter code or null","merchant":"string or null","date":"YYYY-MM-DD or null","location":"string or null","details":{"any structured facts you extracted, e.g. duration, muscle groups, biomarkers, due date, company"},"related_ids":[],"relation_note":null,"reminder":null,"facts":[],"money":[]}
 
 ${FACT_RULES}
+
+${MONEY_RULES}
 
 ${RELATION_RULES}`,
   chat: `You are Smarty Assistant, the intelligent personal assistant inside Smarty Logbook.
@@ -87,11 +94,13 @@ Only include modules the user actually has data for. Max 5 summaries, 4 patterns
 If there is too little data, return fewer items and say so in the overview.`,
   extract: `You read photos, receipts, documents and PDFs for Smarty Logbook and classify them automatically — the user never chooses a category.
 Return STRICT JSON only, no markdown:
-{"title":"short title max 60 chars","summary":"one sentence of what this is","module":"health|fitness|nutrition|finance|business|documents|personal","kind":"photo|receipt|document|medical|meal|expense","ai_tags":["max 4 short lowercase tags"],"amount":number or null,"currency":"3-letter code or null","merchant":"string or null","date":"YYYY-MM-DD or null","due_date":"YYYY-MM-DD or null","paid":true|false|null,"category":"string or null","items":["max 6 line items"],"details":{"structured facts, e.g. biomarkers with values and ranges, laboratory name, policy number, expiry date"},"related_ids":[],"relation_note":null,"reminder":null,"facts":[]}
+{"title":"short title max 60 chars","summary":"one sentence of what this is","module":"health|fitness|nutrition|finance|business|documents|personal","kind":"photo|receipt|document|medical|meal|expense","ai_tags":["max 4 short lowercase tags"],"amount":number or null,"currency":"3-letter code or null","merchant":"string or null","date":"YYYY-MM-DD or null","due_date":"YYYY-MM-DD or null","paid":true|false|null,"category":"string or null","items":["max 6 line items"],"details":{"structured facts, e.g. biomarkers with values and ranges, laboratory name, policy number, expiry date"},"related_ids":[],"relation_note":null,"reminder":null,"facts":[],"money":[]}
 For receipts and bills always read the total, the company and the due date, and whether it is paid.
 For medical documents extract biomarkers with their values and reference ranges, the date and the laboratory.
 
 ${FACT_RULES}
+
+${MONEY_RULES}
 
 ${RELATION_RULES}`,
   transcribe: `You are a speech-to-text engine. Transcribe the audio verbatim in its original language. Return ONLY the transcript text, with no quotes, no markdown and no commentary. If the audio contains no speech, return an empty string.`,
@@ -243,12 +252,37 @@ Deno.serve(async (req) => {
       }
     }
 
+    let moneyText = "";
+    if (mode === "chat" || mode === "search" || mode === "insights" || mode === "brief" || mode === "coach") {
+      try {
+        const db = await userClient(authHeader);
+        const { data: moneyRows } = await db
+          .from("money_items")
+          .select("type,label,amount,currency,cadence,next_due,category")
+          .eq("active", true)
+          .limit(60);
+        if (moneyRows?.length) {
+          const perMonth: Record<string, number> = { once: 0, weekly: 52 / 12, monthly: 1, quarterly: 1 / 3, yearly: 1 / 12 };
+          let income = 0;
+          let out = 0;
+          const lines = (moneyRows as Array<Record<string, unknown>>).map((m) => {
+            const monthly = Number(m.amount ?? 0) * (perMonth[String(m.cadence)] ?? 0);
+            if (m.type === "income") income += monthly; else out += monthly;
+            return `${m.type}: ${m.label} — ${m.amount} ${m.currency} ${m.cadence}${m.next_due ? `, next due ${m.next_due}` : ""}`;
+          });
+          moneyText = `Financial model (real figures from the user's own captures):\n${lines.join("\n")}\nMonthly income ~${income.toFixed(0)}, monthly outgoings ~${out.toFixed(0)}, left over ~${(income - out).toFixed(0)}.\nUse these numbers for any money question; never invent figures.\n\n`;
+        }
+      } catch (e) {
+        console.error("money context failed", e);
+      }
+    }
+
     const recallText = recalled.length
       ? `Most relevant entries from the user's ENTIRE history (semantic recall, ranked):\n${JSON.stringify(recalled).slice(0, 20000)}\n\n`
       : "";
 
-    const context = memories?.length || recalled.length || factsText
-      ? `${factsText}${recallText}Recent entries (JSON):\n${JSON.stringify(memories ?? []).slice(0, 16000)}`
+    const context = memories?.length || recalled.length || factsText || moneyText
+      ? `${moneyText}${factsText}${recallText}Recent entries (JSON):\n${JSON.stringify(memories ?? []).slice(0, 16000)}`
       : "No entries available yet.";
 
     const candidateText = candidates?.length
