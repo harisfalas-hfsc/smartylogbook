@@ -542,6 +542,43 @@ Deno.serve(async (req) => {
       });
     }
 
+    /* ---- persist the retrained profile so the assistant keeps evolving per user ---- */
+    if (mode === "train") {
+      const p = parsed as Record<string, unknown>;
+      const arr = (v: unknown) => (Array.isArray(v) ? v.slice(0, 12) : []);
+      const db = await userClient(authHeader);
+      const { data: auth } = await db.auth.getUser();
+      const uid = auth?.user?.id;
+      if (!uid) throw new Error("Not authenticated");
+      const row = {
+        user_id: uid,
+        portrait: p.portrait ? String(p.portrait).slice(0, 2000) : null,
+        habits: arr(p.habits),
+        routines: arr(p.routines),
+        preferences: arr(p.preferences),
+        patterns: arr(p.patterns),
+        people: arr(p.people),
+        watchlist: arr(p.watchlist),
+        open_questions: arr(p.open_questions),
+        confidence: ["high", "medium", "low"].includes(String(p.confidence)) ? String(p.confidence) : "low",
+        data_points: trainingCount,
+        version: Number(profileRow?.version ?? 0) + 1,
+        trained_at: new Date().toISOString(),
+      };
+      const { data: saved, error: saveErr } = await db
+        .from("assistant_profiles")
+        .upsert(row, { onConflict: "user_id" })
+        .select("*")
+        .maybeSingle();
+      if (saveErr) {
+        console.error("profile save failed", saveErr);
+        throw new Error(`Could not save assistant profile: ${saveErr.message}`);
+      }
+      return new Response(JSON.stringify({ profile: saved }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     return new Response(JSON.stringify(parsed), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
