@@ -125,9 +125,14 @@ const InsightsPage = () => {
               </h2>
               <div className="space-y-2.5">
                 {insights.attention.map((p) => (
-                  <div key={p.title} className="glass rounded-3xl p-4 shadow-soft">
-                    <p className="text-sm font-bold text-foreground">{p.title}</p>
-                    <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">{p.detail}</p>
+                  <div key={p.title} className="flex gap-3 rounded-3xl border border-warning/30 bg-warning/10 p-4 shadow-soft">
+                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl bg-warning/20">
+                      <AlertTriangle className="h-4.5 w-4.5 text-warning" />
+                    </span>
+                    <div className="min-w-0">
+                      <p className="text-sm font-bold text-foreground">{p.title}</p>
+                      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{p.detail}</p>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -141,9 +146,14 @@ const InsightsPage = () => {
               </h2>
               <div className="space-y-2.5">
                 {insights.patterns.map((p) => (
-                  <div key={p.title} className="smarty-card p-4">
-                    <p className="text-sm font-bold text-foreground">{p.title}</p>
-                    <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">{p.detail}</p>
+                  <div key={p.title} className="smarty-card flex gap-3 border-primary/20 p-4">
+                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl bg-primary/10">
+                      <TrendingUp className="h-4.5 w-4.5 text-primary" />
+                    </span>
+                    <div className="min-w-0">
+                      <p className="text-sm font-bold text-foreground">{p.title}</p>
+                      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{p.detail}</p>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -154,20 +164,32 @@ const InsightsPage = () => {
 
       <section className="animate-fade-up">
         <h2 className="mb-3 text-sm font-bold text-foreground">Where your life happens</h2>
-        <div className="smarty-card space-y-3 p-5">
+        <div className="space-y-2.5">
           {perModule.map((m) => (
-            <div key={m.id}>
-              <div className="mb-1 flex items-center justify-between text-xs">
-                <span className="font-semibold text-foreground">{m.label}</span>
-                <span className="tabular-nums text-muted-foreground">{m.count}</span>
+            <Link
+              key={m.id}
+              to={`/app/module/${m.id}`}
+              className="smarty-card flex items-center gap-3 p-3 transition-smooth active:scale-[0.99]"
+            >
+              <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-2xl ${m.tint}`}>
+                <m.icon className={`h-4.5 w-4.5 ${m.color}`} />
+              </span>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="truncate text-xs font-bold text-foreground">{m.label}</span>
+                  <span className="shrink-0 text-[11px] font-semibold tabular-nums text-muted-foreground">
+                    {m.count}
+                  </span>
+                </div>
+                <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-secondary">
+                  <div
+                    className={`h-full rounded-full transition-smooth ${m.tint.replace('/10', '')}`}
+                    style={{ width: `${Math.max(4, (m.count / max) * 100)}%` }}
+                  />
+                </div>
               </div>
-              <div className="h-2 overflow-hidden rounded-full bg-secondary">
-                <div
-                  className="h-full rounded-full bg-gradient-primary transition-smooth"
-                  style={{ width: `${(m.count / max) * 100}%` }}
-                />
-              </div>
-            </div>
+              <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+            </Link>
           ))}
         </div>
       </section>
