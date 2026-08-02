@@ -21,7 +21,7 @@ const addDays = (n: number) => new Date(Date.now() + n * 86400000);
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
-  const secret = Deno.env.get("CRON_SECRET");
+  const secret = Deno.env.get("CRON_JOB_KEY");
   const provided = req.headers.get("x-cron-key");
   if (!secret || provided !== secret) {
     return new Response(JSON.stringify({ error: "unauthorized" }), {
