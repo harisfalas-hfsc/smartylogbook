@@ -255,13 +255,68 @@ const AdminPage = () => {
 
           {tab === 'Customers' && (
             <div className="space-y-3">
+              <div className="smarty-card p-4">
+                <p className="flex items-center gap-2 text-sm font-bold text-foreground">
+                  <UserPlus className="h-4 w-4 text-primary" /> Create a customer
+                </p>
+                <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
+                  Creates the account immediately with the password you choose — already verified, so the
+                  person can sign in straight away without any confirmation email.
+                </p>
+                <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                  <input
+                    type="email"
+                    value={newUser.email}
+                    onChange={(e) => setNewUser((p) => ({ ...p, email: e.target.value }))}
+                    placeholder="Email"
+                    className="w-full rounded-2xl border border-border bg-card px-3 py-2.5 text-sm text-foreground outline-none"
+                  />
+                  <input
+                    value={newUser.username}
+                    onChange={(e) => setNewUser((p) => ({ ...p, username: e.target.value }))}
+                    placeholder="Username (optional)"
+                    className="w-full rounded-2xl border border-border bg-card px-3 py-2.5 text-sm text-foreground outline-none"
+                  />
+                  <input
+                    type="text"
+                    value={newUser.password}
+                    onChange={(e) => setNewUser((p) => ({ ...p, password: e.target.value }))}
+                    placeholder="Password (min 8 characters)"
+                    className="w-full rounded-2xl border border-border bg-card px-3 py-2.5 text-sm text-foreground outline-none"
+                  />
+                  <select
+                    value={newUser.months}
+                    onChange={(e) => setNewUser((p) => ({ ...p, months: Number(e.target.value) }))}
+                    className="w-full rounded-2xl border border-border bg-card px-3 py-2.5 text-sm font-semibold text-foreground outline-none"
+                    aria-label="Premium months to grant"
+                  >
+                    <option value={0}>Free account</option>
+                    {[1, 2, 3, 6, 12].map((m) => (
+                      <option key={m} value={m}>Premium for {m} month{m > 1 ? 's' : ''}</option>
+                    ))}
+                  </select>
+                </div>
+                <button
+                  disabled={busy !== null}
+                  onClick={() =>
+                    act('create-user', async () => {
+                      await adminApi('create_user', { ...newUser, planKey: grantPlan });
+                      setNewUser({ email: '', password: '', username: '', months: 0 });
+                    }, 'Customer created')
+                  }
+                  className="mt-3 w-full rounded-2xl bg-gradient-primary px-4 py-3 text-sm font-bold text-primary-foreground transition-smooth active:scale-[0.99] disabled:opacity-50 sm:w-auto"
+                >
+                  Create customer
+                </button>
+              </div>
+
               <div className="smarty-card flex items-center gap-2 px-4 py-3">
                 <Search className="h-4 w-4 text-muted-foreground" />
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search by email"
-                  className="flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
+                  className="min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
                 />
               </div>
               {filtered.length === 0 && <p className="px-1 text-sm text-muted-foreground">No customers found.</p>}
