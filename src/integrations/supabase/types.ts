@@ -254,6 +254,7 @@ export type Database = {
           content: string | null
           created_at: string
           currency: string | null
+          deleted_at: string | null
           embedded_at: string | null
           embedding: string | null
           id: string
@@ -277,6 +278,7 @@ export type Database = {
           content?: string | null
           created_at?: string
           currency?: string | null
+          deleted_at?: string | null
           embedded_at?: string | null
           embedding?: string | null
           id?: string
@@ -300,6 +302,7 @@ export type Database = {
           content?: string | null
           created_at?: string
           currency?: string | null
+          deleted_at?: string | null
           embedded_at?: string | null
           embedding?: string | null
           id?: string
@@ -681,6 +684,7 @@ export type Database = {
           title: string
         }[]
       }
+      purge_expired_trash: { Args: never; Returns: number }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
