@@ -13,10 +13,9 @@ import {
 import { toast } from 'sonner';
 import { useMemories } from '@/lib/memories';
 import { REMINDER_TYPES, ReminderType, reminderIcon, requestNotificationPermission, useReminders } from '@/lib/reminders';
-import { moduleById, kindIcon } from '@/lib/constants';
+import { getModule, kindIcon } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import Seo from '@/components/Seo';
 
 const WEEKDAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
@@ -105,7 +104,6 @@ const CalendarPage = () => {
 
   return (
     <div className="space-y-4 pb-28">
-      <Seo title="Calendar — Smarty Logbook" description="See what you logged and what is scheduled, month by month." noindex />
 
       <header className="flex items-center justify-between px-0.5">
         <div>
@@ -290,7 +288,7 @@ const CalendarPage = () => {
                   <p className="px-3 py-4 text-center text-xs text-muted-foreground">Nothing logged this day.</p>
                 ) : (
                   dayData!.logged.map((m) => {
-                    const mod = moduleById(m.module);
+                    const mod = getModule(m.module);
                     const Icon = kindIcon(m.kind);
                     return (
                       <Link
