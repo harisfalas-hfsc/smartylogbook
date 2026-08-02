@@ -235,9 +235,10 @@ const AppShell = () => {
         <Outlet />
       </main>
 
-      <div className="pb-28 pt-6 md:pb-8 md:pl-64">
+      <div className="hidden pb-8 pt-6 md:block md:pl-64">
         <SiteFooter />
       </div>
+      <div className="pb-28 md:hidden" />
 
       <BottomNav />
     </div>

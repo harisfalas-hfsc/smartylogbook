@@ -576,6 +576,7 @@ export type Database = {
         Row: {
           coach_time: string
           created_at: string
+          custom_categories: Json
           focus_modules: string[]
           goals: string[]
           id: string
@@ -594,6 +595,7 @@ export type Database = {
         Insert: {
           coach_time?: string
           created_at?: string
+          custom_categories?: Json
           focus_modules?: string[]
           goals?: string[]
           id?: string
@@ -612,6 +614,7 @@ export type Database = {
         Update: {
           coach_time?: string
           created_at?: string
+          custom_categories?: Json
           focus_modules?: string[]
           goals?: string[]
           id?: string

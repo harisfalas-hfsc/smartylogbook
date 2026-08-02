@@ -1,10 +1,11 @@
 import { Link } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
-import { MODULES } from '@/lib/constants';
+import { useCategories } from '@/lib/categories';
 import { useMemories } from '@/lib/memories';
 
 const ModulesPage = () => {
   const { memories } = useMemories();
+  const { categories } = useCategories();
 
   return (
     <div className="space-y-5">
@@ -14,7 +15,7 @@ const ModulesPage = () => {
       </header>
 
       <div className="space-y-3">
-        {MODULES.map((m) => (
+        {categories.map((m) => (
           <Link
             key={m.id}
             to={`/app/module/${m.id}`}

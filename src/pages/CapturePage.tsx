@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Camera, FileText, Loader2, Mic, Paperclip, Sparkles, Square, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -183,6 +183,16 @@ const CapturePage = () => {
       void startRecording();
     }
   };
+
+  // Home-screen shortcuts: /app/capture?mode=voice | photo
+  const modeParam = new URLSearchParams(useLocation().search).get('mode');
+  useEffect(() => {
+    if (modeParam === 'voice') startVoice();
+    if (modeParam === 'photo') cameraInput.current?.click();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [modeParam]);
+
+
 
   /* ---------- files ---------- */
 

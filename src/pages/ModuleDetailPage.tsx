@@ -1,6 +1,6 @@
 import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft, Loader2, Plus, Sparkles } from 'lucide-react';
-import { getModule } from '@/lib/constants';
+import { useCategories } from '@/lib/categories';
 import { useState } from 'react';
 import { groupByDay, useMemories, Memory } from '@/lib/memories';
 import MemoryCard from '@/components/MemoryCard';
@@ -8,7 +8,8 @@ import MemoryDetailSheet from '@/components/MemoryDetailSheet';
 
 const ModuleDetailPage = () => {
   const { id } = useParams<{ id: string }>();
-  const module = getModule(id ?? 'personal');
+  const { getCategory } = useCategories();
+  const module = getCategory(id ?? 'personal');
   const { memories, loading, remove, reclassify, update } = useMemories({ module: module.id });
   const [selected, setSelected] = useState<Memory | null>(null);
   const groups = groupByDay(memories);
