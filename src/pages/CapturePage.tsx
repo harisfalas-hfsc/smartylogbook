@@ -559,11 +559,14 @@ const CapturePage = () => {
         <div className="space-y-2">
           {suggestions.map((s) => (
             <button
-              key={s}
-              onClick={() => setText(s)}
-              className="w-full rounded-2xl border border-border bg-card px-4 py-3 text-left text-xs text-muted-foreground transition-smooth hover:border-primary/40 active:scale-[0.99]"
+              key={s.text}
+              onClick={() => setText(s.text)}
+              className="smarty-card flex w-full items-center gap-3 p-3 text-left transition-smooth hover:border-primary/40 active:scale-[0.99]"
             >
-              {s}
+              <span className={cn('grid h-8 w-8 shrink-0 place-items-center rounded-xl', s.tint)}>
+                <s.icon className={cn('h-4 w-4', s.color)} />
+              </span>
+              <span className="min-w-0 flex-1 text-xs font-medium text-foreground">{s.text}</span>
             </button>
           ))}
         </div>
