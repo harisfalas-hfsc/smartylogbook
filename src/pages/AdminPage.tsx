@@ -74,11 +74,9 @@ const AdminPage = () => {
       setUsers(u.users ?? []);
       setPayments(p.payments ?? []);
       const cfg = c.config ?? {};
-      setPricing({
-        ...DEFAULT_PRICING,
-        ...cfg,
-        plans: Array.isArray(cfg.plans) && cfg.plans.length ? cfg.plans : DEFAULT_PRICING.plans,
-      });
+      const plans = Array.isArray(cfg.plans) && cfg.plans.length ? cfg.plans : DEFAULT_PRICING.plans;
+      setPricing({ ...DEFAULT_PRICING, ...cfg, plans });
+      setGrantPlan((prev) => (plans.some((p) => p.key === prev) ? prev : plans[0]?.key ?? 'premium'));
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load admin data');
     } finally {
