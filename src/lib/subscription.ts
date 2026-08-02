@@ -40,6 +40,7 @@ export const findPlan = (pricing: PricingConfig, key?: string | null): PlanConfi
 
 export const useSubscription = () => {
   const { user } = useAuth();
+  const { isAdmin, loading: adminLoading } = useIsAdmin();
   const { pricing, loading: pricingLoading } = usePricing();
   const [sub, setSub] = useState<SubscriptionRow | null>(null);
   const [used, setUsed] = useState(0);
