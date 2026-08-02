@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import DevPreview from "./pages/__DevPreview";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
@@ -66,6 +67,7 @@ const App = () => (
               <Route path="/terms-and-conditions" element={<TermsPage />} />
               <Route path="/disclaimer" element={<DisclaimerPage />} />
             </Route>
+            <Route path="/__dev" element={<DevPreview />} />
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
