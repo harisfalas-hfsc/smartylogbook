@@ -3,9 +3,9 @@ import { Panel, SubCard, MiniRow, Divider, DesktopOnly, PageHeader, CtaCard, Bra
 import { MODULES } from '@/lib/constants';
 
 const pillars = [
-  { e: '📥', t: 'Capture anything', s: 'Text, voice, a receipt photo, a lab report, a screenshot.' },
-  { e: '🧠', t: 'It classifies it', s: 'You never pick a category. The Assistant reads and files it.' },
-  { e: '🔗', t: 'It connects it', s: 'A scan links to an old injury. A receipt to a monthly bill.' },
+  { e: '📥', t: 'Put anything in', s: 'Type it, say it, snap it, upload it.' },
+  { e: '🧠', t: 'It understands', s: 'Reads it and pulls out the details itself.' },
+  { e: '🔗', t: 'It relates', s: 'A scan links to an old injury. A receipt to a monthly bill.' },
   { e: '💬', t: 'Ask in plain words', s: '"What did the doctor say in March?" It answers.' },
 ];
 
