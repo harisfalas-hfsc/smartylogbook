@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  AlertTriangle, ArrowRight, Camera, ChevronRight, Loader2, Mic, Plus, RefreshCw, Sparkles,
+  AlertTriangle, ArrowRight, Camera, ChevronRight, Loader2, Mic, Paperclip, Plus, RefreshCw, Sparkles,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useMemories, timeOf, Memory } from '@/lib/memories';
