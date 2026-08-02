@@ -1,13 +1,19 @@
-import { Link2, MapPin, Trash2 } from 'lucide-react';
-import { getModule, kindIcon } from '@/lib/constants';
+import { Check, Link2, MapPin, Trash2, FolderInput } from 'lucide-react';
+import { toast } from 'sonner';
+import { getModule, kindIcon, MODULES } from '@/lib/constants';
 import { Memory, timeOf } from '@/lib/memories';
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
+  DropdownMenuSeparator, DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface Props {
   memory: Memory;
   onDelete?: (id: string) => void;
+  onMove?: (memory: Memory, toModule: string) => Promise<{ error: Error | null }> | void;
 }
 
-const MemoryCard = ({ memory, onDelete }: Props) => {
+const MemoryCard = ({ memory, onDelete, onMove }: Props) => {
   const module = getModule(memory.module);
   const Icon = kindIcon(memory.kind);
 
@@ -28,9 +34,51 @@ const MemoryCard = ({ memory, onDelete }: Props) => {
             <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted-foreground">{memory.summary}</p>
           )}
           <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
-            <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${module.tint} ${module.color}`}>
-              {module.label}
-            </span>
+            {onMove ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    aria-label="Change category"
+                    className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold transition-smooth hover:opacity-80 ${module.tint} ${module.color}`}
+                  >
+                    {module.label}
+                    <FolderInput className="h-3 w-3" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-56">
+                  <DropdownMenuLabel className="text-xs">Move to category</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {MODULES.map((m) => {
+                    const MIcon = m.icon;
+                    return (
+                      <DropdownMenuItem
+                        key={m.id}
+                        className="gap-2 text-sm"
+                        onSelect={async () => {
+                          if (m.id === memory.module) return;
+                          const res = await onMove(memory, m.id);
+                          if (res && 'error' in res && res.error) {
+                            toast.error('Could not move this entry');
+                            return;
+                          }
+                          toast.success(`Moved to ${m.label}`, {
+                            description: 'Smarty Assistant will remember this for similar entries.',
+                          });
+                        }}
+                      >
+                        <MIcon className={`h-4 w-4 ${m.color}`} />
+                        {m.label}
+                        {m.id === memory.module && <Check className="ml-auto h-3.5 w-3.5 text-primary" />}
+                      </DropdownMenuItem>
+                    );
+                  })}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${module.tint} ${module.color}`}>
+                {module.label}
+              </span>
+            )}
             {memory.amount != null && (
               <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-semibold text-secondary-foreground">
                 {memory.amount.toLocaleString(undefined, { style: 'currency', currency: memory.currency ?? 'USD' })}

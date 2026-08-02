@@ -19,7 +19,7 @@ const greeting = () => {
 
 const Dashboard = () => {
   const { profile, user } = useAuth();
-  const { memories, loading } = useMemories({ limit: 60 });
+  const { memories, loading, reclassify } = useMemories({ limit: 60 });
   const { prefs } = usePreferences();
   const { brief, generating, toggleDone, regenerate } = useDailyBrief(memories, prefs, !loading);
 
@@ -118,7 +118,7 @@ const Dashboard = () => {
           </div>
         ) : (
           <div className="space-y-2.5">
-            {today.slice(0, 5).map((m) => <MemoryCard key={m.id} memory={m} />)}
+            {today.slice(0, 5).map((m) => <MemoryCard key={m.id} memory={m} onMove={reclassify} />)}
           </div>
         )}
       </section>

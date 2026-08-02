@@ -21,7 +21,7 @@ const EXAMPLES = [
 ];
 
 const TimelinePage = () => {
-  const { memories, loading, remove } = useMemories();
+  const { memories, loading, remove, reclassify } = useMemories();
   const [range, setRange] = useState<(typeof RANGES)[number]['id']>('week');
   const [module, setModule] = useState<string | null>(null);
   const [query, setQuery] = useState('');
@@ -172,7 +172,7 @@ const TimelinePage = () => {
                 <p className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">{g.label}</p>
               </div>
               <div className="space-y-2.5">
-                {g.items.map((m) => <MemoryCard key={m.id} memory={m} onDelete={remove} />)}
+                {g.items.map((m) => <MemoryCard key={m.id} memory={m} onDelete={remove} onMove={reclassify} />)}
               </div>
             </section>
           ))}
