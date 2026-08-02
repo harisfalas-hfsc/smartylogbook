@@ -57,7 +57,8 @@ const AdminPage = () => {
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pricing, setPricing] = useState<PricingConfig>(DEFAULT_PRICING);
-  const [grantPlan, setGrantPlan] = useState<string>('intelligence');
+  const [grantPlan, setGrantPlan] = useState<string>(DEFAULT_PRICING.plans[0]?.key ?? 'premium');
+  const [newUser, setNewUser] = useState({ email: '', password: '', username: '', months: 0 });
 
   const load = useCallback(async () => {
     setLoading(true);
