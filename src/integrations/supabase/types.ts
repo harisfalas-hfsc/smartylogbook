@@ -91,6 +91,8 @@ export type Database = {
           content: string | null
           created_at: string
           currency: string | null
+          embedded_at: string | null
+          embedding: string | null
           id: string
           kind: string
           location: string | null
@@ -112,6 +114,8 @@ export type Database = {
           content?: string | null
           created_at?: string
           currency?: string | null
+          embedded_at?: string | null
+          embedding?: string | null
           id?: string
           kind?: string
           location?: string | null
@@ -133,6 +137,8 @@ export type Database = {
           content?: string | null
           created_at?: string
           currency?: string | null
+          embedded_at?: string | null
+          embedding?: string | null
           id?: string
           kind?: string
           location?: string | null
@@ -381,6 +387,27 @@ export type Database = {
         Returns: boolean
       }
       is_admin_email: { Args: { _email: string }; Returns: boolean }
+      match_memories: {
+        Args: {
+          match_count?: number
+          min_similarity?: number
+          query_embedding: string
+        }
+        Returns: {
+          ai_tags: string[]
+          amount: number
+          content: string
+          currency: string
+          id: string
+          kind: string
+          metadata: Json
+          module: string
+          occurred_at: string
+          similarity: number
+          summary: string
+          title: string
+        }[]
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
