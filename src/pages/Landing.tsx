@@ -18,11 +18,11 @@ const Landing = () => {
             <Sparkles className="h-3.5 w-3.5 text-primary" /> Powered by the Smarty Assistant
           </span>
           <h1 className="mx-auto mt-5 animate-fade-up text-[30px] font-extrabold leading-[1.1] tracking-tight text-foreground md:text-5xl">
-            The <span className="gradient-text">Smarty Logbook</span> that remembers{' '}
-            <span className="gradient-text">your life</span> better than you do.
+            <span className="gradient-text">Smarty Logbook</span> — a logbook{' '}
+            <span className="gradient-text">with a brain.</span>
           </h1>
           <p className="mx-auto mt-4 max-w-md animate-fade-up text-sm leading-relaxed text-muted-foreground md:text-base">
-            Capture anything. It organises, understands and connects the rest.
+            Put anything in. It understands it, connects it, keeps it and finds it when you need it.
           </p>
           <div className="mt-7 flex animate-fade-up flex-col items-center gap-2.5">
             <Link
