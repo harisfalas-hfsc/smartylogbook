@@ -215,6 +215,19 @@ const AssistantPage = () => {
         if (saveError) toast.error('Could not save that to your timeline');
         else { toast.success('Saved to your timeline'); void reload(); }
       }
+      const calendarOps = Array.isArray(data?.calendar) ? data.calendar : [];
+      if (calendarOps.length) {
+        const created = calendarOps.filter((o: { op?: string }) => o.op === 'create').length;
+        const changed = calendarOps.filter((o: { op?: string }) => o.op === 'update').length;
+        const removed = calendarOps.filter((o: { op?: string }) => o.op === 'delete' || o.op === 'complete').length;
+        const parts = [
+          created ? `${created} added` : '',
+          changed ? `${changed} rescheduled` : '',
+          removed ? `${removed} cleared` : '',
+        ].filter(Boolean);
+        toast.success(`Calendar updated — ${parts.join(', ')}`);
+      }
+
       const question2 = typeof data?.question === 'string' ? data.question.trim() : '';
       const answer = String(data?.answer ?? '').trim();
       const content = question2 && !answer.includes(question2)
