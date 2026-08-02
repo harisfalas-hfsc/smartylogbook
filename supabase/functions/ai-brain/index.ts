@@ -627,13 +627,40 @@ Deno.serve(async (req) => {
       }
     }
 
+    // The assistant knows the user's own Smarty Logbook plan and renewal.
+    let planText = "";
+    if (deep) {
+      try {
+        const db = await userClient(authHeader);
+        const { data: sub } = await db
+          .from("subscriptions")
+          .select("plan,plan_key,status,current_period_start,current_period_end,cancel_at_period_end")
+          .maybeSingle();
+        if (sub) {
+          const start = periodStartOf(sub as Record<string, any>).toISOString();
+          const { count } = await db
+            .from("ai_conversations")
+            .select("id", { count: "exact", head: true })
+            .gte("started_at", start);
+          planText =
+            `User's Smarty Logbook subscription: plan "${sub.plan_key ?? sub.plan}", status ${sub.status}` +
+            `${sub.current_period_end ? `, current period ends ${String(sub.current_period_end).slice(0, 10)}` : ""}` +
+            `${sub.cancel_at_period_end ? " (set to cancel at period end)" : ""}. ` +
+            `Conversations used this period: ${count ?? 0}${quota?.allowance ? ` of ${quota.allowance}` : ""}.\n` +
+            `Answer plan, renewal and allowance questions from this. Never invent billing facts.\n\n`;
+        }
+      } catch (e) {
+        console.error("plan context failed", e);
+      }
+    }
+
     const recallText = recalled.length
       ? `Most relevant entries from the user's ENTIRE history (semantic recall, ranked):\n${JSON.stringify(recalled).slice(0, 20000)}\n\n`
       : "";
 
     const entryList = trainingMemories.length ? trainingMemories : (memories ?? []);
-    const context = entryList.length || recalled.length || factsText || moneyText || profileText || calendarText
-      ? `${profileText}${calendarText}${moneyText}${factsText}${recallText}Recent entries (JSON):\n${JSON.stringify(entryList).slice(0, 20000)}`
+    const context = entryList.length || recalled.length || factsText || moneyText || profileText || calendarText || planText
+      ? `${profileText}${planText}${calendarText}${moneyText}${factsText}${recallText}Recent entries (JSON):\n${JSON.stringify(entryList).slice(0, 20000)}`
       : "No entries available yet.";
 
 
