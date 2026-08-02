@@ -11,12 +11,12 @@ import { CAPTURE_KINDS, MODULES, CaptureKind, getModule } from '@/lib/constants'
 import { useReminders } from '@/lib/reminders';
 import { cn } from '@/lib/utils';
 
-const suggestions = [
-  'Upper body session, 48 minutes, felt strong',
-  'Lunch: grilled salmon, rice and salad',
-  'Paid €42.10 at the supermarket',
-  'Idea: a weekly review email for the team',
-  'Call the clinic about the blood test results',
+const suggestions: { text: string; icon: typeof Camera; color: string; tint: string }[] = [
+  { text: 'Upper body session, 48 minutes, felt strong', icon: Dumbbell, color: 'text-mod-fitness', tint: 'bg-mod-fitness/10' },
+  { text: 'Lunch: grilled salmon, rice and salad', icon: Utensils, color: 'text-mod-nutrition', tint: 'bg-mod-nutrition/10' },
+  { text: 'Paid €42.10 at the supermarket', icon: Wallet, color: 'text-mod-finance', tint: 'bg-mod-finance/10' },
+  { text: 'Idea: a weekly review email for the team', icon: Lightbulb, color: 'text-mod-business', tint: 'bg-mod-business/10' },
+  { text: 'Call the clinic about the blood test results', icon: Stethoscope, color: 'text-mod-health', tint: 'bg-mod-health/10' },
 ];
 
 interface Extracted {
