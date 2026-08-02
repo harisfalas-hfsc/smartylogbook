@@ -702,13 +702,13 @@ Deno.serve(async (req) => {
           question = (obj as Record<string, unknown>).question ?? null;
         }
       } catch { /* fall back to plain text */ }
-      return new Response(JSON.stringify({ answer, save, question }), {
+      return new Response(JSON.stringify({ answer, save, question, quota }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
     if (mode === "search") {
-      return new Response(JSON.stringify({ answer: raw.trim() }), {
+      return new Response(JSON.stringify({ answer: raw.trim(), quota }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
