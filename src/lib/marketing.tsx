@@ -29,7 +29,7 @@ export const features = [
   { icon: Clock, emoji: '🕰️', title: 'Universal timeline', text: 'One chronological feed, filtered by day, week, month or year.' },
   { icon: Search, emoji: '🔍', title: 'Ask anything', text: '"What did the doctor say in March?" Plain-language search.' },
   { icon: MessageCircle, emoji: '🤖', title: 'Smarty Assistant', text: 'A real assistant that answers, asks follow-ups and never guesses.' },
-  { icon: Brain, emoji: '💡', title: 'Pattern insights', text: 'Plain-language observations. No scores, no charts to decode.' },
+  { icon: Brain, emoji: '💡', title: 'Pattern insights', text: 'Plain-language observations written like a person would say them.' },
   { icon: Bell, emoji: '🔔', title: 'Proactive reminders', text: 'Bills, check-ups, birthdays and overdue tests surface on time.' },
   { icon: Layers, emoji: '🗂️', title: 'Life modules', text: 'Health, fitness, nutrition, finance, business, documents, personal.' },
   { icon: Shield, emoji: '🔒', title: 'Privacy first', text: 'Encrypted storage, your data, export or delete any time.' },
