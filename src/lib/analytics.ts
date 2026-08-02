@@ -11,8 +11,11 @@ declare global {
   }
 }
 
-const measurementId = import.meta.env
-  .VITE_LOVABLE_CONNECTOR_GOOGLE_ANALYTICS_API_KEY as string | undefined;
+const FALLBACK_MEASUREMENT_ID = 'G-2TBQXNH4DH';
+
+const measurementId = (import.meta.env
+  .VITE_LOVABLE_CONNECTOR_GOOGLE_ANALYTICS_API_KEY as string | undefined) ||
+  FALLBACK_MEASUREMENT_ID;
 
 let initialized = false;
 
