@@ -406,7 +406,9 @@ Deno.serve(async (req) => {
       ? `Raw capture:\n${input ?? ""}\n\n${candidateText}\n\nToday: ${new Date().toISOString().slice(0, 10)}`
       : mode === "search"
         ? `${context}\n\nQuestion: ${input ?? ""}`
-        : `${context}\n\n${prefsText}\n\nToday: ${new Date().toISOString()}`;
+        : mode === "train"
+          ? `${context}\n\n${prefsText}\n\nTotal entries in the logbook: ${trainingCount}.\n\nToday: ${new Date().toISOString().slice(0, 10)}\n\nRe-train your profile of this user now.`
+          : `${context}\n\n${prefsText}\n\nToday: ${new Date().toISOString()}`;
 
     const chatMessages = mode === "chat"
       ? [
