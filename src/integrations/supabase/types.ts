@@ -351,6 +351,63 @@ export type Database = {
         }
         Relationships: []
       }
+      messages: {
+        Row: {
+          action_label: string | null
+          action_url: string | null
+          archived_at: string | null
+          body: string | null
+          created_at: string
+          dedupe_key: string | null
+          id: string
+          kind: string
+          level: string
+          metadata: Json
+          module: string | null
+          read_at: string | null
+          related_at: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          action_label?: string | null
+          action_url?: string | null
+          archived_at?: string | null
+          body?: string | null
+          created_at?: string
+          dedupe_key?: string | null
+          id?: string
+          kind?: string
+          level?: string
+          metadata?: Json
+          module?: string | null
+          read_at?: string | null
+          related_at?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          action_label?: string | null
+          action_url?: string | null
+          archived_at?: string | null
+          body?: string | null
+          created_at?: string
+          dedupe_key?: string | null
+          id?: string
+          kind?: string
+          level?: string
+          metadata?: Json
+          module?: string | null
+          read_at?: string | null
+          related_at?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       money_items: {
         Row: {
           active: boolean
