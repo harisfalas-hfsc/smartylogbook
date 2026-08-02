@@ -144,6 +144,7 @@ ${RELATION_RULES}`,
   train: `SELF-TRAINING — you are re-training yourself on THIS user so every future answer is more personal.
 You are given the assistant's current profile of the user plus their recent entries, tracked numbers and money model.
 Update the profile: keep what is still true, correct what changed, add what is new, drop anything no longer supported by the data.
+If the user has corrected your category choices, treat those corrections as strong preferences: record the rule you learned in "preferences".
 Only write things the data actually supports — never invent a habit, a person or a preference.
 Return STRICT JSON only, no markdown:
 {"portrait":"3-5 sentences describing who this user is and how they live, in plain language",
@@ -318,7 +319,31 @@ Deno.serve(async (req) => {
       }
     }
 
+    /* ---- the user's own category corrections: hard rules the classifier must respect ---- */
+    let correctionsText = "";
+    if (["classify", "extract", "train", "chat"].includes(mode)) {
+      try {
+        const db = await userClient(authHeader);
+        const { data: corr } = await db
+          .from("classification_corrections")
+          .select("title,summary,ai_tags,kind,from_module,to_module,note")
+          .order("created_at", { ascending: false })
+          .limit(40);
+        if (corr?.length) {
+          const lines = (corr as Array<Record<string, unknown>>).map((c) =>
+            `"${c.title ?? ""}"${c.kind ? ` (${c.kind})` : ""}${Array.isArray(c.ai_tags) && c.ai_tags.length ? ` [${(c.ai_tags as string[]).join(", ")}]` : ""}: you filed it under ${c.from_module}, the user moved it to ${c.to_module}${c.note ? ` — "${c.note}"` : ""}`
+          );
+          correctionsText =
+            `USER CORRECTIONS — the user has re-filed entries you classified. These are RULES, not suggestions.\n` +
+            `Learn the pattern behind each correction and apply it to anything similar from now on. When a new capture resembles a corrected one, use the category the USER chose.\n${lines.join("\n")}\n\n`;
+        }
+      } catch (e) {
+        console.error("corrections context failed", e);
+      }
+    }
+
     /* ---- training pulls the user's own history server-side ---- */
+
     let trainingMemories: Array<Record<string, unknown>> = [];
     let trainingCount = 0;
     if (mode === "train") {
@@ -403,18 +428,18 @@ Deno.serve(async (req) => {
       : "";
 
     const userContent = mode === "classify"
-      ? `Raw capture:\n${input ?? ""}\n\n${candidateText}\n\nToday: ${new Date().toISOString().slice(0, 10)}`
+      ? `${correctionsText}Raw capture:\n${input ?? ""}\n\n${candidateText}\n\nToday: ${new Date().toISOString().slice(0, 10)}`
       : mode === "search"
         ? `${context}\n\nQuestion: ${input ?? ""}`
         : mode === "train"
-          ? `${context}\n\n${prefsText}\n\nTotal entries in the logbook: ${trainingCount}.\n\nToday: ${new Date().toISOString().slice(0, 10)}\n\nRe-train your profile of this user now.`
+          ? `${context}\n\n${correctionsText}${prefsText}\n\nTotal entries in the logbook: ${trainingCount}.\n\nToday: ${new Date().toISOString().slice(0, 10)}\n\nRe-train your profile of this user now.`
           : `${context}\n\n${prefsText}\n\nToday: ${new Date().toISOString()}`;
 
     const chatMessages = mode === "chat"
       ? [
         {
           role: "system",
-          content: `${prompts.chat}\n\n${context}\n\n${candidateText}\n\n${prefsText}\n\nToday: ${new Date().toISOString()}`,
+          content: `${prompts.chat}\n\n${correctionsText}${context}\n\n${candidateText}\n\n${prefsText}\n\nToday: ${new Date().toISOString()}`,
         },
         ...(history ?? []).slice(-10).map((m) => ({ role: m.role, content: m.content })),
         {
@@ -437,7 +462,7 @@ Deno.serve(async (req) => {
           content: [
             {
               type: "text",
-              text: `${input?.trim() ? `User note: ${input.trim()}\n\n` : ""}${candidateText}\n\nToday: ${new Date().toISOString().slice(0, 10)}\n\nExtract and classify this document.`,
+              text: `${correctionsText}${input?.trim() ? `User note: ${input.trim()}\n\n` : ""}${candidateText}\n\nToday: ${new Date().toISOString().slice(0, 10)}\n\nExtract and classify this document.`,
             },
             { type: "image_url", image_url: { url: image ?? "" } },
           ],

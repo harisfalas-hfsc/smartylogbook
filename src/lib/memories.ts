@@ -81,13 +81,38 @@ export const useMemories = (options?: { module?: string; limit?: number }) => {
     return { error, id: inserted?.id ?? null };
   };
 
+  /** User moves an entry to another category — and the assistant learns from it. */
+  const reclassify = async (memory: Memory, toModule: string, note?: string) => {
+    if (!user) return { error: new Error('Not signed in') };
+    if (memory.module === toModule) return { error: null };
+    const { error } = await supabase
+      .from('memories')
+      .update({ module: toModule })
+      .eq('id', memory.id);
+    if (error) return { error };
+    setMemories((prev) => prev.map((m) => (m.id === memory.id ? { ...m, module: toModule } : m)));
+    await supabase.from('classification_corrections').insert({
+      user_id: user.id,
+      memory_id: memory.id,
+      title: memory.title,
+      summary: memory.summary,
+      ai_tags: memory.ai_tags ?? [],
+      kind: memory.kind,
+      from_module: memory.module,
+      to_module: toModule,
+      note: note ?? null,
+    });
+    void indexMemories([memory.id]);
+    return { error: null };
+  };
+
   const remove = async (id: string) => {
     const { error } = await supabase.from('memories').delete().eq('id', id);
     if (!error) setMemories((prev) => prev.filter((m) => m.id !== id));
     return { error };
   };
 
-  return { memories, loading, reload: load, create, remove };
+  return { memories, loading, reload: load, create, remove, reclassify };
 };
 
 export const groupByDay = (memories: Memory[]) => {

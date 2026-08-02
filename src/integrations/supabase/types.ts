@@ -95,6 +95,59 @@ export type Database = {
         }
         Relationships: []
       }
+      classification_corrections: {
+        Row: {
+          ai_tags: string[]
+          created_at: string
+          from_module: string
+          id: string
+          kind: string | null
+          memory_id: string | null
+          note: string | null
+          summary: string | null
+          title: string | null
+          to_module: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ai_tags?: string[]
+          created_at?: string
+          from_module: string
+          id?: string
+          kind?: string | null
+          memory_id?: string | null
+          note?: string | null
+          summary?: string | null
+          title?: string | null
+          to_module: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ai_tags?: string[]
+          created_at?: string
+          from_module?: string
+          id?: string
+          kind?: string | null
+          memory_id?: string | null
+          note?: string | null
+          summary?: string | null
+          title?: string | null
+          to_module?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "classification_corrections_memory_id_fkey"
+            columns: ["memory_id"]
+            isOneToOne: false
+            referencedRelation: "memories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       coach_cards: {
         Row: {
           action: string
