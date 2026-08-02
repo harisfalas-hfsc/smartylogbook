@@ -128,7 +128,7 @@ export const postMessage = async (
     metadata?: Record<string, unknown>;
   },
 ) => {
-  const { error } = await supabase.from('messages').insert({
+  const { error } = await supabase.from('messages').insert([{
     user_id: userId,
     kind: msg.kind,
     title: msg.title,
@@ -139,7 +139,7 @@ export const postMessage = async (
     action_url: msg.action_url ?? null,
     related_at: msg.related_at ?? null,
     dedupe_key: msg.dedupe_key ?? null,
-    metadata: msg.metadata ?? {},
-  });
+    metadata: (msg.metadata ?? {}) as never,
+  }]);
   return { error };
 };
