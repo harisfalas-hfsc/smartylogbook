@@ -10,6 +10,7 @@ export interface SubscriptionRow {
   source: string;
   current_period_start: string | null;
   current_period_end: string | null;
+  cancel_at_period_end?: boolean | null;
 }
 
 /** Start of the current billing cycle (falls back to the calendar month). */
@@ -53,7 +54,7 @@ export const useSubscription = () => {
     setLoading(true);
     const { data } = await supabase
       .from('subscriptions')
-      .select('plan, plan_key, status, source, current_period_start, current_period_end')
+      .select('plan, plan_key, status, source, current_period_start, current_period_end, cancel_at_period_end')
       .eq('user_id', user.id)
       .maybeSingle();
     const row = (data as SubscriptionRow | null) ?? null;
@@ -87,6 +88,16 @@ export const useSubscription = () => {
     return { error: null };
   };
 
+  const setCancellation = async (cancel: boolean) => {
+    const { data, error } = await supabase.functions.invoke('account', {
+      body: { action: cancel ? 'cancel' : 'resume' },
+    });
+    await load();
+    if (error) return { error: error.message };
+    if (data && typeof data === 'object' && 'error' in data) return { error: String((data as { error: unknown }).error) };
+    return { error: null };
+  };
+
   return {
     loading: loading || pricingLoading,
     pricing,
@@ -99,6 +110,9 @@ export const useSubscription = () => {
     canUseAssistant: active && remaining > 0,
     renewsAt: sub?.current_period_end ?? null,
     renewNow,
+    cancelAtPeriodEnd: Boolean(sub?.cancel_at_period_end),
+    cancelPlan: () => setCancellation(true),
+    resumePlan: () => setCancellation(false),
     reload: load,
   };
 };

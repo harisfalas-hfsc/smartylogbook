@@ -31,6 +31,7 @@ import SettingsPage from "./pages/SettingsPage";
 import TrashPage from "./pages/TrashPage";
 import AdminPage from "./pages/AdminPage";
 import AccountPage from "./pages/AccountPage";
+import PlanPage from "./pages/PlanPage";
 import PrivacySecurityPage from "./pages/PrivacySecurityPage";
 import AppearancePage from "./pages/AppearancePage";
 import RemindersPage from "./pages/RemindersPage";
@@ -85,6 +86,7 @@ const App = () => (
               <Route path="settings" element={<SettingsPage />} />
               <Route path="trash" element={<TrashPage />} />
               <Route path="account" element={<AccountPage />} />
+              <Route path="plan" element={<PlanPage />} />
               <Route path="privacy" element={<PrivacySecurityPage />} />
               <Route path="appearance" element={<AppearancePage />} />
               <Route path="admin" element={<AdminPage />} />

@@ -81,7 +81,26 @@ Deno.serve(async (req) => {
       return json({ ok: true, current_period_start: start.toISOString(), current_period_end: end.toISOString() });
     }
 
+    /* Cancel at period end — keeps access until the paid cycle finishes. */
+    if (action === "cancel" || action === "resume") {
+      const { data: existing } = await admin
+        .from("subscriptions")
+        .select("*")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (!existing || existing.plan === "free") {
+        return json({ error: "You do not have an active plan." }, 400);
+      }
+      const { error } = await admin
+        .from("subscriptions")
+        .update({ cancel_at_period_end: action === "cancel" })
+        .eq("user_id", user.id);
+      if (error) return json({ error: error.message }, 400);
+      return json({ ok: true, cancel_at_period_end: action === "cancel", current_period_end: existing.current_period_end });
+    }
+
     if (action === "export") {
+
       const tables = ["profiles", "memories", "user_preferences", "coach_cards", "reminders", "user_roles", "account_requests"];
       const data: Record<string, unknown> = {};
       for (const t of tables) {
