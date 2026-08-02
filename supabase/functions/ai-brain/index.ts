@@ -69,6 +69,7 @@ Alerts are proactive: bills due, overdue check-ups, documents expiring, long gap
 Never use scores, ratings, percentages or numeric evaluations of the user. Be warm, specific and never judgmental.
 If goals, focus areas or a tone are provided, follow them.`,
   coach: "",
+  embed: "",
   search: `You are the knowledge base of Smarty Logbook. Answer the user's question using ONLY the provided entries.
 Be concise and concrete: give real numbers, dates, merchants and names. Connect related entries when useful.
 If the answer is not in the data, say so plainly and ask one intelligent follow-up question (e.g. offer to have it uploaded). Never invent facts. Plain text, no markdown headers.`,
@@ -87,6 +88,57 @@ ${RELATION_RULES}`,
   transcribe: `You are a speech-to-text engine. Transcribe the audio verbatim in its original language. Return ONLY the transcript text, with no quotes, no markdown and no commentary. If the audio contains no speech, return an empty string.`,
 };
 prompts.coach = prompts.brief;
+
+
+const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+
+/** Text that represents a memory for semantic search. */
+const memoryText = (m: Record<string, unknown>) =>
+  [
+    m.title,
+    m.summary,
+    m.content,
+    Array.isArray(m.ai_tags) ? (m.ai_tags as string[]).join(", ") : null,
+    m.module,
+    m.kind,
+    m.merchant,
+    m.amount != null ? `amount ${m.amount} ${m.currency ?? ""}` : null,
+    m.location,
+    m.occurred_at ? String(m.occurred_at).slice(0, 10) : null,
+    m.metadata && typeof m.metadata === "object" ? JSON.stringify(m.metadata) : null,
+  ]
+    .filter(Boolean)
+    .join("\n")
+    .slice(0, 6000);
+
+async function embedTexts(apiKey: string, inputs: string[]): Promise<number[][]> {
+  const out: number[][] = [];
+  for (let i = 0; i < inputs.length; i += EMBED_BATCH) {
+    const batch = inputs.slice(i, i + EMBED_BATCH);
+    const res = await fetch("https://ai.gateway.lovable.dev/v1/embeddings", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ model: EMBED_MODEL, input: batch, dimensions: EMBED_DIMS }),
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`Embedding failed (${res.status}): ${text.slice(0, 300)}`);
+    }
+    const json = await res.json();
+    const sorted = (json.data ?? []).sort((a: { index: number }, b: { index: number }) => a.index - b.index);
+    for (const d of sorted) out.push(d.embedding as number[]);
+  }
+  return out;
+}
+
+const userClient = async (authHeader: string) => {
+  const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2.58.0");
+  return createClient(supabaseUrl, anonKey, {
+    global: { headers: { Authorization: authHeader } },
+    auth: { persistSession: false },
+  });
+};
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
