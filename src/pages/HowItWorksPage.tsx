@@ -19,21 +19,21 @@ const HowItWorksPage = () => (
   <div className="mx-auto max-w-6xl px-3 py-7 sm:px-5 sm:py-10">
     <PageHeader
       eyebrow="How it works"
-      title="You capture. The Smarty Logbook does everything else."
-      subtitle="Six seconds of your effort — classification, connections, reminders and answers happen on their own."
+      title="You put it in. Smarty Logbook does the thinking."
+      subtitle="Four ways in — type, say, snap, upload. Then it understands, relates, remembers and finds it for you."
     />
 
     <Panel
-      eyebrow="Step 1 — capture"
-      eyebrowEmoji="📥"
+      eyebrow="The whole idea"
+      eyebrowEmoji="🔁"
       badge={Wand2}
-      title={<>Throw <span className="gradient-text">anything</span> at it.</>}
-      lead="No forms, no categories, no naming. Four ways in, all of them one tap away."
+      title={<>Put anything in, <span className="gradient-text">get sense back.</span></>}
+      lead="No forms, no naming, no filing. One tap in, and the thinking happens on the other side."
     >
       <div className="grid gap-3 lg:grid-cols-2">
-        <SubCard label="Ways to capture" labelEmoji="⚡">
+        <SubCard label="You put in" labelEmoji="📥">
           <div className="grid gap-2 sm:grid-cols-2">
-            {captureTypes.map((c) => (
+            {givesIn.map((c) => (
               <MiniRow key={c.t} emoji={c.e} title={c.t} text={c.s} />
             ))}
           </div>
@@ -44,17 +44,16 @@ const HowItWorksPage = () => (
             </p>
           </DesktopOnly>
         </SubCard>
-        <DesktopOnly>
-          <SubCard label="What you never do" labelEmoji="🚫">
-            <div className="grid gap-2">
-              <MiniRow emoji="📂" title="Pick a folder" text="The Assistant decides where it belongs." />
-              <MiniRow emoji="🏷️" title="Write tags" text="Generated automatically from the content." />
-              <MiniRow emoji="⌨️" title="Fill in fields" text="Dates and amounts are extracted for you." />
-            </div>
-          </SubCard>
-        </DesktopOnly>
+        <SubCard label="It gives back" labelEmoji="✨">
+          <div className="grid gap-2 sm:grid-cols-2">
+            {givesBack.map((c) => (
+              <MiniRow key={c.t} emoji={c.e} title={c.t} text={c.s} />
+            ))}
+          </div>
+        </SubCard>
       </div>
     </Panel>
+
 
     <Panel
       eyebrow="Step 2 — the flow"
