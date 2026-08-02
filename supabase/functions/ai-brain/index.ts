@@ -5,8 +5,13 @@ const corsHeaders = {
 };
 
 const MODEL = "google/gemini-3.6-flash";
+const EMBED_MODEL = "openai/text-embedding-3-small";
+const EMBED_DIMS = 1536;
+const EMBED_BATCH = 40;
 
-type Mode = "classify" | "brief" | "coach" | "search" | "insights" | "extract" | "transcribe" | "chat";
+type Mode =
+  | "classify" | "brief" | "coach" | "search" | "insights"
+  | "extract" | "transcribe" | "chat" | "embed";
 
 interface Body {
   mode: Mode;
@@ -19,6 +24,8 @@ interface Body {
   preferences?: { goals?: string[]; focus?: string[]; tone?: string } | null;
   history?: Array<{ role: "user" | "assistant"; content: string }>;
   attachments?: Array<{ url: string; name?: string }>;
+  ids?: string[];
+  retrieve?: boolean;
 }
 
 const RELATION_RULES = `RELATIONSHIP ENGINE — nothing exists in isolation.
