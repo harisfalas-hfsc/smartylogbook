@@ -73,10 +73,11 @@ export const useSubscription = () => {
 
   useEffect(() => { void load(); }, [load]);
 
-  const active = isActive(sub);
+  /* Administrators always have full Premium access — never show them upsells. */
+  const active = isAdmin || isActive(sub);
   const plan = active ? findPlan(pricing, sub?.plan_key) : null;
   const allowance = active && plan ? planAllowance(pricing, plan) : 0;
-  const remaining = Math.max(0, allowance - used);
+  const remaining = isAdmin ? Math.max(allowance, 1) : Math.max(0, allowance - used);
 
   /**
    * Immediate renewal / top-up: the user pays for another month right away and
