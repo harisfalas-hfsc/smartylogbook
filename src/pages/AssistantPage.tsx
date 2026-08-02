@@ -6,6 +6,7 @@ import { useMemories } from '@/lib/memories';
 import { usePreferences } from '@/lib/preferences';
 import { useDailyBrief } from '@/lib/assistant';
 import DailyBriefCard from '@/components/DailyBriefCard';
+import AssistantMemoryCard from '@/components/AssistantMemoryCard';
 import { cn } from '@/lib/utils';
 
 interface ChatMessage {
@@ -241,6 +242,8 @@ const AssistantPage = () => {
       </header>
 
       <DailyBriefCard brief={brief} generating={generating} onToggleDone={toggleDone} onRegenerate={regenerate} />
+
+      <AssistantMemoryCard />
 
       <div className="space-y-3">
         {messages.length === 0 && (

@@ -11,7 +11,7 @@ const EMBED_BATCH = 40;
 
 type Mode =
   | "classify" | "brief" | "coach" | "search" | "insights"
-  | "extract" | "transcribe" | "chat" | "embed";
+  | "extract" | "transcribe" | "chat" | "embed" | "train";
 
 interface Body {
   mode: Mode;
@@ -27,6 +27,43 @@ interface Body {
   ids?: string[];
   retrieve?: boolean;
 }
+
+const IDENTITY = `IDENTITY — You are Smarty Assistant, the intelligence behind Smarty Logbook.
+You are not a chatbot, not a search engine, not a generic AI. You are this ONE user's Personal AI Operating System.
+Mission: understand this user's life, organise it automatically, connect information, discover patterns, predict likely outcomes and help them make better decisions every day.
+Your objective is not to answer questions — it is to understand the user. Every interaction must reduce their mental effort and improve a decision.
+
+MINDSET — think like the world's best executive assistant: exceptional memory, analytical, calm, proactive, trustworthy.
+You observe, connect, compare, explain, predict, recommend and keep learning.
+
+GOLDEN RULE — every piece of information has value. Nothing is random. Never merely store information: always understand it.
+The user NEVER has to choose a category. Understanding comes before organisation.
+
+KNOWLEDGE GRAPH — never think in folders, think in relationships: people, places, companies, doctors, family, meetings, projects,
+medical history, finances, workouts, nutrition, travel, documents, receipts, ideas, dates. Nothing exists alone.
+
+CONFIDENCE ENGINE — before answering, silently judge how much real data supports you and speak at the right level:
+- High: long history, several sources agree, patterns stable ("Based on 18 months of expenses, ...").
+- Medium: some history, patterns emerging ("You've logged three months of expenses, so this is reasonable but will improve.").
+- Low: not enough data ("I don't yet have enough information to estimate this accurately — keep logging and it will get reliable.").
+Never invent certainty and never present a prediction as a fact.
+
+PREDICTION — use real history to estimate likely outcomes (yearly spending, recurring costs, weight or recovery trends, cash flow,
+upcoming renewals, medical follow-ups). Always say the estimate is based on observed patterns.
+
+RECOMMENDATIONS — always grounded in this user's own history, never generic advice, and always say WHY
+("your grocery spending has risen for three months", "you haven't uploaded a blood test in over a year").
+
+MISSING INFORMATION — never guess. Say exactly what is missing, ask one intelligent follow-up question, and explain how accuracy improves.
+
+PROACTIVITY — flag meaningful situations without being asked (a document expiring, a renewal, an overdue check-up, a rising cost,
+a dropping habit, real progress). Be helpful, never intrusive or overwhelming.
+
+STYLE — natural, professional, friendly, calm, clear, supportive. Never robotic, never lecturing. Concise unless more detail is asked for.
+Always separate verified facts, observed patterns, predictions and suggestions. Never fabricate a memory. Never use scores, ratings,
+grades or numeric evaluations of the user.
+
+Your success is measured by one question: "Did I help the user make a better decision today?"`;
 
 const RELATION_RULES = `RELATIONSHIP ENGINE — nothing exists in isolation.
 You are given "Existing entries" with ids. Choose every entry the new capture is genuinely related to
@@ -104,8 +141,29 @@ ${MONEY_RULES}
 
 ${RELATION_RULES}`,
   transcribe: `You are a speech-to-text engine. Transcribe the audio verbatim in its original language. Return ONLY the transcript text, with no quotes, no markdown and no commentary. If the audio contains no speech, return an empty string.`,
+  train: `SELF-TRAINING — you are re-training yourself on THIS user so every future answer is more personal.
+You are given the assistant's current profile of the user plus their recent entries, tracked numbers and money model.
+Update the profile: keep what is still true, correct what changed, add what is new, drop anything no longer supported by the data.
+Only write things the data actually supports — never invent a habit, a person or a preference.
+Return STRICT JSON only, no markdown:
+{"portrait":"3-5 sentences describing who this user is and how they live, in plain language",
+ "habits":["short observed habits, max 8"],
+ "routines":["recurring rhythms with their timing, e.g. 'trains Mon/Wed/Fri mornings', max 6"],
+ "preferences":["how they like to be helped, tone, what they care about, max 6"],
+ "patterns":[{"title":"short pattern","detail":"one sentence with the evidence","confidence":"high|medium|low"}],
+ "people":[{"name":"person or company","relation":"doctor|family|friend|client|supplier|other","note":"one short line"}],
+ "watchlist":[{"title":"what to keep an eye on","detail":"one sentence why","confidence":"high|medium|low"}],
+ "open_questions":["intelligent questions whose answers would make you much more useful, max 5"],
+ "confidence":"high|medium|low"}
+Max 8 patterns, 10 people, 6 watchlist items. No scores, ratings or numeric evaluations of the user.`,
 };
 prompts.coach = prompts.brief;
+
+/** Every user-facing reasoning mode speaks with the same trained identity. */
+for (const mode of ["classify", "chat", "brief", "coach", "search", "insights", "extract", "train"] as Mode[]) {
+  prompts[mode] = `${IDENTITY}\n\n---\n\n${prompts[mode]}`;
+}
+
 
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -227,8 +285,57 @@ Deno.serve(async (req) => {
       }
     }
 
+    /* modes that reason over the user's whole life */
+    const deep = ["chat", "search", "insights", "brief", "coach", "train"].includes(mode);
+
+    /* ---- the assistant's own learned profile of THIS user (self-training memory) ---- */
+    let profileRow: Record<string, unknown> | null = null;
+    let profileText = "";
+    if (deep) {
+      try {
+        const db = await userClient(authHeader);
+        const { data } = await db.from("assistant_profiles").select("*").maybeSingle();
+        profileRow = (data as Record<string, unknown>) ?? null;
+        if (profileRow?.portrait || (profileRow?.patterns as unknown[])?.length) {
+          const p = profileRow;
+          profileText =
+            `WHAT YOU HAVE LEARNED ABOUT THIS USER SO FAR (your own trained profile, confidence: ${p.confidence ?? "low"}, ` +
+            `built from ${p.data_points ?? 0} entries, version ${p.version ?? 0}).\n` +
+            `Use it to personalise every answer, but always prefer fresh evidence from the entries when they disagree.\n` +
+            `${JSON.stringify({
+              portrait: p.portrait,
+              habits: p.habits,
+              routines: p.routines,
+              preferences: p.preferences,
+              patterns: p.patterns,
+              people: p.people,
+              watchlist: p.watchlist,
+              open_questions: p.open_questions,
+            }).slice(0, 8000)}\n\n`;
+        }
+      } catch (e) {
+        console.error("profile context failed", e);
+      }
+    }
+
+    /* ---- training pulls the user's own history server-side ---- */
+    let trainingMemories: Array<Record<string, unknown>> = [];
+    let trainingCount = 0;
+    if (mode === "train") {
+      const db = await userClient(authHeader);
+      const { data: rows, count } = await db
+        .from("memories")
+        .select("title,summary,module,kind,amount,currency,merchant,location,ai_tags,occurred_at,metadata", {
+          count: "exact",
+        })
+        .order("occurred_at", { ascending: false })
+        .limit(150);
+      trainingMemories = (rows ?? []) as Array<Record<string, unknown>>;
+      trainingCount = count ?? trainingMemories.length;
+    }
+
     let factsText = "";
-    if (mode === "chat" || mode === "search" || mode === "insights" || mode === "brief" || mode === "coach") {
+    if (deep) {
       try {
         const db = await userClient(authHeader);
         const { data: factRows } = await db
@@ -253,7 +360,7 @@ Deno.serve(async (req) => {
     }
 
     let moneyText = "";
-    if (mode === "chat" || mode === "search" || mode === "insights" || mode === "brief" || mode === "coach") {
+    if (deep) {
       try {
         const db = await userClient(authHeader);
         const { data: moneyRows } = await db
@@ -281,9 +388,11 @@ Deno.serve(async (req) => {
       ? `Most relevant entries from the user's ENTIRE history (semantic recall, ranked):\n${JSON.stringify(recalled).slice(0, 20000)}\n\n`
       : "";
 
-    const context = memories?.length || recalled.length || factsText || moneyText
-      ? `${moneyText}${factsText}${recallText}Recent entries (JSON):\n${JSON.stringify(memories ?? []).slice(0, 16000)}`
+    const entryList = trainingMemories.length ? trainingMemories : (memories ?? []);
+    const context = entryList.length || recalled.length || factsText || moneyText || profileText
+      ? `${profileText}${moneyText}${factsText}${recallText}Recent entries (JSON):\n${JSON.stringify(entryList).slice(0, 20000)}`
       : "No entries available yet.";
+
 
     const candidateText = candidates?.length
       ? `Existing entries (id + title):\n${JSON.stringify(candidates).slice(0, 12000)}`
@@ -297,7 +406,9 @@ Deno.serve(async (req) => {
       ? `Raw capture:\n${input ?? ""}\n\n${candidateText}\n\nToday: ${new Date().toISOString().slice(0, 10)}`
       : mode === "search"
         ? `${context}\n\nQuestion: ${input ?? ""}`
-        : `${context}\n\n${prefsText}\n\nToday: ${new Date().toISOString()}`;
+        : mode === "train"
+          ? `${context}\n\n${prefsText}\n\nTotal entries in the logbook: ${trainingCount}.\n\nToday: ${new Date().toISOString().slice(0, 10)}\n\nRe-train your profile of this user now.`
+          : `${context}\n\n${prefsText}\n\nToday: ${new Date().toISOString()}`;
 
     const chatMessages = mode === "chat"
       ? [
@@ -427,6 +538,43 @@ Deno.serve(async (req) => {
     if (!parsed) {
       return new Response(JSON.stringify({ error: "Could not parse AI response" }), {
         status: 502,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    /* ---- persist the retrained profile so the assistant keeps evolving per user ---- */
+    if (mode === "train") {
+      const p = parsed as Record<string, unknown>;
+      const arr = (v: unknown) => (Array.isArray(v) ? v.slice(0, 12) : []);
+      const db = await userClient(authHeader);
+      const { data: auth } = await db.auth.getUser();
+      const uid = auth?.user?.id;
+      if (!uid) throw new Error("Not authenticated");
+      const row = {
+        user_id: uid,
+        portrait: p.portrait ? String(p.portrait).slice(0, 2000) : null,
+        habits: arr(p.habits),
+        routines: arr(p.routines),
+        preferences: arr(p.preferences),
+        patterns: arr(p.patterns),
+        people: arr(p.people),
+        watchlist: arr(p.watchlist),
+        open_questions: arr(p.open_questions),
+        confidence: ["high", "medium", "low"].includes(String(p.confidence)) ? String(p.confidence) : "low",
+        data_points: trainingCount,
+        version: Number(profileRow?.version ?? 0) + 1,
+        trained_at: new Date().toISOString(),
+      };
+      const { data: saved, error: saveErr } = await db
+        .from("assistant_profiles")
+        .upsert(row, { onConflict: "user_id" })
+        .select("*")
+        .maybeSingle();
+      if (saveErr) {
+        console.error("profile save failed", saveErr);
+        throw new Error(`Could not save assistant profile: ${saveErr.message}`);
+      }
+      return new Response(JSON.stringify({ profile: saved }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }

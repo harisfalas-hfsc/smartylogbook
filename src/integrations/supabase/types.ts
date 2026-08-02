@@ -38,6 +38,63 @@ export type Database = {
         }
         Relationships: []
       }
+      assistant_profiles: {
+        Row: {
+          confidence: string
+          created_at: string
+          data_points: number
+          habits: Json
+          id: string
+          open_questions: Json
+          patterns: Json
+          people: Json
+          portrait: string | null
+          preferences: Json
+          routines: Json
+          trained_at: string | null
+          updated_at: string
+          user_id: string
+          version: number
+          watchlist: Json
+        }
+        Insert: {
+          confidence?: string
+          created_at?: string
+          data_points?: number
+          habits?: Json
+          id?: string
+          open_questions?: Json
+          patterns?: Json
+          people?: Json
+          portrait?: string | null
+          preferences?: Json
+          routines?: Json
+          trained_at?: string | null
+          updated_at?: string
+          user_id: string
+          version?: number
+          watchlist?: Json
+        }
+        Update: {
+          confidence?: string
+          created_at?: string
+          data_points?: number
+          habits?: Json
+          id?: string
+          open_questions?: Json
+          patterns?: Json
+          people?: Json
+          portrait?: string | null
+          preferences?: Json
+          routines?: Json
+          trained_at?: string | null
+          updated_at?: string
+          user_id?: string
+          version?: number
+          watchlist?: Json
+        }
+        Relationships: []
+      }
       coach_cards: {
         Row: {
           action: string
