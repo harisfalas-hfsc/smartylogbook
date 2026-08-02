@@ -256,15 +256,20 @@ const AssistantPage = () => {
         <ConversationMeter used={used} allowance={allowance} planName={plan?.name} renewsAt={renewsAt} />
       )}
 
-      <DailyBriefCard
-        brief={brief}
-        generating={generating}
-        onRegenerate={regenerate}
-        onAsk={(t) => setInput(t)}
-      />
+      {canUseAssistant && (
+        <>
+          <DailyBriefCard
+            brief={brief}
+            generating={generating}
+            onRegenerate={regenerate}
+            onAsk={(t) => setInput(t)}
+          />
 
-      <AssistantMemoryCard />
+          <AssistantMemoryCard />
+        </>
+      )}
 
+      {canUseAssistant && (
       <div className="space-y-3">
         {messages.length === 0 && (
           <div className="grid gap-2 sm:grid-cols-2">
@@ -312,8 +317,10 @@ const AssistantPage = () => {
         )}
         <div ref={endRef} />
       </div>
+      )}
 
       {/* Composer */}
+      {canUseAssistant && (
       <div className="sticky bottom-24 z-20 md:bottom-4">
         <div className="smarty-card space-y-3 p-3">
           {files.length > 0 && (
@@ -386,6 +393,7 @@ const AssistantPage = () => {
           <input ref={fileInput} type="file" accept="image/*,application/pdf" multiple className="hidden" onChange={onPick} />
         </div>
       </div>
+      )}
     </div>
   );
 };
