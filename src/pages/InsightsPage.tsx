@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useMemories } from '@/lib/memories';
 import { MODULES, getModule } from '@/lib/constants';
 import TrendsSection from '@/components/TrendsSection';
+import MoneySection from '@/components/MoneySection';
 
 interface Insights {
   summaries: { module: string; title: string; lines: string[] }[];
@@ -82,6 +83,7 @@ const InsightsPage = () => {
       ) : insights ? (
         <>
           <TrendsSection />
+          <MoneySection />
           {insights.overview && (
             <section className="smarty-card animate-fade-up p-5">
               <p className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">Right now</p>

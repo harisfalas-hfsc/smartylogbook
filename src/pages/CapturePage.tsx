@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { saveFacts, type AiFact } from '@/lib/facts';
+import { saveMoneyItems, type AiMoneyItem } from '@/lib/money';
 import { useMemories } from '@/lib/memories';
 import { CAPTURE_KINDS, MODULES, CaptureKind, getModule } from '@/lib/constants';
 import { useReminders } from '@/lib/reminders';
@@ -36,6 +37,7 @@ interface Extracted {
   relation_note?: string | null;
   reminder?: { title?: string; type?: string; due_date?: string } | null;
   facts?: AiFact[];
+  money?: AiMoneyItem[];
 }
 
 const readAsDataUrl = (file: File | Blob) =>
@@ -307,6 +309,7 @@ const CapturePage = () => {
     }
     if (newId && user) {
       void saveFacts(user.id, newId, classified?.facts, occurredAt);
+      void saveMoneyItems(user.id, newId, classified?.money);
     }
     const reminder = classified?.reminder;
     if (reminder?.title && reminder.due_date) {
