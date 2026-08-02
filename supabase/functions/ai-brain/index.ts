@@ -144,9 +144,11 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { mode, input, image, audio, audioFormat, memories, candidates, preferences, history, attachments }: Body =
-      await req.json();
-    if (!mode || !prompts[mode]) {
+    const {
+      mode, input, image, audio, audioFormat, memories, candidates, preferences, history, attachments,
+      ids, retrieve,
+    }: Body = await req.json();
+    if (!mode || prompts[mode] === undefined) {
       return new Response(JSON.stringify({ error: "Invalid mode" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -156,8 +158,63 @@ Deno.serve(async (req) => {
     const apiKey = Deno.env.get("LOVABLE_API_KEY");
     if (!apiKey) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const context = memories?.length
-      ? `Entries (JSON):\n${JSON.stringify(memories).slice(0, 24000)}`
+    const authHeader = req.headers.get("Authorization") ?? "";
+
+    /* ---- embed mode: index entries so the Assistant can recall the whole history ---- */
+    if (mode === "embed") {
+      const db = await userClient(authHeader);
+      let query = db
+        .from("memories")
+        .select("id,title,summary,content,module,kind,amount,currency,location,ai_tags,metadata,occurred_at");
+      query = ids?.length ? query.in("id", ids) : query.is("embedding", null);
+      const { data: rows, error } = await query.order("occurred_at", { ascending: false }).limit(80);
+      if (error) throw error;
+      if (!rows?.length) {
+        return new Response(JSON.stringify({ embedded: 0, remaining: 0 }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const vectors = await embedTexts(apiKey, rows.map((r) => memoryText(r as Record<string, unknown>)));
+      let embedded = 0;
+      for (let i = 0; i < rows.length; i++) {
+        const { error: upErr } = await db
+          .from("memories")
+          .update({ embedding: JSON.stringify(vectors[i]), embedded_at: new Date().toISOString() })
+          .eq("id", rows[i].id);
+        if (!upErr) embedded++;
+      }
+      const { count } = await db
+        .from("memories")
+        .select("id", { count: "exact", head: true })
+        .is("embedding", null);
+      return new Response(JSON.stringify({ embedded, remaining: count ?? 0 }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    /* ---- semantic recall: pull the most relevant entries from the ENTIRE history ---- */
+    let recalled: Array<Record<string, unknown>> = [];
+    if (retrieve && input?.trim() && (mode === "chat" || mode === "search")) {
+      try {
+        const db = await userClient(authHeader);
+        const [vector] = await embedTexts(apiKey, [input.trim().slice(0, 4000)]);
+        const { data: matches, error: matchErr } = await db.rpc("match_memories", {
+          query_embedding: JSON.stringify(vector),
+          match_count: 16,
+        });
+        if (matchErr) console.error("match_memories error", matchErr);
+        recalled = (matches ?? []) as Array<Record<string, unknown>>;
+      } catch (e) {
+        console.error("semantic recall failed", e);
+      }
+    }
+
+    const recallText = recalled.length
+      ? `Most relevant entries from the user's ENTIRE history (semantic recall, ranked):\n${JSON.stringify(recalled).slice(0, 20000)}\n\n`
+      : "";
+
+    const context = memories?.length || recalled.length
+      ? `${recallText}Recent entries (JSON):\n${JSON.stringify(memories ?? []).slice(0, 16000)}`
       : "No entries available yet.";
 
     const candidateText = candidates?.length
