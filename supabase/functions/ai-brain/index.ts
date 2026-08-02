@@ -36,11 +36,18 @@ Return their ids in "related_ids" (max 5, only real matches, empty array when no
 Also decide whether this capture implies a future action (a bill due date, an appointment, a re-test, an expiry).
 If so return "reminder": {"title":"short","type":"task|bill|health|event","due_date":"YYYY-MM-DD"} else "reminder": null.`;
 
+const FACT_RULES = `FACT EXTRACTION — pull out every measurable value so it can be trended over time.
+Return a "facts" array (empty when there is nothing measurable). Each item:
+{"name":"snake_case stable key, e.g. cholesterol_total, weight, blood_pressure_systolic, rent, invoice_total, hba1c","label":"human label","value":number,"unit":"mg/dL|kg|EUR|bpm|... or null","category":"health|money|fitness|nutrition|other","date":"YYYY-MM-DD or null"}
+Use the SAME name for the same measurement every time so past and future values line up. Max 20 facts. Never invent values.`;
+
 const prompts: Record<Mode, string> = {
   classify: `You are the automatic classification engine of Smarty Logbook.
 The user NEVER picks a category. From the raw capture alone you must understand what it is, where it belongs, what to extract and what it connects to.
 Return STRICT JSON only, no markdown:
-{"title":"short title max 60 chars","summary":"one sentence summary","module":"health|fitness|nutrition|finance|business|documents|personal","secondary_modules":["other modules it also belongs to, max 2"],"kind":"text|voice|photo|receipt|document|medical|workout|meal|expense|task|reminder|idea|journal|mood|location","ai_tags":["max 4 short lowercase tags"],"amount":number or null,"currency":"3-letter code or null","merchant":"string or null","date":"YYYY-MM-DD or null","location":"string or null","details":{"any structured facts you extracted, e.g. duration, muscle groups, biomarkers, due date, company"},"related_ids":[],"relation_note":null,"reminder":null}
+{"title":"short title max 60 chars","summary":"one sentence summary","module":"health|fitness|nutrition|finance|business|documents|personal","secondary_modules":["other modules it also belongs to, max 2"],"kind":"text|voice|photo|receipt|document|medical|workout|meal|expense|task|reminder|idea|journal|mood|location","ai_tags":["max 4 short lowercase tags"],"amount":number or null,"currency":"3-letter code or null","merchant":"string or null","date":"YYYY-MM-DD or null","location":"string or null","details":{"any structured facts you extracted, e.g. duration, muscle groups, biomarkers, due date, company"},"related_ids":[],"relation_note":null,"reminder":null,"facts":[]}
+
+${FACT_RULES}
 
 ${RELATION_RULES}`,
   chat: `You are Smarty Assistant, the intelligent personal assistant inside Smarty Logbook.
@@ -80,9 +87,11 @@ Only include modules the user actually has data for. Max 5 summaries, 4 patterns
 If there is too little data, return fewer items and say so in the overview.`,
   extract: `You read photos, receipts, documents and PDFs for Smarty Logbook and classify them automatically — the user never chooses a category.
 Return STRICT JSON only, no markdown:
-{"title":"short title max 60 chars","summary":"one sentence of what this is","module":"health|fitness|nutrition|finance|business|documents|personal","kind":"photo|receipt|document|medical|meal|expense","ai_tags":["max 4 short lowercase tags"],"amount":number or null,"currency":"3-letter code or null","merchant":"string or null","date":"YYYY-MM-DD or null","due_date":"YYYY-MM-DD or null","paid":true|false|null,"category":"string or null","items":["max 6 line items"],"details":{"structured facts, e.g. biomarkers with values and ranges, laboratory name, policy number, expiry date"},"related_ids":[],"relation_note":null,"reminder":null}
+{"title":"short title max 60 chars","summary":"one sentence of what this is","module":"health|fitness|nutrition|finance|business|documents|personal","kind":"photo|receipt|document|medical|meal|expense","ai_tags":["max 4 short lowercase tags"],"amount":number or null,"currency":"3-letter code or null","merchant":"string or null","date":"YYYY-MM-DD or null","due_date":"YYYY-MM-DD or null","paid":true|false|null,"category":"string or null","items":["max 6 line items"],"details":{"structured facts, e.g. biomarkers with values and ranges, laboratory name, policy number, expiry date"},"related_ids":[],"relation_note":null,"reminder":null,"facts":[]}
 For receipts and bills always read the total, the company and the due date, and whether it is paid.
 For medical documents extract biomarkers with their values and reference ranges, the date and the laboratory.
+
+${FACT_RULES}
 
 ${RELATION_RULES}`,
   transcribe: `You are a speech-to-text engine. Transcribe the audio verbatim in its original language. Return ONLY the transcript text, with no quotes, no markdown and no commentary. If the audio contains no speech, return an empty string.`,
@@ -209,12 +218,37 @@ Deno.serve(async (req) => {
       }
     }
 
+    let factsText = "";
+    if (mode === "chat" || mode === "search" || mode === "insights" || mode === "brief" || mode === "coach") {
+      try {
+        const db = await userClient(authHeader);
+        const { data: factRows } = await db
+          .from("facts")
+          .select("name,label,value,unit,category,observed_at")
+          .order("observed_at", { ascending: false })
+          .limit(200);
+        if (factRows?.length) {
+          const grouped: Record<string, string[]> = {};
+          for (const f of factRows as Array<Record<string, unknown>>) {
+            const key = `${f.label ?? f.name}${f.unit ? ` (${f.unit})` : ""}`;
+            (grouped[key] ||= []).push(`${f.value} on ${String(f.observed_at).slice(0, 10)}`);
+          }
+          const lines = Object.entries(grouped)
+            .map(([k, v]) => `${k}: ${v.slice(0, 8).reverse().join(" -> ")}`)
+            .slice(0, 40);
+          factsText = `Tracked numbers over time (oldest -> newest per line). Use these for real comparisons and trends:\n${lines.join("\n")}\n\n`;
+        }
+      } catch (e) {
+        console.error("facts context failed", e);
+      }
+    }
+
     const recallText = recalled.length
       ? `Most relevant entries from the user's ENTIRE history (semantic recall, ranked):\n${JSON.stringify(recalled).slice(0, 20000)}\n\n`
       : "";
 
-    const context = memories?.length || recalled.length
-      ? `${recallText}Recent entries (JSON):\n${JSON.stringify(memories ?? []).slice(0, 16000)}`
+    const context = memories?.length || recalled.length || factsText
+      ? `${factsText}${recallText}Recent entries (JSON):\n${JSON.stringify(memories ?? []).slice(0, 16000)}`
       : "No entries available yet.";
 
     const candidateText = candidates?.length

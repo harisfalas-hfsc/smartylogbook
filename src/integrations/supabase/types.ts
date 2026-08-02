@@ -83,6 +83,59 @@ export type Database = {
         }
         Relationships: []
       }
+      facts: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          label: string | null
+          memory_id: string | null
+          name: string
+          observed_at: string
+          text_value: string | null
+          unit: string | null
+          updated_at: string
+          user_id: string
+          value: number | null
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          id?: string
+          label?: string | null
+          memory_id?: string | null
+          name: string
+          observed_at?: string
+          text_value?: string | null
+          unit?: string | null
+          updated_at?: string
+          user_id: string
+          value?: number | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          label?: string | null
+          memory_id?: string | null
+          name?: string
+          observed_at?: string
+          text_value?: string | null
+          unit?: string | null
+          updated_at?: string
+          user_id?: string
+          value?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "facts_memory_id_fkey"
+            columns: ["memory_id"]
+            isOneToOne: false
+            referencedRelation: "memories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       memories: {
         Row: {
           ai_tags: string[]

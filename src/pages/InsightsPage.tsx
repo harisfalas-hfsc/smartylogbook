@@ -3,6 +3,7 @@ import { Brain, Loader2, RefreshCw, Sparkles, AlertTriangle } from 'lucide-react
 import { supabase } from '@/integrations/supabase/client';
 import { useMemories } from '@/lib/memories';
 import { MODULES, getModule } from '@/lib/constants';
+import TrendsSection from '@/components/TrendsSection';
 
 interface Insights {
   summaries: { module: string; title: string; lines: string[] }[];
@@ -80,6 +81,7 @@ const InsightsPage = () => {
         <div className="smarty-card p-6 text-center text-sm text-muted-foreground">{error}</div>
       ) : insights ? (
         <>
+          <TrendsSection />
           {insights.overview && (
             <section className="smarty-card animate-fade-up p-5">
               <p className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">Right now</p>
