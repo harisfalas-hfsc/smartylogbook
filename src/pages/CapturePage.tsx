@@ -184,6 +184,16 @@ const CapturePage = () => {
     }
   };
 
+  // Home-screen shortcuts: /app/capture?mode=voice | photo
+  const modeParam = new URLSearchParams(useLocation().search).get('mode');
+  useEffect(() => {
+    if (modeParam === 'voice') startVoice();
+    if (modeParam === 'photo') cameraInput.current?.click();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [modeParam]);
+
+
+
   /* ---------- files ---------- */
 
   const pickFile = async (chosen: File | undefined, asKind: CaptureKind) => {
