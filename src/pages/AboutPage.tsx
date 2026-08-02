@@ -49,8 +49,8 @@ const AboutPage = () => (
       eyebrow="Our mission"
       eyebrowEmoji="🌱"
       badge={Sparkles}
-      title={<>Your life, <span className="gradient-text">remembered.</span></>}
-      lead="Smarty Logbook takes the work of organising, filing and remembering off your hands. You throw things in; the Smarty Assistant makes sense of them."
+      title={<>A logbook <span className="gradient-text">with a brain.</span></>}
+      lead="Smarty Logbook takes the work of organising, filing and remembering off your hands. You put things in; the Smarty Assistant makes sense of them."
     >
       <div className="grid gap-3 lg:grid-cols-2">
         <SubCard label="How it feels" labelEmoji="✨">
