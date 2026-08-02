@@ -11,14 +11,21 @@ interface Props {
   memory: Memory;
   onDelete?: (id: string) => void;
   onMove?: (memory: Memory, toModule: string) => Promise<{ error: Error | null }> | void;
+  onOpen?: (memory: Memory) => void;
 }
 
-const MemoryCard = ({ memory, onDelete, onMove }: Props) => {
+const MemoryCard = ({ memory, onDelete, onMove, onOpen }: Props) => {
   const module = getModule(memory.module);
   const Icon = kindIcon(memory.kind);
 
   return (
-    <article className="smarty-card group animate-fade-up p-4 transition-smooth hover:shadow-elevated">
+    <article
+      onClick={() => onOpen?.(memory)}
+      role={onOpen ? 'button' : undefined}
+      tabIndex={onOpen ? 0 : undefined}
+      onKeyDown={(e) => { if (onOpen && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); onOpen(memory); } }}
+      className={`smarty-card group animate-fade-up p-4 transition-smooth hover:shadow-elevated${onOpen ? ' cursor-pointer' : ''}`}
+    >
       <div className="flex gap-3">
         <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${module.tint}`}>
           <Icon className={`h-5 w-5 ${module.color}`} />
@@ -39,13 +46,14 @@ const MemoryCard = ({ memory, onDelete, onMove }: Props) => {
                 <DropdownMenuTrigger asChild>
                   <button
                     aria-label="Change category"
+                    onClick={(e) => e.stopPropagation()}
                     className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold transition-smooth hover:opacity-80 ${module.tint} ${module.color}`}
                   >
                     {module.label}
                     <FolderInput className="h-3 w-3" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-56">
+                <DropdownMenuContent align="start" className="w-56" onClick={(e) => e.stopPropagation()}>
                   <DropdownMenuLabel className="text-xs">Move to category</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   {MODULES.map((m) => {
@@ -104,7 +112,7 @@ const MemoryCard = ({ memory, onDelete, onMove }: Props) => {
             ))}
             {onDelete && (
               <button
-                onClick={() => onDelete(memory.id)}
+                onClick={(e) => { e.stopPropagation(); onDelete(memory.id); }}
                 aria-label="Delete memory"
                 className="ml-auto rounded-full p-1.5 text-muted-foreground opacity-0 transition-smooth hover:bg-destructive/10 hover:text-destructive group-hover:opacity-100"
               >

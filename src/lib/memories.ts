@@ -81,6 +81,21 @@ export const useMemories = (options?: { module?: string; limit?: number }) => {
     return { error, id: inserted?.id ?? null };
   };
 
+  /** Manual edit of a record by the user. */
+  const update = async (id: string, patch: Partial<Memory>) => {
+    const allowed: Record<string, unknown> = {};
+    for (const key of ['title', 'summary', 'content', 'module', 'kind', 'ai_tags', 'amount', 'currency', 'location', 'occurred_at'] as const) {
+      if (key in patch) allowed[key] = patch[key] ?? null;
+    }
+    if (!Object.keys(allowed).length) return { error: null };
+    const { error } = await supabase.from('memories').update(allowed).eq('id', id);
+    if (!error) {
+      setMemories((prev) => prev.map((m) => (m.id === id ? { ...m, ...(allowed as Partial<Memory>) } : m)));
+      void indexMemories([id]);
+    }
+    return { error };
+  };
+
   /** User moves an entry to another category — and the assistant learns from it. */
   const reclassify = async (memory: Memory, toModule: string, note?: string) => {
     if (!user) return { error: new Error('Not signed in') };
@@ -112,7 +127,7 @@ export const useMemories = (options?: { module?: string; limit?: number }) => {
     return { error };
   };
 
-  return { memories, loading, reload: load, create, remove, reclassify };
+  return { memories, loading, reload: load, create, remove, reclassify, update };
 };
 
 export const groupByDay = (memories: Memory[]) => {

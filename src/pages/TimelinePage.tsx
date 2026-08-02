@@ -1,7 +1,9 @@
 import { useMemo, useState } from 'react';
-import { Loader2, Search, Sparkles, X } from 'lucide-react';
-import { groupByDay, useMemories } from '@/lib/memories';
+import { CalendarRange, Loader2, Search, Sparkles, X } from 'lucide-react';
+import { groupByDay, useMemories, Memory } from '@/lib/memories';
 import MemoryCard from '@/components/MemoryCard';
+import MemoryDetailSheet from '@/components/MemoryDetailSheet';
+import { Input } from '@/components/ui/input';
 import { MODULES } from '@/lib/constants';
 import { describeQuery, parsePlainLanguage } from '@/lib/nlSearch';
 import { cn } from '@/lib/utils';
@@ -21,12 +23,16 @@ const EXAMPLES = [
 ];
 
 const TimelinePage = () => {
-  const { memories, loading, remove, reclassify } = useMemories();
+  const { memories, loading, remove, reclassify, update } = useMemories();
   const [range, setRange] = useState<(typeof RANGES)[number]['id']>('week');
   const [module, setModule] = useState<string | null>(null);
   const [query, setQuery] = useState('');
   const [ask, setAsk] = useState('');
   const [applied, setApplied] = useState<string | null>(null);
+  const [from, setFrom] = useState('');
+  const [to, setTo] = useState('');
+  const [showDates, setShowDates] = useState(false);
+  const [selected, setSelected] = useState<Memory | null>(null);
 
   const runPlainLanguage = (raw: string) => {
     const parsed = parsePlainLanguage(raw);
@@ -56,8 +62,14 @@ const TimelinePage = () => {
       start.setHours(0, 0, 0, 0);
       cutoff = start.getTime();
     }
+    const fromTs = from ? new Date(`${from}T00:00:00`).getTime() : 0;
+    const toTs = to ? new Date(`${to}T23:59:59`).getTime() : 0;
+    if (fromTs || toTs) cutoff = 0;
     return memories.filter((m) => {
-      if (cutoff && new Date(m.occurred_at).getTime() < cutoff) return false;
+      const ts = new Date(m.occurred_at).getTime();
+      if (fromTs && ts < fromTs) return false;
+      if (toTs && ts > toTs) return false;
+      if (cutoff && ts < cutoff) return false;
       if (module && m.module !== module) return false;
       if (query) {
         const hay = `${m.title} ${m.summary ?? ''} ${m.content ?? ''} ${m.ai_tags.join(' ')}`.toLowerCase();
@@ -65,7 +77,7 @@ const TimelinePage = () => {
       }
       return true;
     });
-  }, [memories, range, module, query]);
+  }, [memories, range, module, query, from, to]);
 
   const groups = groupByDay(filtered);
 
@@ -115,11 +127,56 @@ const TimelinePage = () => {
         )}
       </div>
 
+      <div className="animate-fade-up space-y-2">
+        <div className="flex items-center gap-2">
+          <div className="flex min-w-0 flex-1 items-center gap-2 rounded-2xl border border-border bg-card px-3 py-2 focus-within:border-primary/50">
+            <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search by keyword…"
+              className="min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
+            />
+            {query ? (
+              <button onClick={() => setQuery('')} aria-label="Clear keyword"><X className="h-4 w-4 text-muted-foreground" /></button>
+            ) : null}
+          </div>
+          <button
+            onClick={() => setShowDates((v) => !v)}
+            aria-label="Filter by date"
+            className={cn(
+              'flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border transition-smooth active:scale-95',
+              showDates || from || to ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-card text-muted-foreground'
+            )}
+          >
+            <CalendarRange className="h-4 w-4" />
+          </button>
+        </div>
+        {showDates && (
+          <div className="smarty-card flex items-end gap-2 p-3">
+            <div className="min-w-0 flex-1">
+              <label className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">From</label>
+              <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="mt-1 h-9 text-xs" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <label className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">To</label>
+              <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="mt-1 h-9 text-xs" />
+            </div>
+            <button
+              onClick={() => { setFrom(''); setTo(''); }}
+              className="h-9 shrink-0 rounded-xl bg-secondary px-3 text-[11px] font-semibold text-secondary-foreground"
+            >
+              Clear
+            </button>
+          </div>
+        )}
+      </div>
+
       <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 scrollbar-hide">
         {RANGES.map((r) => (
           <button
             key={r.id}
-            onClick={() => setRange(r.id)}
+            onClick={() => { setRange(r.id); setFrom(''); setTo(''); }}
             className={cn(
               'shrink-0 rounded-2xl px-4 py-2 text-xs font-semibold transition-smooth active:scale-95',
               range === r.id ? 'bg-gradient-primary text-primary-foreground shadow-glow' : 'bg-secondary text-secondary-foreground'
@@ -172,12 +229,27 @@ const TimelinePage = () => {
                 <p className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">{g.label}</p>
               </div>
               <div className="space-y-2.5">
-                {g.items.map((m) => <MemoryCard key={m.id} memory={m} onDelete={remove} onMove={reclassify} />)}
+                {g.items.map((m) => <MemoryCard key={m.id} memory={m} onDelete={remove} onMove={reclassify} onOpen={setSelected} />)}
               </div>
             </section>
           ))}
         </div>
       )}
+
+      <p className="pb-2 text-center text-[11px] text-muted-foreground">
+        {filtered.length} {filtered.length === 1 ? 'record' : 'records'} — tap any record to open, edit or move it.
+      </p>
+
+      <MemoryDetailSheet
+        memory={selected}
+        open={!!selected}
+        onOpenChange={(o) => !o && setSelected(null)}
+        allMemories={memories}
+        onOpenMemory={setSelected}
+        onSave={update}
+        onMove={reclassify}
+        onDelete={remove}
+      />
     </div>
   );
 };
