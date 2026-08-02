@@ -26,9 +26,9 @@ const assistantPowers = [
 ];
 
 const promises = [
-  { e: '📂', t: 'No folders', s: 'Nothing to file. Nothing to name.' },
-  { e: '🏷️', t: 'No tags', s: 'The Assistant writes them for you.' },
-  { e: '🔢', t: 'No scores', s: 'Plain language, never numbers to decode.' },
+  { e: '📂', t: 'No filing', s: 'It lands in the right place on its own — and you can move it if you disagree.' },
+  { e: '🏷️', t: 'No busywork', s: 'Tags, dates and amounts are written for you.' },
+  { e: '🗣️', t: 'Plain language', s: 'Summaries you can read, not numbers to decode.' },
 ];
 
 const privacy = [
