@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Brain, Loader2, RefreshCw, Sparkles, AlertTriangle } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { AlertTriangle, Brain, ChevronRight, Loader2, RefreshCw, Sparkles, TrendingUp } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useMemories } from '@/lib/memories';
 import { MODULES, getModule } from '@/lib/constants';
