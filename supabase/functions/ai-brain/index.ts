@@ -5,8 +5,13 @@ const corsHeaders = {
 };
 
 const MODEL = "google/gemini-3.6-flash";
+const EMBED_MODEL = "openai/text-embedding-3-small";
+const EMBED_DIMS = 1536;
+const EMBED_BATCH = 40;
 
-type Mode = "classify" | "brief" | "coach" | "search" | "insights" | "extract" | "transcribe" | "chat";
+type Mode =
+  | "classify" | "brief" | "coach" | "search" | "insights"
+  | "extract" | "transcribe" | "chat" | "embed";
 
 interface Body {
   mode: Mode;
@@ -19,6 +24,8 @@ interface Body {
   preferences?: { goals?: string[]; focus?: string[]; tone?: string } | null;
   history?: Array<{ role: "user" | "assistant"; content: string }>;
   attachments?: Array<{ url: string; name?: string }>;
+  ids?: string[];
+  retrieve?: boolean;
 }
 
 const RELATION_RULES = `RELATIONSHIP ENGINE — nothing exists in isolation.
@@ -62,6 +69,7 @@ Alerts are proactive: bills due, overdue check-ups, documents expiring, long gap
 Never use scores, ratings, percentages or numeric evaluations of the user. Be warm, specific and never judgmental.
 If goals, focus areas or a tone are provided, follow them.`,
   coach: "",
+  embed: "",
   search: `You are the knowledge base of Smarty Logbook. Answer the user's question using ONLY the provided entries.
 Be concise and concrete: give real numbers, dates, merchants and names. Connect related entries when useful.
 If the answer is not in the data, say so plainly and ask one intelligent follow-up question (e.g. offer to have it uploaded). Never invent facts. Plain text, no markdown headers.`,
@@ -81,13 +89,66 @@ ${RELATION_RULES}`,
 };
 prompts.coach = prompts.brief;
 
+
+const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+
+/** Text that represents a memory for semantic search. */
+const memoryText = (m: Record<string, unknown>) =>
+  [
+    m.title,
+    m.summary,
+    m.content,
+    Array.isArray(m.ai_tags) ? (m.ai_tags as string[]).join(", ") : null,
+    m.module,
+    m.kind,
+    m.merchant,
+    m.amount != null ? `amount ${m.amount} ${m.currency ?? ""}` : null,
+    m.location,
+    m.occurred_at ? String(m.occurred_at).slice(0, 10) : null,
+    m.metadata && typeof m.metadata === "object" ? JSON.stringify(m.metadata) : null,
+  ]
+    .filter(Boolean)
+    .join("\n")
+    .slice(0, 6000);
+
+async function embedTexts(apiKey: string, inputs: string[]): Promise<number[][]> {
+  const out: number[][] = [];
+  for (let i = 0; i < inputs.length; i += EMBED_BATCH) {
+    const batch = inputs.slice(i, i + EMBED_BATCH);
+    const res = await fetch("https://ai.gateway.lovable.dev/v1/embeddings", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ model: EMBED_MODEL, input: batch, dimensions: EMBED_DIMS }),
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`Embedding failed (${res.status}): ${text.slice(0, 300)}`);
+    }
+    const json = await res.json();
+    const sorted = (json.data ?? []).sort((a: { index: number }, b: { index: number }) => a.index - b.index);
+    for (const d of sorted) out.push(d.embedding as number[]);
+  }
+  return out;
+}
+
+const userClient = async (authHeader: string) => {
+  const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2.58.0");
+  return createClient(supabaseUrl, anonKey, {
+    global: { headers: { Authorization: authHeader } },
+    auth: { persistSession: false },
+  });
+};
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { mode, input, image, audio, audioFormat, memories, candidates, preferences, history, attachments }: Body =
-      await req.json();
-    if (!mode || !prompts[mode]) {
+    const {
+      mode, input, image, audio, audioFormat, memories, candidates, preferences, history, attachments,
+      ids, retrieve,
+    }: Body = await req.json();
+    if (!mode || prompts[mode] === undefined) {
       return new Response(JSON.stringify({ error: "Invalid mode" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -97,8 +158,63 @@ Deno.serve(async (req) => {
     const apiKey = Deno.env.get("LOVABLE_API_KEY");
     if (!apiKey) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const context = memories?.length
-      ? `Entries (JSON):\n${JSON.stringify(memories).slice(0, 24000)}`
+    const authHeader = req.headers.get("Authorization") ?? "";
+
+    /* ---- embed mode: index entries so the Assistant can recall the whole history ---- */
+    if (mode === "embed") {
+      const db = await userClient(authHeader);
+      let query = db
+        .from("memories")
+        .select("id,title,summary,content,module,kind,amount,currency,location,ai_tags,metadata,occurred_at");
+      query = ids?.length ? query.in("id", ids) : query.is("embedding", null);
+      const { data: rows, error } = await query.order("occurred_at", { ascending: false }).limit(80);
+      if (error) throw error;
+      if (!rows?.length) {
+        return new Response(JSON.stringify({ embedded: 0, remaining: 0 }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const vectors = await embedTexts(apiKey, rows.map((r) => memoryText(r as Record<string, unknown>)));
+      let embedded = 0;
+      for (let i = 0; i < rows.length; i++) {
+        const { error: upErr } = await db
+          .from("memories")
+          .update({ embedding: JSON.stringify(vectors[i]), embedded_at: new Date().toISOString() })
+          .eq("id", rows[i].id);
+        if (!upErr) embedded++;
+      }
+      const { count } = await db
+        .from("memories")
+        .select("id", { count: "exact", head: true })
+        .is("embedding", null);
+      return new Response(JSON.stringify({ embedded, remaining: count ?? 0 }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    /* ---- semantic recall: pull the most relevant entries from the ENTIRE history ---- */
+    let recalled: Array<Record<string, unknown>> = [];
+    if (retrieve && input?.trim() && (mode === "chat" || mode === "search")) {
+      try {
+        const db = await userClient(authHeader);
+        const [vector] = await embedTexts(apiKey, [input.trim().slice(0, 4000)]);
+        const { data: matches, error: matchErr } = await db.rpc("match_memories", {
+          query_embedding: JSON.stringify(vector),
+          match_count: 16,
+        });
+        if (matchErr) console.error("match_memories error", matchErr);
+        recalled = (matches ?? []) as Array<Record<string, unknown>>;
+      } catch (e) {
+        console.error("semantic recall failed", e);
+      }
+    }
+
+    const recallText = recalled.length
+      ? `Most relevant entries from the user's ENTIRE history (semantic recall, ranked):\n${JSON.stringify(recalled).slice(0, 20000)}\n\n`
+      : "";
+
+    const context = memories?.length || recalled.length
+      ? `${recallText}Recent entries (JSON):\n${JSON.stringify(memories ?? []).slice(0, 16000)}`
       : "No entries available yet.";
 
     const candidateText = candidates?.length

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { indexMemories } from '@/lib/semantic';
 
 export interface Memory {
   id: string;
@@ -55,7 +56,7 @@ export const useMemories = (options?: { module?: string; limit?: number }) => {
 
   const create = async (memory: NewMemory) => {
     if (!user) return { error: new Error('Not signed in') };
-    const { error } = await supabase.from('memories').insert({
+    const { data: inserted, error } = await supabase.from('memories').insert({
       user_id: user.id,
       kind: memory.kind ?? 'text',
       module: memory.module ?? 'personal',
@@ -72,8 +73,11 @@ export const useMemories = (options?: { module?: string; limit?: number }) => {
       related_ids: memory.related_ids ?? [],
       relation_note: memory.relation_note ?? null,
       occurred_at: memory.occurred_at ?? new Date().toISOString(),
-    });
-    if (!error) await load();
+    }).select('id').maybeSingle();
+    if (!error) {
+      await load();
+      if (inserted?.id) void indexMemories([inserted.id]);
+    }
     return { error };
   };
 

@@ -12,6 +12,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useIsAdmin } from '@/lib/admin';
 import { usePreferences } from '@/lib/preferences';
 import { useNotificationEngine } from '@/lib/reminders';
+import { useMemoryIndex } from '@/lib/semantic';
 
 const AppShell = () => {
   const { pathname } = useLocation();
@@ -21,6 +22,7 @@ const AppShell = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const { isAdmin } = useIsAdmin();
   useNotificationEngine(prefs);
+  useMemoryIndex(!prefsLoading && !!user);
   const initial = (profile?.username ?? user?.email ?? 'S').charAt(0).toUpperCase();
 
   const desktopLinks = [...NAV_TABS.filter((t) => t.path !== '/app/capture'), ...MORE_LINKS];

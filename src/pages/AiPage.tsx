@@ -31,6 +31,7 @@ const AiPage = () => {
         body: {
           mode: 'search',
           input: q,
+          retrieve: true,
           memories: memories.map((m) => ({
             title: m.title, summary: m.summary, content: m.content, module: m.module,
             kind: m.kind, amount: m.amount, location: m.location, tags: m.ai_tags,
