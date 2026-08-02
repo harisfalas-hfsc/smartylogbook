@@ -26,7 +26,7 @@ const readAsDataUrl = (file: File | Blob) =>
 const AssistantPage = () => {
   const { memories, loading, create, reload } = useMemories({ limit: 60 });
   const { prefs } = usePreferences();
-  const { brief, generating, toggleDone, regenerate } = useDailyBrief(memories, prefs, !loading);
+  const { brief, generating, regenerate } = useDailyBrief(memories, prefs, !loading);
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
