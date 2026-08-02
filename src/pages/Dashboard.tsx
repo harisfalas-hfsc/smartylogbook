@@ -82,7 +82,7 @@ const Dashboard = () => {
 
       {/* Quick capture — the primary action, Keep-style */}
       <section className="animate-fade-up">
-        <div className="smarty-card flex items-center gap-2 p-2 pl-4">
+        <div className="smarty-card flex items-center gap-1.5 p-2 pl-4">
           <button
             type="button"
             onClick={() => navigate('/app/capture')}
@@ -93,16 +93,23 @@ const Dashboard = () => {
           <Link
             to="/app/capture?mode=voice"
             aria-label="Capture with voice"
-            className="grid h-10 w-10 place-items-center rounded-2xl bg-secondary text-primary transition-smooth active:scale-95"
+            className="grid h-10 w-10 place-items-center rounded-2xl bg-mod-personal/10 text-mod-personal transition-smooth active:scale-95"
           >
             <Mic className="h-4.5 w-4.5" />
           </Link>
           <Link
             to="/app/capture?mode=photo"
             aria-label="Capture a photo"
-            className="grid h-10 w-10 place-items-center rounded-2xl bg-secondary text-primary transition-smooth active:scale-95"
+            className="grid h-10 w-10 place-items-center rounded-2xl bg-mod-health/10 text-mod-health transition-smooth active:scale-95"
           >
             <Camera className="h-4.5 w-4.5" />
+          </Link>
+          <Link
+            to="/app/capture?mode=file"
+            aria-label="Upload a file or receipt"
+            className="grid h-10 w-10 place-items-center rounded-2xl bg-mod-documents/10 text-mod-documents transition-smooth active:scale-95"
+          >
+            <Paperclip className="h-4.5 w-4.5" />
           </Link>
         </div>
       </section>
