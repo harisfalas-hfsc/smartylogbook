@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import {
+  Trash2,
   Bell, ChevronRight, FileText, Fingerprint, LogOut, Moon, Shield, ShieldCheck, Sparkles, Target, User,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -150,6 +151,20 @@ const SettingsPage = () => {
             />
           </div>
         </div>
+
+        <Link
+          to="/app/trash"
+          className="smarty-card mt-2.5 flex items-center gap-3 px-4 py-3.5 transition-smooth active:scale-[0.99]"
+        >
+          <Trash2 className="h-4.5 w-4.5 text-primary" />
+          <span className="flex-1 text-sm font-semibold text-foreground">
+            Trash
+            <span className="block text-[11px] font-normal text-muted-foreground">
+              Restore deleted records within 30 days
+            </span>
+          </span>
+          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+        </Link>
 
         <Link
           to="/app/reminders"

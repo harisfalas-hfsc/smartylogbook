@@ -28,6 +28,7 @@ import InsightsPage from "./pages/InsightsPage";
 import ModulesPage from "./pages/ModulesPage";
 import ModuleDetailPage from "./pages/ModuleDetailPage";
 import SettingsPage from "./pages/SettingsPage";
+import TrashPage from "./pages/TrashPage";
 import AdminPage from "./pages/AdminPage";
 import AccountPage from "./pages/AccountPage";
 import PrivacySecurityPage from "./pages/PrivacySecurityPage";
@@ -82,6 +83,7 @@ const App = () => (
               <Route path="module/:id" element={<ModuleDetailPage />} />
               <Route path="reminders" element={<RemindersPage />} />
               <Route path="settings" element={<SettingsPage />} />
+              <Route path="trash" element={<TrashPage />} />
               <Route path="account" element={<AccountPage />} />
               <Route path="privacy" element={<PrivacySecurityPage />} />
               <Route path="appearance" element={<AppearancePage />} />

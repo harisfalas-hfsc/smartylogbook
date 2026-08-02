@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { RotateCcw, Trash2, Info } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTrash, daysLeftInTrash, TRASH_RETENTION_DAYS } from '@/lib/memories';
-import { MODULES } from '@/lib/modules';
+import { MODULES } from '@/lib/constants';
 
 const moduleLabel = (id: string) => MODULES.find((m) => m.id === id)?.label ?? id;
 
