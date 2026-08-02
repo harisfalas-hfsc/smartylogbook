@@ -588,13 +588,39 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Calendar awareness: what the user has scheduled around today.
+    let calendarText = "";
+    if (deep) {
+      try {
+        const db = await userClient(authHeader);
+        const from = new Date(Date.now() - 14 * 86400000).toISOString();
+        const to = new Date(Date.now() + 90 * 86400000).toISOString();
+        const { data: rem } = await db
+          .from("reminders")
+          .select("title,type,due_at,amount,done")
+          .gte("due_at", from)
+          .lte("due_at", to)
+          .order("due_at", { ascending: true })
+          .limit(80);
+        if (rem?.length) {
+          const lines = (rem as Array<Record<string, unknown>>).map(
+            (r) =>
+              `${String(r.due_at).slice(0, 16).replace("T", " ")} — ${r.title} (${r.type}${r.amount ? `, ${r.amount}` : ""})${r.done ? " [done]" : ""}`,
+          );
+          calendarText = `User's calendar (last 14 days and next 90 days, today is ${new Date().toISOString().slice(0, 10)}):\n${lines.join("\n")}\nUse this for any question about schedule, appointments, upcoming bills or "what do I have tomorrow". Never invent calendar items.\n\n`;
+        }
+      } catch (e) {
+        console.error("calendar context failed", e);
+      }
+    }
+
     const recallText = recalled.length
       ? `Most relevant entries from the user's ENTIRE history (semantic recall, ranked):\n${JSON.stringify(recalled).slice(0, 20000)}\n\n`
       : "";
 
     const entryList = trainingMemories.length ? trainingMemories : (memories ?? []);
-    const context = entryList.length || recalled.length || factsText || moneyText || profileText
-      ? `${profileText}${moneyText}${factsText}${recallText}Recent entries (JSON):\n${JSON.stringify(entryList).slice(0, 20000)}`
+    const context = entryList.length || recalled.length || factsText || moneyText || profileText || calendarText
+      ? `${profileText}${calendarText}${moneyText}${factsText}${recallText}Recent entries (JSON):\n${JSON.stringify(entryList).slice(0, 20000)}`
       : "No entries available yet.";
 
 
