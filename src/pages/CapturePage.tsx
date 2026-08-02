@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Brain, Camera, FileText, FolderTree, Link2, Loader2, Mic, Paperclip, SlidersHorizontal, Sparkles, Square, X } from 'lucide-react';
+import { Brain, Camera, Dumbbell, FileText, FolderTree, Lightbulb, Link2, Loader2, Mic, Paperclip, SlidersHorizontal, Sparkles, Square, Stethoscope, Utensils, Wallet, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
