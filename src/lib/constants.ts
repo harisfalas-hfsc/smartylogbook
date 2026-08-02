@@ -2,7 +2,7 @@ import {
   Activity, Apple, Brain, Briefcase, Camera, CreditCard, Dumbbell, FileText,
   Heart, Home, Image, Lightbulb, MapPin, Mic, NotebookPen, Receipt, Search,
   Smile, Sparkles, Timer, Utensils, Wallet, CheckSquare, Bell, Stethoscope,
-  User, Settings, BarChart3, Clock, Plus,
+  User, Settings, BarChart3, Clock, Plus, CalendarClock,
 } from 'lucide-react';
 
 export type ModuleId =
