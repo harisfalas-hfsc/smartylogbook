@@ -1,4 +1,4 @@
-import { Wand2, Brain, Bell, MessageCircle } from 'lucide-react';
+import { Wand2, Brain, Bell, MessageCircle, CreditCard } from 'lucide-react';
 import { Panel, SubCard, MiniRow, Divider, DesktopOnly, PageHeader, CtaCard, insights, predictions, steps, givesIn, givesBack } from '@/lib/marketing';
 
 const examples = [
@@ -136,6 +136,38 @@ const HowItWorksPage = () => (
           </SubCard>
         </DesktopOnly>
       </div>
+    </Panel>
+
+    <Panel
+      eyebrow="What it costs"
+      eyebrowEmoji="💶"
+      badge={CreditCard}
+      title={<>Free to keep. <span className="gradient-text">Paid to think.</span></>}
+      lead="The logbook itself never costs anything. Smarty Assistant is the only paid part, and it is measured in AI Conversations."
+    >
+      <div className="grid gap-3 lg:grid-cols-2">
+        <SubCard label="Free forever — €0" labelEmoji="♾️">
+          <div className="grid gap-2">
+            <MiniRow emoji="📥" title="Unlimited capture" text="Text, voice, photos, PDFs, receipts and reports — no storage limits." />
+            <MiniRow emoji="🗂️" title="Timeline & organisation" text="Filter by day, week, month or year and organise it yourself." />
+            <MiniRow emoji="🔎" title="Your own search" text="Find any entry you saved, any time." />
+          </div>
+        </SubCard>
+        <SubCard label="Smarty Premium — €9.99 / month" labelEmoji="✨">
+          <div className="grid gap-2">
+            <MiniRow emoji="💬" title="300 AI Conversations" text="About 10 a day. One conversation is one topic, follow-ups included." />
+            <MiniRow emoji="🧠" title="The Assistant switches on" text="Reasoning, analysis, predictions and your daily brief." />
+            <MiniRow emoji="🔁" title="Out early? Renew instantly" text="Your cycle restarts that day. Cancel any time in Settings → My plan." />
+          </div>
+        </SubCard>
+      </div>
+      <DesktopOnly>
+        <Divider />
+        <p className="text-[12.5px] leading-relaxed text-muted-foreground">
+          Capturing, classifying, searching, filtering and reminders never use a conversation — you only spend
+          one when the Assistant actually thinks for you.
+        </p>
+      </DesktopOnly>
     </Panel>
 
     <CtaCard title="Try it in ten seconds." text="Capture one thing today and watch the Smarty Assistant do the rest." />

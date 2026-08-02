@@ -1,7 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Trash2, FolderInput,
-  Bell, ChevronRight, FileText, Fingerprint, LogOut, Moon, Shield, ShieldCheck, Sparkles, Target, User,
+  Bell, ChevronRight, CreditCard, FileText, Fingerprint, LogOut, Moon, Shield, ShieldCheck, Sparkles, Target, User,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
@@ -38,6 +38,7 @@ const SettingsPage = () => {
 
   const rows = [
     { icon: User, label: 'Account & data', value: user?.email ?? '', to: '/app/account' },
+    { icon: CreditCard, label: 'My plan', value: 'Plan & billing', to: '/app/plan' },
     { icon: Fingerprint, label: 'Biometric lock', value: 'Device', to: '/app/privacy' },
     { icon: Shield, label: 'Privacy & security', value: 'Encrypted', to: '/app/privacy' },
     { icon: Moon, label: 'Appearance', value: 'Light / Dark', to: '/app/appearance' },
