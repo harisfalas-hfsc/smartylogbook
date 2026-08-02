@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { CalendarRange, Loader2, Search, Sparkles, X } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { CalendarRange, Loader2, Search, Sparkles, Trash2, X } from 'lucide-react';
 import { groupByDay, useMemories, Memory } from '@/lib/memories';
 import MemoryCard from '@/components/MemoryCard';
 import MemoryDetailSheet from '@/components/MemoryDetailSheet';
@@ -83,9 +84,20 @@ const TimelinePage = () => {
 
   return (
     <div className="space-y-5">
-      <header className="animate-fade-up">
-        <h1 className="text-2xl font-extrabold tracking-tight text-foreground">Timeline</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Everything you've lived, in order.</p>
+      <header className="animate-fade-up flex items-start gap-3">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl font-extrabold tracking-tight text-foreground">Timeline</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Tap a record to open or edit it · tap its category chip to move it.
+          </p>
+        </div>
+        <Link
+          to="/app/trash"
+          aria-label="Trash"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-border bg-card text-muted-foreground transition-smooth active:scale-95"
+        >
+          <Trash2 className="h-4 w-4" />
+        </Link>
       </header>
 
       <div className="animate-fade-up space-y-2">

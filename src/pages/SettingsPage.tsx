@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  Trash2,
+  Trash2, FolderInput,
   Bell, ChevronRight, FileText, Fingerprint, LogOut, Moon, Shield, ShieldCheck, Sparkles, Target, User,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -96,6 +96,32 @@ const SettingsPage = () => {
 
       <section className="animate-fade-up">
         <h2 className="mb-3 flex items-center gap-2 text-sm font-bold text-foreground">
+          <FolderInput className="h-4 w-4 text-primary" /> Your records
+        </h2>
+        <div className="smarty-card p-4">
+          <p className="text-[11px] leading-relaxed text-muted-foreground">
+            Tap any record in Timeline, Home or a category to open, edit or move it. Tap its
+            category chip to file it somewhere else — every move, edit and restore teaches Smarty
+            Assistant how you think, so next time it classifies it your way.
+          </p>
+          <Link
+            to="/app/trash"
+            className="mt-3 flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3.5 transition-smooth active:scale-[0.99]"
+          >
+            <Trash2 className="h-4.5 w-4.5 text-primary" />
+            <span className="flex-1 text-sm font-semibold text-foreground">
+              Trash
+              <span className="block text-[11px] font-normal text-muted-foreground">
+                Restore anything you deleted in the last 30 days
+              </span>
+            </span>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          </Link>
+        </div>
+      </section>
+
+      <section className="animate-fade-up">
+        <h2 className="mb-3 flex items-center gap-2 text-sm font-bold text-foreground">
           <Bell className="h-4 w-4 text-primary" /> Push notifications
         </h2>
         <div className="smarty-card divide-y divide-border p-2">
@@ -151,20 +177,6 @@ const SettingsPage = () => {
             />
           </div>
         </div>
-
-        <Link
-          to="/app/trash"
-          className="smarty-card mt-2.5 flex items-center gap-3 px-4 py-3.5 transition-smooth active:scale-[0.99]"
-        >
-          <Trash2 className="h-4.5 w-4.5 text-primary" />
-          <span className="flex-1 text-sm font-semibold text-foreground">
-            Trash
-            <span className="block text-[11px] font-normal text-muted-foreground">
-              Restore deleted records within 30 days
-            </span>
-          </span>
-          <ChevronRight className="h-4 w-4 text-muted-foreground" />
-        </Link>
 
         <Link
           to="/app/reminders"
