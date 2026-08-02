@@ -285,8 +285,57 @@ Deno.serve(async (req) => {
       }
     }
 
+    /* modes that reason over the user's whole life */
+    const deep = ["chat", "search", "insights", "brief", "coach", "train"].includes(mode);
+
+    /* ---- the assistant's own learned profile of THIS user (self-training memory) ---- */
+    let profileRow: Record<string, unknown> | null = null;
+    let profileText = "";
+    if (deep) {
+      try {
+        const db = await userClient(authHeader);
+        const { data } = await db.from("assistant_profiles").select("*").maybeSingle();
+        profileRow = (data as Record<string, unknown>) ?? null;
+        if (profileRow?.portrait || (profileRow?.patterns as unknown[])?.length) {
+          const p = profileRow;
+          profileText =
+            `WHAT YOU HAVE LEARNED ABOUT THIS USER SO FAR (your own trained profile, confidence: ${p.confidence ?? "low"}, ` +
+            `built from ${p.data_points ?? 0} entries, version ${p.version ?? 0}).\n` +
+            `Use it to personalise every answer, but always prefer fresh evidence from the entries when they disagree.\n` +
+            `${JSON.stringify({
+              portrait: p.portrait,
+              habits: p.habits,
+              routines: p.routines,
+              preferences: p.preferences,
+              patterns: p.patterns,
+              people: p.people,
+              watchlist: p.watchlist,
+              open_questions: p.open_questions,
+            }).slice(0, 8000)}\n\n`;
+        }
+      } catch (e) {
+        console.error("profile context failed", e);
+      }
+    }
+
+    /* ---- training pulls the user's own history server-side ---- */
+    let trainingMemories: Array<Record<string, unknown>> = [];
+    let trainingCount = 0;
+    if (mode === "train") {
+      const db = await userClient(authHeader);
+      const { data: rows, count } = await db
+        .from("memories")
+        .select("title,summary,module,kind,amount,currency,merchant,location,ai_tags,occurred_at,metadata", {
+          count: "exact",
+        })
+        .order("occurred_at", { ascending: false })
+        .limit(150);
+      trainingMemories = (rows ?? []) as Array<Record<string, unknown>>;
+      trainingCount = count ?? trainingMemories.length;
+    }
+
     let factsText = "";
-    if (mode === "chat" || mode === "search" || mode === "insights" || mode === "brief" || mode === "coach") {
+    if (deep) {
       try {
         const db = await userClient(authHeader);
         const { data: factRows } = await db
@@ -311,7 +360,7 @@ Deno.serve(async (req) => {
     }
 
     let moneyText = "";
-    if (mode === "chat" || mode === "search" || mode === "insights" || mode === "brief" || mode === "coach") {
+    if (deep) {
       try {
         const db = await userClient(authHeader);
         const { data: moneyRows } = await db
@@ -339,9 +388,11 @@ Deno.serve(async (req) => {
       ? `Most relevant entries from the user's ENTIRE history (semantic recall, ranked):\n${JSON.stringify(recalled).slice(0, 20000)}\n\n`
       : "";
 
-    const context = memories?.length || recalled.length || factsText || moneyText
-      ? `${moneyText}${factsText}${recallText}Recent entries (JSON):\n${JSON.stringify(memories ?? []).slice(0, 16000)}`
+    const entryList = trainingMemories.length ? trainingMemories : (memories ?? []);
+    const context = entryList.length || recalled.length || factsText || moneyText || profileText
+      ? `${profileText}${moneyText}${factsText}${recallText}Recent entries (JSON):\n${JSON.stringify(entryList).slice(0, 20000)}`
       : "No entries available yet.";
+
 
     const candidateText = candidates?.length
       ? `Existing entries (id + title):\n${JSON.stringify(candidates).slice(0, 12000)}`
