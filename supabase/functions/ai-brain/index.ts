@@ -111,11 +111,24 @@ Be proactive: when you notice something worth flagging (a bill due soon, an over
 Be concise (max ~150 words), warm and concrete. Plain text, no markdown headers, no scores or ratings — never rate the user's life with numbers.
 
 You can WRITE to the user's logbook. Whenever the user asks you to log, save, note, record, add, create a list, or mark something as done, you MUST create an entry.
+CALENDAR CONTROL — you fully control the user's calendar. You are given their existing calendar items with ids.
+When the user asks to schedule, add, book, move, reschedule, rename, mark done, cancel or delete anything on a date, you MUST return the operations in "calendar".
+Each operation:
+{"op":"create|update|delete|complete","id":"existing calendar item id (required for update/delete/complete)","title":"short title","type":"task|bill|health|event","due_at":"YYYY-MM-DDTHH:MM (local, use 09:00 when no time is given)","amount":number or null}
+Resolve relative dates yourself ("next Tuesday", "in two months", "tomorrow at 6") against today's date. Only touch items you can see in the calendar context; if the user is vague about WHICH item, ask instead of guessing.
+Confirm in "answer" what you scheduled, moved or removed, with the real date.
+
+RECURRING BILLS — when the user logs a bill, invoice, subscription or anything that will come again, proactively offer to put the next one in the calendar
+("Your electricity bill is usually monthly — want me to put the next one on 14 March?"). Use "question" for the offer, and create it as soon as they say yes.
+
+SUBSCRIPTION AWARENESS — you know the user's own Smarty Logbook plan, allowance and renewal date (given in context). Answer questions about it accurately, and mention an upcoming renewal or a nearly exhausted allowance when it matters.
+
 ALWAYS reply with STRICT JSON only, no markdown fences:
-{"answer":"your reply","question":null,"save":null}
+{"answer":"your reply","question":null,"save":null,"calendar":[]}
 - "question": the single follow-up question you need answered, or null.
 - "save": null, or {"title":"short title max 60 chars","summary":"one sentence","content":"full details","module":"health|fitness|nutrition|finance|business|documents|personal","kind":"text|workout|meal|expense|task|note|medical|idea|journal","ai_tags":["max 4"],"amount":number or null,"related_ids":["ids of existing entries this connects to"],"reminder":null or {"title":"short","type":"task|bill|health|event","due_date":"YYYY-MM-DD"}}
-Never claim you logged something unless you filled "save".`,
+- "calendar": array of calendar operations (empty when none).
+Never claim you logged or scheduled something unless you filled "save" or "calendar".`,
   brief: `You are Smarty Assistant writing the user's daily brief in Smarty Logbook. Given their recent entries, return STRICT JSON only:
 {"headline":"max 8 words","action":"the single most useful thing to do today, max 25 words","reason":"why, max 20 words","module":"most relevant module id or null","alerts":[{"title":"short proactive alert","detail":"one sentence"}]}
 Alerts are proactive: bills due, overdue check-ups, documents expiring, long gaps in training or contact, unusual spending. Max 3, empty array when nothing matters.
@@ -597,7 +610,7 @@ Deno.serve(async (req) => {
         const to = new Date(Date.now() + 90 * 86400000).toISOString();
         const { data: rem } = await db
           .from("reminders")
-          .select("title,type,due_at,amount,done")
+          .select("id,title,type,due_at,amount,done")
           .gte("due_at", from)
           .lte("due_at", to)
           .order("due_at", { ascending: true })
@@ -605,9 +618,9 @@ Deno.serve(async (req) => {
         if (rem?.length) {
           const lines = (rem as Array<Record<string, unknown>>).map(
             (r) =>
-              `${String(r.due_at).slice(0, 16).replace("T", " ")} — ${r.title} (${r.type}${r.amount ? `, ${r.amount}` : ""})${r.done ? " [done]" : ""}`,
+              `[id:${r.id}] ${String(r.due_at).slice(0, 16).replace("T", " ")} — ${r.title} (${r.type}${r.amount ? `, ${r.amount}` : ""})${r.done ? " [done]" : ""}`,
           );
-          calendarText = `User's calendar (last 14 days and next 90 days, today is ${new Date().toISOString().slice(0, 10)}):\n${lines.join("\n")}\nUse this for any question about schedule, appointments, upcoming bills or "what do I have tomorrow". Never invent calendar items.\n\n`;
+          calendarText = `User's calendar (last 14 days and next 90 days, today is ${new Date().toISOString().slice(0, 10)}):\n${lines.join("\n")}\nUse this for any question about schedule, appointments, upcoming bills or "what do I have tomorrow". Never invent calendar items.\nYou can change these items: use the id shown in [id:...] for any update, reschedule, complete or delete operation.\n\n`;
         }
       } catch (e) {
         console.error("calendar context failed", e);
