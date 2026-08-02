@@ -189,8 +189,8 @@ const AppShell = () => {
               <Bell className="h-4 w-4" />
             </Link>
             <Link
-              to="/app/account"
-              aria-label="Account"
+              to="/app/settings"
+              aria-label="Account, plan and settings"
               className="inline-flex h-8 w-8 items-center justify-center rounded-full border-2 border-primary bg-primary text-xs font-bold text-primary-foreground"
             >
               {initial}
