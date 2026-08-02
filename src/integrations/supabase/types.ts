@@ -208,6 +208,68 @@ export type Database = {
         }
         Relationships: []
       }
+      money_items: {
+        Row: {
+          active: boolean
+          amount: number
+          cadence: string
+          category: string | null
+          created_at: string
+          currency: string
+          id: string
+          label: string
+          memory_id: string | null
+          next_due: string | null
+          notes: string | null
+          source: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          amount?: number
+          cadence?: string
+          category?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          label: string
+          memory_id?: string | null
+          next_due?: string | null
+          notes?: string | null
+          source?: string
+          type?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          amount?: number
+          cadence?: string
+          category?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          label?: string
+          memory_id?: string | null
+          next_due?: string | null
+          notes?: string | null
+          source?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "money_items_memory_id_fkey"
+            columns: ["memory_id"]
+            isOneToOne: false
+            referencedRelation: "memories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payments: {
         Row: {
           amount_eur: number
