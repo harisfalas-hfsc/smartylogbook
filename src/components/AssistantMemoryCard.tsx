@@ -1,4 +1,4 @@
-import { Brain, Loader2, RefreshCw, Sparkles } from 'lucide-react';
+import { Brain, HelpCircle, Loader2, RefreshCw, Repeat, Sparkles } from 'lucide-react';
 import { useAssistantProfile } from '@/lib/assistantProfile';
 import { cn } from '@/lib/utils';
 
