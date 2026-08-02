@@ -135,7 +135,10 @@ const AdminPage = () => {
         <span>Renews {fmtDate(u.current_period_end)}</span>
         <span>{u.memories} entries · {euro(u.total_spend)}</span>
       </div>
-      <div className="mt-3 flex flex-wrap items-center gap-2">
+      <p className="mt-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+        Grant access — pick a plan, then how many months
+      </p>
+      <div className="mt-2 flex flex-wrap items-center gap-2">
         <select
           value={grantPlan}
           onChange={(e) => setGrantPlan(e.target.value)}
