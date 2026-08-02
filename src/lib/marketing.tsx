@@ -35,6 +35,22 @@ export const features = [
   { icon: Shield, emoji: '🔒', title: 'Privacy first', text: 'Encrypted storage, your data, export or delete any time.' },
 ];
 
+/* The whole product in two columns: what you put in, what comes back. */
+export const givesIn = [
+  { e: '⌨️', t: 'Type it', s: 'A thought, a number, a note.' },
+  { e: '🎙️', t: 'Say it', s: 'Speak, it gets written down.' },
+  { e: '📷', t: 'Snap it', s: 'A receipt, a label, a screen.' },
+  { e: '📎', t: 'Upload it', s: 'PDFs, reports, invoices.' },
+];
+
+export const givesBack = [
+  { e: '🧠', t: 'Understands', s: 'Reads it and pulls out the details.' },
+  { e: '🔗', t: 'Relates', s: 'Attaches it to what already exists.' },
+  { e: '📌', t: 'Remembers', s: 'Kept for as long as you want it.' },
+  { e: '🔎', t: 'Finds it', s: 'Ask in plain words, get the answer.' },
+];
+
+
 export const insights = [
   'You sleep better on days you train before 6pm.',
   'You spend 41% more every Friday evening.',
