@@ -126,8 +126,8 @@ const AboutPage = () => (
       eyebrow="Life modules"
       eyebrowEmoji="🗂️"
       badge={Layers}
-      title={<>You never choose <span className="gradient-text">where it goes.</span></>}
-      lead="Every memory lands in the right module automatically. These are the areas your life gets filed into."
+      title={<>It files it — <span className="gradient-text">you stay in control.</span></>}
+      lead="Every entry lands in the right area on its own. If you prefer, you can open a module yourself and put something exactly where you want it."
     >
       <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
         {MODULES.map((m) => (
