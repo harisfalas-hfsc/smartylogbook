@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Camera, Loader2, Mic, Paperclip, Send, Square, X } from 'lucide-react';
+import { CalendarClock, Camera, FileText, Loader2, Mic, Paperclip, Send, Square, Stethoscope, Wallet, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useMemories } from '@/lib/memories';
