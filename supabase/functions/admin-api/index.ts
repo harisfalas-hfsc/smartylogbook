@@ -141,12 +141,13 @@ Deno.serve(async (req) => {
       let canceled = 0;
       let granted = 0;
       let paid = 0;
+      let mrr = 0;
       for (const s of (subs ?? []) as Sub[]) {
         const e = effective(s);
         if (e.plan === "premium" && e.status === "active") {
           activePremium++;
           if (e.source === "admin_grant") granted++;
-          if (e.source === "paid") paid++;
+          if (e.source === "paid") { paid++; mrr += Number(s.amount_eur ?? PREMIUM_PRICE); }
         }
         if (s.status === "canceled") canceled++;
       }
@@ -173,7 +174,7 @@ Deno.serve(async (req) => {
         grantedSubscriptions: granted,
         canceledSubscriptions: canceled,
         freeUsers: users.length - activePremium,
-        mrr: Number((paid * PREMIUM_PRICE).toFixed(2)),
+        mrr: Number(mrr.toFixed(2)),
         totalRevenue: Number(totalRevenue.toFixed(2)),
         paymentsCount: succeeded.length,
         currency: "EUR",
