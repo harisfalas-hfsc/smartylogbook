@@ -8,6 +8,7 @@ import ProactiveAlerts from '@/components/ProactiveAlerts';
 import { usePreferences } from '@/lib/preferences';
 import { useDailyBrief } from '@/lib/assistant';
 import MemoryCard from '@/components/MemoryCard';
+import MemoryDetailSheet from '@/components/MemoryDetailSheet';
 import { MODULES, kindIcon, getModule } from '@/lib/constants';
 
 const greeting = () => {
@@ -19,7 +20,8 @@ const greeting = () => {
 
 const Dashboard = () => {
   const { profile, user } = useAuth();
-  const { memories, loading, reclassify } = useMemories({ limit: 60 });
+  const { memories, loading, reclassify, update, remove } = useMemories({ limit: 60 });
+  const [selectedMemory, setSelectedMemory] = useState<Memory | null>(null);
   const { prefs } = usePreferences();
   const { brief, generating, toggleDone, regenerate } = useDailyBrief(memories, prefs, !loading);
 
@@ -118,7 +120,7 @@ const Dashboard = () => {
           </div>
         ) : (
           <div className="space-y-2.5">
-            {today.slice(0, 5).map((m) => <MemoryCard key={m.id} memory={m} onMove={reclassify} />)}
+            {today.slice(0, 5).map((m) => <MemoryCard key={m.id} memory={m} onMove={reclassify} onOpen={setSelectedMemory} />)}
           </div>
         )}
       </section>
@@ -162,6 +164,16 @@ const Dashboard = () => {
           </div>
         </section>
       )}
+      <MemoryDetailSheet
+        memory={selectedMemory}
+        open={!!selectedMemory}
+        onOpenChange={(o) => !o && setSelectedMemory(null)}
+        allMemories={memories}
+        onOpenMemory={setSelectedMemory}
+        onSave={update}
+        onMove={reclassify}
+        onDelete={remove}
+      />
     </div>
   );
 };

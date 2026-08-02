@@ -1,13 +1,16 @@
 import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft, Loader2, Plus, Sparkles } from 'lucide-react';
 import { getModule } from '@/lib/constants';
-import { groupByDay, useMemories } from '@/lib/memories';
+import { useState } from 'react';
+import { groupByDay, useMemories, Memory } from '@/lib/memories';
 import MemoryCard from '@/components/MemoryCard';
+import MemoryDetailSheet from '@/components/MemoryDetailSheet';
 
 const ModuleDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const module = getModule(id ?? 'personal');
-  const { memories, loading, remove, reclassify } = useMemories({ module: module.id });
+  const { memories, loading, remove, reclassify, update } = useMemories({ module: module.id });
+  const [selected, setSelected] = useState<Memory | null>(null);
   const groups = groupByDay(memories);
 
   return (
@@ -60,12 +63,22 @@ const ModuleDetailPage = () => {
             <section key={g.key}>
               <p className="mb-2.5 text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">{g.label}</p>
               <div className="space-y-2.5">
-                {g.items.map((m) => <MemoryCard key={m.id} memory={m} onDelete={remove} onMove={reclassify} />)}
+                {g.items.map((m) => <MemoryCard key={m.id} memory={m} onDelete={remove} onMove={reclassify} onOpen={setSelected} />)}
               </div>
             </section>
           ))}
         </div>
       )}
+      <MemoryDetailSheet
+        memory={selected}
+        open={!!selected}
+        onOpenChange={(o) => !o && setSelected(null)}
+        allMemories={memories}
+        onOpenMemory={setSelected}
+        onSave={update}
+        onMove={reclassify}
+        onDelete={remove}
+      />
     </div>
   );
 };
