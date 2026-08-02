@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Camera, FileText, Loader2, Mic, Paperclip, Sparkles, Square, X } from 'lucide-react';
+import { Brain, Camera, Dumbbell, FileText, FolderTree, Lightbulb, Link2, Loader2, Mic, Paperclip, SlidersHorizontal, Sparkles, Square, Stethoscope, Utensils, Wallet, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -11,12 +11,12 @@ import { CAPTURE_KINDS, MODULES, CaptureKind, getModule } from '@/lib/constants'
 import { useReminders } from '@/lib/reminders';
 import { cn } from '@/lib/utils';
 
-const suggestions = [
-  'Upper body session, 48 minutes, felt strong',
-  'Lunch: grilled salmon, rice and salad',
-  'Paid €42.10 at the supermarket',
-  'Idea: a weekly review email for the team',
-  'Call the clinic about the blood test results',
+const suggestions: { text: string; icon: typeof Camera; color: string; tint: string }[] = [
+  { text: 'Upper body session, 48 minutes, felt strong', icon: Dumbbell, color: 'text-mod-fitness', tint: 'bg-mod-fitness/10' },
+  { text: 'Lunch: grilled salmon, rice and salad', icon: Utensils, color: 'text-mod-nutrition', tint: 'bg-mod-nutrition/10' },
+  { text: 'Paid €42.10 at the supermarket', icon: Wallet, color: 'text-mod-finance', tint: 'bg-mod-finance/10' },
+  { text: 'Idea: a weekly review email for the team', icon: Lightbulb, color: 'text-mod-business', tint: 'bg-mod-business/10' },
+  { text: 'Call the clinic about the blood test results', icon: Stethoscope, color: 'text-mod-health', tint: 'bg-mod-health/10' },
 ];
 
 interface Extracted {
@@ -184,11 +184,12 @@ const CapturePage = () => {
     }
   };
 
-  // Home-screen shortcuts: /app/capture?mode=voice | photo
+  // Home-screen shortcuts: /app/capture?mode=voice | photo | file
   const modeParam = new URLSearchParams(useLocation().search).get('mode');
   useEffect(() => {
     if (modeParam === 'voice') startVoice();
     if (modeParam === 'photo') cameraInput.current?.click();
+    if (modeParam === 'file') fileInput.current?.click();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [modeParam]);
 
@@ -437,61 +438,79 @@ const CapturePage = () => {
           onChange={(e) => pickFile(e.target.files?.[0], 'photo')}
         />
 
-        <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-border pt-3">
+        <div className="mt-3 grid grid-cols-3 gap-2 border-t border-border pt-3">
           <button
             onClick={startVoice}
             disabled={transcribing}
             aria-label={recording ? 'Stop recording' : 'Voice capture'}
             className={cn(
-              'flex items-center gap-1.5 rounded-2xl px-3 py-2.5 text-xs font-semibold transition-smooth active:scale-95 disabled:opacity-60',
+              'flex flex-col items-center gap-1 rounded-2xl border p-2.5 text-[11px] font-bold transition-smooth active:scale-95 disabled:opacity-60',
               listening || recording
-                ? 'bg-destructive text-destructive-foreground'
-                : 'bg-secondary text-secondary-foreground'
+                ? 'border-destructive bg-destructive text-destructive-foreground'
+                : 'border-mod-personal/25 bg-mod-personal/10 text-mod-personal'
             )}
           >
             {transcribing ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className="h-4.5 w-4.5 animate-spin" />
             ) : recording ? (
-              <Square className="h-4 w-4" />
+              <Square className="h-4.5 w-4.5" />
             ) : (
-              <Mic className="h-4 w-4" />
+              <Mic className="h-4.5 w-4.5" />
             )}
-            {transcribing ? 'Transcribing' : recording ? 'Stop' : listening ? 'Listening' : 'Voice'}
+            {transcribing ? 'Transcribing' : recording ? 'Stop' : listening ? 'Listening' : 'Speak'}
           </button>
           <button
             onClick={() => cameraInput.current?.click()}
             aria-label="Take a photo"
-            className="flex items-center gap-1.5 rounded-2xl bg-secondary px-3 py-2.5 text-xs font-semibold text-secondary-foreground transition-smooth active:scale-95"
+            className="flex flex-col items-center gap-1 rounded-2xl border border-mod-health/25 bg-mod-health/10 p-2.5 text-[11px] font-bold text-mod-health transition-smooth active:scale-95"
           >
-            <Camera className="h-4 w-4" /> Camera
+            <Camera className="h-4.5 w-4.5" /> Photo
           </button>
           <button
             onClick={() => fileInput.current?.click()}
             aria-label="Upload a photo, receipt or PDF"
-            className="flex items-center gap-1.5 rounded-2xl bg-secondary px-3 py-2.5 text-xs font-semibold text-secondary-foreground transition-smooth active:scale-95"
+            className="flex flex-col items-center gap-1 rounded-2xl border border-mod-documents/25 bg-mod-documents/10 p-2.5 text-[11px] font-bold text-mod-documents transition-smooth active:scale-95"
           >
-            <Paperclip className="h-4 w-4" /> File
-          </button>
-
-          <button
-            onClick={save}
-            disabled={saving || extracting}
-            className="ml-auto flex items-center gap-2 rounded-2xl bg-gradient-primary px-5 py-3 text-sm font-semibold text-primary-foreground shadow-glow transition-smooth active:scale-95 disabled:opacity-60"
-          >
-            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-            {saving ? 'Understanding…' : 'Capture'}
+            <Paperclip className="h-4.5 w-4.5" /> File / PDF
           </button>
         </div>
+
+        <button
+          onClick={save}
+          disabled={saving || extracting}
+          className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-primary px-5 py-3 text-sm font-semibold text-primary-foreground shadow-glow transition-smooth active:scale-[0.98] disabled:opacity-60"
+        >
+          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+          {saving ? 'Understanding…' : 'Capture'}
+        </button>
       </div>
+
+      {/* What happens next — colourful, not a wall of text */}
+      <section className="animate-fade-up grid grid-cols-3 gap-2">
+        {[
+          { icon: Brain, label: 'It reads it', tint: 'bg-mod-health/10', color: 'text-mod-health' },
+          { icon: FolderTree, label: 'Files it for you', tint: 'bg-mod-finance/10', color: 'text-mod-finance' },
+          { icon: Link2, label: 'Links it up', tint: 'bg-mod-business/10', color: 'text-mod-business' },
+        ].map((s) => (
+          <div key={s.label} className="smarty-card flex flex-col items-center gap-1.5 p-3 text-center">
+            <span className={cn('grid h-9 w-9 place-items-center rounded-2xl', s.tint)}>
+              <s.icon className={cn('h-4.5 w-4.5', s.color)} />
+            </span>
+            <p className="text-[10px] font-bold leading-tight text-foreground">{s.label}</p>
+          </div>
+        ))}
+      </section>
 
       <section className="animate-fade-up">
         <button
           onClick={() => setShowOverride((v) => !v)}
-          className="text-xs font-semibold text-muted-foreground underline underline-offset-4"
+          className="flex w-full items-center gap-2 rounded-2xl border border-dashed border-border px-3 py-2.5 text-xs font-semibold text-muted-foreground transition-smooth active:scale-[0.99]"
         >
-          {showOverride ? 'Hide manual override' : 'The AI files this automatically — override manually'}
+          <SlidersHorizontal className="h-3.5 w-3.5 text-primary" />
+          {showOverride ? 'Hide manual override' : 'Pick the type or category yourself'}
         </button>
       </section>
+
 
       {showOverride && (
       <>
@@ -540,11 +559,14 @@ const CapturePage = () => {
         <div className="space-y-2">
           {suggestions.map((s) => (
             <button
-              key={s}
-              onClick={() => setText(s)}
-              className="w-full rounded-2xl border border-border bg-card px-4 py-3 text-left text-xs text-muted-foreground transition-smooth hover:border-primary/40 active:scale-[0.99]"
+              key={s.text}
+              onClick={() => setText(s.text)}
+              className="smarty-card flex w-full items-center gap-3 p-3 text-left transition-smooth hover:border-primary/40 active:scale-[0.99]"
             >
-              {s}
+              <span className={cn('grid h-8 w-8 shrink-0 place-items-center rounded-xl', s.tint)}>
+                <s.icon className={cn('h-4 w-4', s.color)} />
+              </span>
+              <span className="min-w-0 flex-1 text-xs font-medium text-foreground">{s.text}</span>
             </button>
           ))}
         </div>

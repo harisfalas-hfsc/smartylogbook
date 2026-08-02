@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Camera, Loader2, Mic, Paperclip, Send, Square, X } from 'lucide-react';
+import { CalendarClock, Camera, FileText, Loader2, Mic, Paperclip, Send, Square, Stethoscope, Wallet, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useMemories } from '@/lib/memories';
@@ -26,7 +26,7 @@ const readAsDataUrl = (file: File | Blob) =>
 const AssistantPage = () => {
   const { memories, loading, create, reload } = useMemories({ limit: 60 });
   const { prefs } = usePreferences();
-  const { brief, generating, toggleDone, regenerate } = useDailyBrief(memories, prefs, !loading);
+  const { brief, generating, regenerate } = useDailyBrief(memories, prefs, !loading);
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
@@ -224,10 +224,10 @@ const AssistantPage = () => {
   };
 
   const quick = [
-    'When was my last blood test?',
-    'Read this report and explain it',
-    'How much did I spend on groceries last month?',
-    'What do I need to deal with this week?',
+    { q: 'When was my last blood test?', icon: Stethoscope, color: 'text-mod-health', tint: 'bg-mod-health/10' },
+    { q: 'Read this report and explain it', icon: FileText, color: 'text-mod-documents', tint: 'bg-mod-documents/10' },
+    { q: 'How much did I spend on groceries last month?', icon: Wallet, color: 'text-mod-finance', tint: 'bg-mod-finance/10' },
+    { q: 'What do I need to deal with this week?', icon: CalendarClock, color: 'text-mod-business', tint: 'bg-mod-business/10' },
   ];
 
   return (
@@ -241,20 +241,28 @@ const AssistantPage = () => {
         </p>
       </header>
 
-      <DailyBriefCard brief={brief} generating={generating} onToggleDone={toggleDone} onRegenerate={regenerate} />
+      <DailyBriefCard
+        brief={brief}
+        generating={generating}
+        onRegenerate={regenerate}
+        onAsk={(t) => setInput(t)}
+      />
 
       <AssistantMemoryCard />
 
       <div className="space-y-3">
         {messages.length === 0 && (
-          <div className="flex flex-wrap gap-2">
-            {quick.map((q) => (
+          <div className="grid gap-2 sm:grid-cols-2">
+            {quick.map((item) => (
               <button
-                key={q}
-                onClick={() => setInput(q)}
-                className="rounded-2xl border border-border bg-card px-3 py-2 text-xs font-semibold text-muted-foreground transition-smooth active:scale-95"
+                key={item.q}
+                onClick={() => setInput(item.q)}
+                className="smarty-card flex items-center gap-3 p-3 text-left transition-smooth active:scale-[0.98]"
               >
-                {q}
+                <span className={cn('grid h-9 w-9 shrink-0 place-items-center rounded-2xl', item.tint)}>
+                  <item.icon className={cn('h-4.5 w-4.5', item.color)} />
+                </span>
+                <span className="min-w-0 flex-1 text-xs font-semibold text-foreground">{item.q}</span>
               </button>
             ))}
           </div>
