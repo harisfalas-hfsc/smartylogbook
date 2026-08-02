@@ -176,6 +176,7 @@ const AssistantPage = () => {
         body: {
           mode: 'chat',
           input: question,
+          retrieve: true,
           history,
           attachments: attachments.map((a) => ({ url: a.url, name: a.name })),
           preferences: prefs ? { goals: prefs.goals, focus: prefs.focus_modules, tone: prefs.tone } : null,
