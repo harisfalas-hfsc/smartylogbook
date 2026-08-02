@@ -4,6 +4,7 @@ import { Camera, FileText, Loader2, Mic, Paperclip, Sparkles, Square, X } from '
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { saveFacts, type AiFact } from '@/lib/facts';
 import { useMemories } from '@/lib/memories';
 import { CAPTURE_KINDS, MODULES, CaptureKind, getModule } from '@/lib/constants';
 import { useReminders } from '@/lib/reminders';
@@ -34,6 +35,7 @@ interface Extracted {
   related_ids?: string[];
   relation_note?: string | null;
   reminder?: { title?: string; type?: string; due_date?: string } | null;
+  facts?: AiFact[];
 }
 
 const readAsDataUrl = (file: File | Blob) =>
@@ -270,7 +272,7 @@ const CapturePage = () => {
 
     const occurredAt = classified?.date ? new Date(`${classified.date}T12:00:00`).toISOString() : undefined;
 
-    const { error } = await create({
+    const { error, id: newId } = await create({
       title: classified?.title ?? text.trim().slice(0, 60) ?? 'Capture',
       summary: classified?.summary ?? null,
       content: text.trim() || null,
@@ -302,6 +304,9 @@ const CapturePage = () => {
     if (error) {
       toast.error(error.message);
       return;
+    }
+    if (newId && user) {
+      void saveFacts(user.id, newId, classified?.facts, occurredAt);
     }
     const reminder = classified?.reminder;
     if (reminder?.title && reminder.due_date) {

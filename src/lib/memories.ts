@@ -78,7 +78,7 @@ export const useMemories = (options?: { module?: string; limit?: number }) => {
       await load();
       if (inserted?.id) void indexMemories([inserted.id]);
     }
-    return { error };
+    return { error, id: inserted?.id ?? null };
   };
 
   const remove = async (id: string) => {
