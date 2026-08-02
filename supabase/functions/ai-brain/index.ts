@@ -239,6 +239,31 @@ Deno.serve(async (req) => {
 
     const authHeader = req.headers.get("Authorization") ?? "";
 
+    /* ------------------------------------------------------------------
+     * MONETISATION GATE
+     * The logbook is free forever. Every mode that actually calls an LLM
+     * belongs to Smarty Assistant and requires an active plan.
+     * Only real reasoning conversations consume the monthly allowance —
+     * deterministic work, transcription and plain database queries do not.
+     * ---------------------------------------------------------------- */
+    const PREMIUM_MODES: Mode[] = ["chat", "search", "insights", "brief", "coach", "train", "extract", "classify", "embed"];
+    const BILLABLE_MODES: Mode[] = ["chat", "search"];
+
+    let quota: { allowance: number; used: number; conversationId: string | null } | null = null;
+
+    if (PREMIUM_MODES.includes(mode)) {
+      const gate = await enforceAssistantAccess(authHeader, mode, BILLABLE_MODES.includes(mode), input ?? "");
+      if ("error" in gate) {
+        return new Response(JSON.stringify(gate), {
+          status: 402,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      quota = gate;
+    }
+
+
+
     /* ---- embed mode: index entries so the Assistant can recall the whole history ---- */
     if (mode === "embed") {
       const db = await userClient(authHeader);
