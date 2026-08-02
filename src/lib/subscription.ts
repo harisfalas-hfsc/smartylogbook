@@ -102,11 +102,12 @@ export const useSubscription = () => {
   };
 
   return {
-    loading: loading || pricingLoading,
+    loading: loading || pricingLoading || adminLoading,
     pricing,
     subscription: sub,
     plan,
     active,
+    isAdmin,
     allowance,
     used,
     remaining,
