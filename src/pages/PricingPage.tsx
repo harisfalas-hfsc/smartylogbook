@@ -22,8 +22,8 @@ const PricingPage = () => {
     <div className="mx-auto max-w-5xl px-4 py-8 sm:px-5 sm:py-10">
       <PageHeader
         eyebrow="Pricing"
-        title="The logbook is free. The intelligence is premium."
-        subtitle="Store your whole life at no cost, forever. Pay only when you want Smarty Assistant to think about it with you."
+        title="One free logbook. One premium brain."
+        subtitle="Keep everything at no cost, forever. Add Smarty Assistant for €9.99 a month — around 10 AI conversations every day."
       />
 
       {/* Free plan — the hero of the page */}
@@ -67,8 +67,10 @@ const PricingPage = () => {
             Pay for intelligence, not for storage.
           </h2>
           <p className="mx-auto mt-2 max-w-2xl text-sm text-muted-foreground">
-            Plans are measured in AI Conversations. One conversation is one complete topic — including the natural
-            follow-up questions that belong to it. Searches, filters and calculations answered without AI never use one.
+            Smarty Assistant is measured in AI Conversations. One conversation is one complete topic — including the
+            natural follow-up questions that belong to it. Searching, filtering, categorising and calculating never use
+            one. When the month's conversations run out you are told immediately, and you can either wait for your
+            renewal date or renew straight away — renewing restarts your cycle from that day.
           </p>
         </div>
 
@@ -83,7 +85,7 @@ const PricingPage = () => {
           ))}
         </div>
 
-        <div className="mt-8 grid gap-4 md:grid-cols-3">
+        <div className="mx-auto mt-8 grid max-w-md gap-4">
           {pricing.plans.map((p) => {
             const allowance = planAllowance(pricing, p);
             return (
@@ -108,7 +110,7 @@ const PricingPage = () => {
                 <div className="mt-4 rounded-2xl bg-primary/5 p-3 text-center">
                   <p className="text-2xl font-extrabold text-primary">{allowance}</p>
                   <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                    AI Conversations / month
+                    AI Conversations / month · about 10 a day
                   </p>
                 </div>
                 <ul className="mt-5 space-y-2">
@@ -130,7 +132,7 @@ const PricingPage = () => {
                       : 'border border-border bg-card text-foreground',
                   )}
                 >
-                  Get {p.name.replace('Smarty ', '')}
+                  Get {p.name.replace('Smarty ', '')} — €{p.price.toFixed(2)}/month
                 </Link>
               </div>
             );

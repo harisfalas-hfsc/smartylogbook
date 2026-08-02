@@ -239,14 +239,12 @@ const DEFAULT_PRICING = {
   conversationWindowMinutes: 45,
   roundTo: 10,
   plans: [
-    { key: "insight", name: "Smarty Insight", price: 6.99 },
-    { key: "intelligence", name: "Smarty Intelligence", price: 9.99 },
-    { key: "genius", name: "Smarty Genius", price: 12.99 },
+    { key: "premium", name: "Smarty Premium", price: 9.99, allowanceOverride: 300 },
   ],
 } as Record<string, any>;
 
 const allowanceFor = (cfg: Record<string, any>, planKey: string): number => {
-  const plan = (cfg.plans ?? []).find((p: any) => p.key === planKey);
+  const plan = (cfg.plans ?? []).find((p: any) => p.key === planKey) ?? (cfg.plans ?? [])[0];
   if (!plan) return 0;
   if (plan.allowanceOverride != null && plan.allowanceOverride > 0) return Math.round(plan.allowanceOverride);
   const usd =
@@ -278,7 +276,10 @@ async function enforceAssistantAccess(
   mode: Mode,
   billable: boolean,
   input: string,
-): Promise<{ allowance: number; used: number; conversationId: string | null } | { error: string; upgrade: true; reason: string }> {
+): Promise<
+  | { allowance: number; used: number; conversationId: string | null }
+  | { error: string; upgrade: true; reason: string; resetsAt?: string | null; allowance?: number; used?: number }
+> {
   const db = await userClient(authHeader);
   const { data: auth } = await db.auth.getUser();
   const uid = auth?.user?.id;
@@ -306,7 +307,7 @@ async function enforceAssistantAccess(
     };
   }
 
-  const planKey = sub.plan_key ?? (sub.plan === "premium" ? "intelligence" : "intelligence");
+  const planKey = sub.plan_key ?? "premium";
   const allowance = allowanceFor(cfg, planKey);
   const start = periodStartOf(sub);
 
@@ -340,10 +341,20 @@ async function enforceAssistantAccess(
   }
 
   if (used >= allowance) {
+    const resetsAt = sub.current_period_end ?? null;
+    const when = resetsAt
+      ? new Date(resetsAt).toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" })
+      : "your next renewal date";
     return {
-      error: "You have used all AI Conversations included in your plan this month.",
+      error:
+        `Your AI Conversations for this month are used up (${used} of ${allowance}). ` +
+        `Your allowance renews on ${when}. You can wait until then, or renew now for another full month — ` +
+        `renewing today restarts your billing cycle from today.`,
       upgrade: true,
       reason: "allowance_exhausted",
+      resetsAt,
+      allowance,
+      used,
     };
   }
 

@@ -20,7 +20,7 @@ interface Turn { role: 'user' | 'ai'; text: string }
 const AiPage = () => {
   const { memories } = useMemories({ limit: 200 });
   const {
-    pricing, plan, active, allowance, used, canUseAssistant, renewsAt, loading: subLoading, reload: reloadSub,
+    pricing, plan, active, allowance, used, canUseAssistant, renewsAt, renewNow, loading: subLoading, reload: reloadSub,
   } = useSubscription();
   const [turns, setTurns] = useState<Turn[]>([]);
   const [question, setQuestion] = useState('');
@@ -65,7 +65,7 @@ const AiPage = () => {
         </p>
       </header>
 
-      {!subLoading && !canUseAssistant && <AssistantUpgrade pricing={pricing} exhausted={active} />}
+      {!subLoading && !canUseAssistant && <AssistantUpgrade pricing={pricing} exhausted={active} allowance={allowance} renewsAt={renewsAt} onRenew={renewNow} />}
 
       {canUseAssistant && (
         <ConversationMeter used={used} allowance={allowance} planName={plan?.name} renewsAt={renewsAt} />

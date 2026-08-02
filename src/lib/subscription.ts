@@ -34,7 +34,7 @@ export const isActive = (sub: SubscriptionRow | null) =>
   );
 
 export const findPlan = (pricing: PricingConfig, key?: string | null): PlanConfig | null =>
-  pricing.plans.find((p) => p.key === key) ?? null;
+  pricing.plans.find((p) => p.key === key) ?? pricing.plans[0] ?? null;
 
 export const useSubscription = () => {
   const { user } = useAuth();
@@ -71,9 +71,21 @@ export const useSubscription = () => {
   useEffect(() => { void load(); }, [load]);
 
   const active = isActive(sub);
-  const plan = findPlan(pricing, sub?.plan_key ?? (sub?.plan === 'premium' ? 'intelligence' : null));
+  const plan = active ? findPlan(pricing, sub?.plan_key) : null;
   const allowance = active && plan ? planAllowance(pricing, plan) : 0;
   const remaining = Math.max(0, allowance - used);
+
+  /**
+   * Immediate renewal / top-up: the user pays for another month right away and
+   * the billing cycle (and the conversation allowance) restarts from today.
+   */
+  const renewNow = async () => {
+    const { data, error } = await supabase.functions.invoke('account', { body: { action: 'renew' } });
+    await load();
+    if (error) return { error: error.message };
+    if (data && typeof data === 'object' && 'error' in data) return { error: String((data as { error: unknown }).error) };
+    return { error: null };
+  };
 
   return {
     loading: loading || pricingLoading,
@@ -86,6 +98,7 @@ export const useSubscription = () => {
     remaining,
     canUseAssistant: active && remaining > 0,
     renewsAt: sub?.current_period_end ?? null,
+    renewNow,
     reload: load,
   };
 };
