@@ -11,7 +11,7 @@ const EMBED_BATCH = 40;
 
 type Mode =
   | "classify" | "brief" | "coach" | "search" | "insights"
-  | "extract" | "transcribe" | "chat" | "embed";
+  | "extract" | "transcribe" | "chat" | "embed" | "train";
 
 interface Body {
   mode: Mode;
