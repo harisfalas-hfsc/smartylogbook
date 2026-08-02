@@ -4,6 +4,7 @@ import { ArrowRight, Camera, Loader2, Mic, Plus, Sparkles, Wallet, Dumbbell, Act
 import { useAuth } from '@/contexts/AuthContext';
 import { useMemories, timeOf } from '@/lib/memories';
 import DailyBriefCard from '@/components/DailyBriefCard';
+import ProactiveAlerts from '@/components/ProactiveAlerts';
 import { usePreferences } from '@/lib/preferences';
 import { useDailyBrief } from '@/lib/assistant';
 import MemoryCard from '@/components/MemoryCard';
@@ -58,6 +59,9 @@ const Dashboard = () => {
 
       {/* Smarty Assistant daily brief */}
       <DailyBriefCard brief={brief} generating={generating} onToggleDone={toggleDone} onRegenerate={regenerate} />
+
+      {/* Proactive alerts found by the daily background scan */}
+      <ProactiveAlerts />
 
       {/* Quick capture */}
       <section className="animate-fade-up">

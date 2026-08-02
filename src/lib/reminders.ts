@@ -149,6 +149,23 @@ export const useNotificationEngine = (prefs: Preferences | null) => {
         }
       }
 
+      // Proactive alerts written by the nightly background scan
+      const { data: openAlerts } = await supabase
+        .from('proactive_alerts')
+        .select('id,kind,title,detail,severity')
+        .eq('dismissed', false)
+        .is('notified_at', null)
+        .limit(5);
+
+      for (const a of openAlerts ?? []) {
+        if (!typeEnabled(prefs, String(a.kind))) continue;
+        fire(String(a.title), String(a.detail ?? 'Open Smarty Logbook for details.'));
+        await supabase
+          .from('proactive_alerts')
+          .update({ notified_at: new Date().toISOString() })
+          .eq('id', a.id);
+      }
+
       const { data } = await supabase
         .from('reminders')
         .select('*')
