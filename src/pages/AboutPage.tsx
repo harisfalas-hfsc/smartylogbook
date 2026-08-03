@@ -19,7 +19,7 @@ const AboutPage = () => (
   <div className="mx-auto max-w-5xl px-3 py-7 sm:px-5 sm:py-10">
     <PageHeader
       eyebrow="About"
-      title="Smarty Logbook — a logbook with a brain."
+      title="Smarty Logbook, a logbook with a brain."
       subtitle="Put anything in. It understands it, relates it to the rest of your life, and finds it the moment you ask."
     />
 
