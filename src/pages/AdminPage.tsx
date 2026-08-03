@@ -187,7 +187,7 @@ const AdminPage = () => {
           <h1 className="flex items-center gap-2 text-2xl font-extrabold tracking-tight text-foreground">
             <ShieldCheck className="h-6 w-6 text-primary" /> Admin panel
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground">Customers, subscriptions and revenue.</p>
+          <p className="mt-1 text-sm text-muted-foreground">Customers, revenue, automations and messages.</p>
         </div>
         <button
           onClick={load}
