@@ -1,5 +1,7 @@
 import { Wand2, Brain, CreditCard } from 'lucide-react';
 import { Panel, SubCard, MiniRow, DesktopOnly, PageHeader, CtaCard, steps, givesIn, givesBack } from '@/lib/marketing';
+import StepsCircle from '@/components/StepsCircle';
+
 
 const HowItWorksPage = () => (
   <div className="mx-auto max-w-5xl px-3 py-7 sm:px-5 sm:py-10">
@@ -41,7 +43,13 @@ const HowItWorksPage = () => (
       title={<>What happens the <span className="gradient-text">moment you save.</span></>}
       lead="Six quiet stages, in order, every time."
     >
-      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+      {/* Mobile: circular connected flow */}
+      <div className="lg:hidden">
+        <StepsCircle />
+      </div>
+
+      {/* Desktop: unchanged list */}
+      <div className="hidden gap-2 sm:grid sm:grid-cols-2 lg:grid-cols-3">
         {steps.map((s, i) => (
           <div key={s.title} className="flex items-center gap-2.5 rounded-2xl border border-primary/15 bg-card p-2.5">
             <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-primary shadow-glow">
@@ -56,6 +64,7 @@ const HowItWorksPage = () => (
           </div>
         ))}
       </div>
+
     </Panel>
 
     <Panel
