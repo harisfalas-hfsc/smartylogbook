@@ -173,7 +173,32 @@ const SettingsPage = () => {
               />
             </div>
           </div>
+          <div className="px-3 py-3">
+            <div className="flex items-center gap-2">
+              <BellRing className="h-4 w-4 shrink-0 text-primary" />
+              <p className="text-sm font-semibold text-foreground">Browser permission</p>
+              <span
+                className={cn(
+                  'ml-auto rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide',
+                  permission === 'granted' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground',
+                )}
+              >
+                {permission === 'granted' ? 'Allowed' : permission === 'denied' ? 'Blocked' : 'Not set'}
+              </span>
+            </div>
+            <p className="mt-1.5 text-[11px] leading-relaxed text-muted-foreground">
+              Nudges are delivered by your browser while Smarty Logbook is open, and every alert is
+              always waiting for you in Messages.
+            </p>
+            <button
+              onClick={testNotification}
+              className="mt-2 w-full rounded-xl border border-border bg-card px-3 py-2 text-xs font-bold text-foreground transition-smooth active:scale-[0.98] sm:w-auto sm:px-4"
+            >
+              Send a test notification
+            </button>
+          </div>
         </div>
+
 
         <Link
           to="/app/reminders"
