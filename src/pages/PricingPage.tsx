@@ -2,6 +2,8 @@ import { Link } from 'react-router-dom';
 import { Check, Infinity as InfinityIcon, MessageCircle, Sparkles } from 'lucide-react';
 import { PageHeader } from '@/lib/marketing';
 import { ASSISTANT_BENEFITS, FREE_BENEFITS, planAllowance, usePricing } from '@/lib/pricing';
+import { useAuth } from '@/contexts/AuthContext';
+
 
 const GOOD_TO_KNOW = [
   {
