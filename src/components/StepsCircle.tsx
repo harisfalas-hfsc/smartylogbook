@@ -26,9 +26,9 @@ const StepsCircle = () => {
           const x = 50 + R * Math.cos(a);
           const y = 50 + R * Math.sin(a);
           // clockwise tangent direction at this point
-          const deg = (Math.atan2(Math.cos(a), Math.sin(a)) * 180) / Math.PI;
+          const deg = (Math.atan2(Math.cos(a), -Math.sin(a)) * 180) / Math.PI;
           return (
-            <g key={i} transform={`translate(${x} ${y}) rotate(${-deg})`}>
+            <g key={i} transform={`translate(${x} ${y}) rotate(${deg})`}>
               <path d="M-1.6,-2 L2.4,0 L-1.6,2 Z" className="fill-primary" />
             </g>
           );
