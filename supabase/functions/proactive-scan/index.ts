@@ -195,6 +195,48 @@ Deno.serve(async (req) => {
     console.error("subscription alerts failed", e);
   }
 
+  /* ---- daily assistant brief: one message per user at their chosen morning hour ---- */
+  let briefs = 0;
+  try {
+    const nowUtcHour = today.getUTCHours();
+    const { data: prefRows } = await db
+      .from("user_preferences")
+      .select("user_id,coach_time,notify_coach,quiet_hours_start,quiet_hours_end")
+      .eq("notify_coach", true);
+
+    const todayKey = day(today);
+    const briefRows: Record<string, unknown>[] = [];
+    for (const p of prefRows ?? []) {
+      const hour = Number(String(p.coach_time ?? "07:30").slice(0, 2));
+      if (Number.isNaN(hour) || hour !== nowUtcHour) continue;
+      const mine = alerts.filter((a) => a.user_id === p.user_id);
+      const headline = mine.length
+        ? `${mine.length} thing${mine.length > 1 ? "s" : ""} need your attention today.`
+        : "Nothing urgent today — a good day to capture what is on your mind.";
+      briefRows.push({
+        user_id: p.user_id,
+        kind: "brief",
+        title: "Your daily brief is ready",
+        body: headline,
+        level: "normal",
+        related_at: today.toISOString(),
+        action_label: "Open Smarty Assistant",
+        action_url: "/app/assistant",
+        dedupe_key: `brief:${todayKey}`,
+      });
+    }
+    if (briefRows.length) {
+      const { data, error } = await db
+        .from("messages")
+        .upsert(briefRows, { onConflict: "user_id,dedupe_key", ignoreDuplicates: true })
+        .select("id");
+      if (error) console.error("insert briefs failed", error);
+      briefs = data?.length ?? 0;
+    }
+  } catch (e) {
+    console.error("daily brief failed", e);
+  }
+
   /* ---- mirror everything into each user's Message Center ---- */
   let messaged = 0;
   if (alerts.length) {
@@ -217,8 +259,8 @@ Deno.serve(async (req) => {
     messaged = data?.length ?? 0;
   }
 
-  console.log(`proactive-scan: ${alerts.length} candidates, ${inserted} new alerts, ${messaged} messages`);
-  return new Response(JSON.stringify({ candidates: alerts.length, inserted, messaged }), {
+  console.log(`proactive-scan: ${alerts.length} candidates, ${inserted} new alerts, ${messaged} messages, ${briefs} briefs`);
+  return new Response(JSON.stringify({ candidates: alerts.length, inserted, messaged, briefs }), {
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 });

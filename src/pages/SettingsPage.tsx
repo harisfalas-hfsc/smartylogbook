@@ -1,7 +1,8 @@
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Trash2, FolderInput,
-  Bell, ChevronRight, CreditCard, FileText, Fingerprint, LogOut, Moon, Shield, ShieldCheck, Sparkles, Target, User,
+  Bell, BellRing, ChevronRight, CreditCard, FileText, LogOut, Moon, Shield, ShieldCheck, Sparkles, Target, User,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
@@ -26,20 +27,40 @@ const SettingsPage = () => {
   const navigate = useNavigate();
   const { isAdmin } = useIsAdmin();
 
+  const [permission, setPermission] = useState<string>(
+    typeof Notification !== 'undefined' ? Notification.permission : 'unsupported',
+  );
+
   const toggleNotify = async (key: string, value: boolean) => {
     if (value) {
-      const permission = await requestNotificationPermission();
-      if (permission !== 'granted') {
+      const perm = await requestNotificationPermission();
+      setPermission(perm);
+      if (perm !== 'granted') {
         toast.info('Allow browser notifications to receive these nudges');
       }
     }
     await update({ [key]: value });
   };
 
+  const testNotification = async () => {
+    const perm = await requestNotificationPermission();
+    setPermission(perm);
+    if (perm !== 'granted') {
+      toast.error(
+        perm === 'unsupported'
+          ? 'This browser cannot show notifications'
+          : 'Notifications are blocked — enable them in your browser settings',
+      );
+      return;
+    }
+    new Notification('Smarty Logbook', { body: 'Notifications are working. This is a test nudge.' });
+    toast.success('Test notification sent');
+  };
+
+
   const rows = [
     { icon: User, label: 'Account & data', value: user?.email ?? '', to: '/app/account' },
     { icon: CreditCard, label: 'My plan', value: 'Plan & billing', to: '/app/plan' },
-    { icon: Fingerprint, label: 'Biometric lock', value: 'Device', to: '/app/privacy' },
     { icon: Shield, label: 'Privacy & security', value: 'Encrypted', to: '/app/privacy' },
     { icon: Moon, label: 'Appearance', value: 'Light / Dark', to: '/app/appearance' },
   ];
@@ -145,41 +166,61 @@ const SettingsPage = () => {
             );
           })}
 
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 px-3 py-3">
-            <div className="min-w-[9rem] flex-1">
-              <p className="text-sm font-semibold text-foreground">Morning brief time</p>
-              <p className="text-[11px] text-muted-foreground">When today's recommendation lands</p>
-            </div>
+          <div className="px-3 py-3">
+            <p className="text-sm font-semibold text-foreground">Morning brief time</p>
+            <p className="text-[11px] text-muted-foreground">When today's recommendation lands</p>
             <input
               type="time"
               value={prefs?.coach_time ?? '07:30'}
               onChange={(e) => update({ coach_time: e.target.value })}
-              className="shrink-0 rounded-xl bg-secondary px-2 py-1 text-sm font-semibold text-primary outline-none"
+              className="mt-2 w-full max-w-full rounded-xl bg-secondary px-3 py-2 text-sm font-semibold text-primary outline-none sm:w-40"
             />
           </div>
 
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 px-3 py-3">
-            <div className="min-w-[9rem] flex-1">
-              <p className="text-sm font-semibold text-foreground">Quiet hours</p>
-              <p className="text-[11px] text-muted-foreground">No notifications in this window</p>
-            </div>
-            <div className="flex shrink-0 items-center gap-2">
+          <div className="px-3 py-3">
+            <p className="text-sm font-semibold text-foreground">Quiet hours</p>
+            <p className="text-[11px] text-muted-foreground">No notifications in this window</p>
+            <div className="mt-2 grid grid-cols-2 gap-2 sm:w-[21rem]">
               <input
                 type="time"
                 value={prefs?.quiet_hours_start ?? '22:00'}
                 onChange={(e) => update({ quiet_hours_start: e.target.value })}
-                className="rounded-xl bg-secondary px-2 py-1 text-sm font-semibold text-primary outline-none"
+                className="w-full min-w-0 rounded-xl bg-secondary px-3 py-2 text-sm font-semibold text-primary outline-none"
               />
-              <span className="text-xs text-muted-foreground">–</span>
               <input
                 type="time"
                 value={prefs?.quiet_hours_end ?? '07:00'}
                 onChange={(e) => update({ quiet_hours_end: e.target.value })}
-                className="rounded-xl bg-secondary px-2 py-1 text-sm font-semibold text-primary outline-none"
+                className="w-full min-w-0 rounded-xl bg-secondary px-3 py-2 text-sm font-semibold text-primary outline-none"
               />
             </div>
           </div>
+          <div className="px-3 py-3">
+            <div className="flex items-center gap-2">
+              <BellRing className="h-4 w-4 shrink-0 text-primary" />
+              <p className="text-sm font-semibold text-foreground">Browser permission</p>
+              <span
+                className={cn(
+                  'ml-auto rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide',
+                  permission === 'granted' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground',
+                )}
+              >
+                {permission === 'granted' ? 'Allowed' : permission === 'denied' ? 'Blocked' : 'Not set'}
+              </span>
+            </div>
+            <p className="mt-1.5 text-[11px] leading-relaxed text-muted-foreground">
+              Nudges are delivered by your browser while Smarty Logbook is open, and every alert is
+              always waiting for you in Messages.
+            </p>
+            <button
+              onClick={testNotification}
+              className="mt-2 w-full rounded-xl border border-border bg-card px-3 py-2 text-xs font-bold text-foreground transition-smooth active:scale-[0.98] sm:w-auto sm:px-4"
+            >
+              Send a test notification
+            </button>
+          </div>
         </div>
+
 
         <Link
           to="/app/reminders"

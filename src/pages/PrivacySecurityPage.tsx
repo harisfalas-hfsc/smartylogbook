@@ -1,31 +1,8 @@
-import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Fingerprint, FileText, Lock, ShieldCheck, Trash2, Database } from 'lucide-react';
-import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
-
-const LOCK_KEY = 'smarty-app-lock';
+import { ArrowLeft, FileText, Lock, ShieldCheck, Trash2, Database } from 'lucide-react';
 
 const PrivacySecurityPage = () => {
   const navigate = useNavigate();
-  const [lock, setLock] = useState(false);
-  const [supported, setSupported] = useState(false);
-
-  useEffect(() => {
-    setLock(localStorage.getItem(LOCK_KEY) === '1');
-    setSupported(typeof window !== 'undefined' && 'PublicKeyCredential' in window);
-  }, []);
-
-  const toggleLock = async () => {
-    if (!supported) {
-      toast.info('This device or browser does not expose biometric unlock');
-      return;
-    }
-    const next = !lock;
-    setLock(next);
-    localStorage.setItem(LOCK_KEY, next ? '1' : '0');
-    toast.success(next ? 'App lock enabled on this device' : 'App lock disabled');
-  };
 
   return (
     <div className="space-y-5">
@@ -37,21 +14,6 @@ const PrivacySecurityPage = () => {
         <h1 className="text-2xl font-extrabold tracking-tight text-foreground">Privacy & security</h1>
         <p className="mt-1 text-sm text-muted-foreground">How your logbook is protected and what you control.</p>
       </header>
-
-      <section className="smarty-card animate-fade-up divide-y divide-border p-2">
-        <button onClick={toggleLock} className="flex w-full items-center gap-3 px-3 py-3.5 text-left">
-          <Fingerprint className="h-4.5 w-4.5 shrink-0 text-primary" />
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold text-foreground">Biometric / device lock</p>
-            <p className="text-[11px] text-muted-foreground">
-              {supported ? 'Require your device unlock before opening the logbook' : 'Not available on this device'}
-            </p>
-          </div>
-          <span className={cn('h-6 w-11 shrink-0 rounded-full p-0.5 transition-smooth', lock ? 'bg-primary' : 'bg-muted')}>
-            <span className={cn('block h-5 w-5 rounded-full bg-white transition-smooth', lock && 'translate-x-5')} />
-          </span>
-        </button>
-      </section>
 
       <section className="smarty-card animate-fade-up space-y-3 p-5">
         <h2 className="flex items-center gap-2 text-sm font-bold text-foreground">
