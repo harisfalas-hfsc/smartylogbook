@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import {
-  BadgeCheck, CreditCard, Crown, Loader2, RefreshCw, Save, Search, ShieldCheck, SlidersHorizontal, TrendingUp, UserPlus, Users, XCircle,
+  BadgeCheck, Bell, CreditCard, Crown, Loader2, RefreshCw, Save, Search, ShieldCheck, SlidersHorizontal, Timer, TrendingUp, UserPlus, Users, XCircle,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -11,9 +11,12 @@ import { cn } from '@/lib/utils';
 import {
   DEFAULT_PRICING, PlanConfig, PricingConfig, conversationCost, planAllowance, planMargin,
 } from '@/lib/pricing';
+import AdminJobsTab from '@/components/admin/AdminJobsTab';
+import AdminMessagesTab from '@/components/admin/AdminMessagesTab';
 
-const TABS = ['Overview', 'Customers', 'Subscriptions', 'Payments', 'Pricing'] as const;
+const TABS = ['Overview', 'Customers', 'Subscriptions', 'Payments', 'Pricing', 'Jobs', 'Messages'] as const;
 type Tab = (typeof TABS)[number];
+
 
 const fmtDate = (d?: string | null) =>
   d ? new Date(d).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
