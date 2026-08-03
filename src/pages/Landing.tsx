@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, Brain, Clock, Sparkles } from 'lucide-react';
-import { MiniRow, givesIn, givesBack } from '@/lib/marketing';
+import { givesIn } from '@/lib/marketing';
 
 const highlights = [
   { icon: Sparkles, t: 'Capture in 3 seconds', s: 'Voice, photo or text. No folders, no tags.' },
