@@ -2,6 +2,8 @@ import { Link } from 'react-router-dom';
 import { Check, Infinity as InfinityIcon, MessageCircle, Sparkles } from 'lucide-react';
 import { PageHeader } from '@/lib/marketing';
 import { ASSISTANT_BENEFITS, FREE_BENEFITS, planAllowance, usePricing } from '@/lib/pricing';
+import { useAuth } from '@/contexts/AuthContext';
+
 
 const GOOD_TO_KNOW = [
   {
@@ -23,6 +25,9 @@ const GOOD_TO_KNOW = [
 
 const PricingPage = () => {
   const { pricing } = usePricing();
+  const { user } = useAuth();
+  const premiumHref = user ? '/app/checkout' : '/auth?next=/app/checkout';
+
   const premium = pricing.plans[0];
   const allowance = premium ? planAllowance(pricing, premium) : 300;
 
@@ -112,7 +117,8 @@ const PricingPage = () => {
           </ul>
 
           <Link
-            to="/auth"
+            to={premiumHref}
+
             className="relative mt-6 flex items-center justify-center rounded-2xl bg-gradient-primary px-5 py-3.5 text-sm font-bold text-primary-foreground shadow-glow transition-smooth active:scale-[0.98]"
           >
             Get Premium
