@@ -63,7 +63,7 @@ const Pill = ({ tone, children }: { tone: 'premium' | 'free' | 'canceled' | 'adm
 
 const AdminPage = () => {
   const { isAdmin, loading: roleLoading } = useIsAdmin();
-  const [tab, setTab] = useState<Tab>('Overview');
+  const [tab, setTab] = useState<Tab | null>(null);
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [payments, setPayments] = useState<AdminPayment[]>([]);
@@ -192,14 +192,39 @@ const AdminPage = () => {
     </div>
   );
 
+  const hubValue = (t: Tab): string => {
+    if (!stats) return '—';
+    switch (t) {
+      case 'Revenue': return euro(stats.totalRevenue);
+      case 'Customers': return String(stats.totalUsers);
+      case 'Subscriptions': return String(stats.activeSubscriptions);
+      case 'Payments': return String(stats.paymentsCount);
+      case 'Pricing': return euro(pricing.plans[0]?.price ?? 9.99);
+      default: return '';
+    }
+  };
+
   return (
     <div className="space-y-5">
       <header className="animate-fade-up flex items-start justify-between gap-3">
-        <div>
-          <h1 className="flex items-center gap-2 text-2xl font-extrabold tracking-tight text-foreground">
-            <ShieldCheck className="h-6 w-6 text-primary" /> Admin panel
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">Customers, revenue, automations and messages.</p>
+        <div className="flex min-w-0 items-start gap-2">
+          {tab && (
+            <button
+              onClick={() => setTab(null)}
+              aria-label="Back to admin home"
+              className="mt-1 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-primary hover:bg-primary/10"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+          )}
+          <div className="min-w-0">
+            <h1 className="flex items-center gap-2 text-2xl font-extrabold tracking-tight text-foreground">
+              <ShieldCheck className="h-6 w-6 shrink-0 text-primary" /> {tab ?? 'Admin panel'}
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {tab ? TAB_META[tab].blurb : 'Customers, revenue, automations and messages.'}
+            </p>
+          </div>
         </div>
         <button
           onClick={load}
@@ -209,22 +234,6 @@ const AdminPage = () => {
           <RefreshCw className={cn('h-4 w-4', loading && 'animate-spin')} />
         </button>
       </header>
-
-      <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-7">
-        {TABS.map((t) => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={cn(
-              'rounded-2xl px-2 py-2.5 text-center text-[11px] font-bold transition-smooth sm:text-xs',
-              tab === t ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground',
-            )}
-          >
-            {t}
-          </button>
-        ))}
-      </div>
-
 
       {error && (
         <div className="smarty-card border-destructive/40 p-4 text-sm font-semibold text-destructive">{error}</div>
@@ -236,8 +245,41 @@ const AdminPage = () => {
         </div>
       ) : (
         <>
-          {tab === 'Overview' && stats && (
+          {tab === null && (
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              {TABS.map((t) => {
+                const meta = TAB_META[t];
+                const value = hubValue(t);
+                return (
+                  <button
+                    key={t}
+                    onClick={() => setTab(t)}
+                    className="smarty-card group flex min-h-[132px] flex-col justify-between p-5 text-left transition-smooth active:scale-[0.99] hover:border-primary/40"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <span className={cn('inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br', meta.tint)}>
+                        <meta.icon className="h-6 w-6" />
+                      </span>
+                      {value ? (
+                        <span className="text-2xl font-extrabold tracking-tight text-foreground">{value}</span>
+                      ) : null}
+                    </div>
+                    <div className="mt-4">
+                      <p className="flex items-center gap-1 text-base font-extrabold text-foreground">
+                        {t}
+                        <ChevronRight className="h-4 w-4 text-muted-foreground transition-smooth group-hover:translate-x-0.5" />
+                      </p>
+                      <p className="mt-0.5 text-[12px] leading-snug text-muted-foreground">{meta.blurb}</p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {tab === 'Revenue' && stats && (
             <div className="space-y-4">
+
               <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
                 <StatCard icon={Users} label="Customers" value={String(stats.totalUsers)} sub={`${stats.newUsers30d} new in 30 days`} />
                 <StatCard icon={Crown} label="Active premium" value={String(stats.activeSubscriptions)} sub={`${stats.grantedSubscriptions} granted · ${stats.paidSubscriptions} paid`} />
