@@ -1,5 +1,5 @@
 import { Sparkles, Layers, ShieldCheck, Plus } from 'lucide-react';
-import { Panel, MiniRow, PageHeader, CtaCard } from '@/lib/marketing';
+import { Panel, MiniRow, PageHeader, CtaCard, DesktopIntro } from '@/lib/marketing';
 import { MODULES } from '@/lib/constants';
 
 const pillars = [
@@ -22,6 +22,13 @@ const AboutPage = () => (
       title="Smarty Logbook — a logbook with a brain."
       subtitle="Put anything in. It understands it, relates it to the rest of your life, and finds it the moment you ask."
     />
+
+    <DesktopIntro
+      title="What Smarty Logbook actually is"
+      lead="Smarty Logbook is one place for everything that happens in your life — notes, receipts, lab results, workouts, bills, appointments and ideas. You capture it in a few seconds and the Smarty Assistant does the rest: it reads what you sent, pulls out the dates, amounts and details, files it in the right life module, links it to what already exists, and reminds you before it matters. Nothing to name, nothing to tag, nothing to file. When you need something back, you ask in plain words."
+      points={[...pillars.map((p) => ({ e: p.e, t: p.t, s: p.s }))]}
+    />
+
 
     <Panel
       eyebrow="The idea"

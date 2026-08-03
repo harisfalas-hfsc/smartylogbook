@@ -1,5 +1,5 @@
 import { Wand2, Brain } from 'lucide-react';
-import { Panel, SubCard, MiniRow, PageHeader, steps, givesIn, givesBack } from '@/lib/marketing';
+import { Panel, SubCard, MiniRow, PageHeader, steps, givesIn, givesBack, DesktopIntro } from '@/lib/marketing';
 import StepsCircle from '@/components/StepsCircle';
 
 
@@ -10,6 +10,18 @@ const HowItWorksPage = () => (
       title="You put it in. Smarty Logbook does the thinking."
       subtitle="Four ways in — type, say, snap, upload. Then it understands, relates, remembers and finds it for you."
     />
+
+    <DesktopIntro
+      title="How Smarty Logbook works, end to end"
+      lead="There are four ways in — type it, say it, snap it or upload it — and one way out: you ask. In between, the Smarty Assistant reads every entry, extracts the details that matter, files it into the right life module without asking you, connects it to related entries so your logbook becomes a map of your life, and schedules the follow-ups, renewals and appointments it finds. Every morning it hands you a short brief of what actually matters today."
+      points={[
+        { e: '📥', t: 'Four ways in', s: 'Type, voice, photo or file — one tap.' },
+        { e: '🧠', t: 'It understands', s: 'Dates, amounts and details extracted.' },
+        { e: '🔗', t: 'It connects', s: 'New entries link to what you already have.' },
+        { e: '💬', t: 'You just ask', s: 'Plain language in, real answers back.' },
+      ]}
+    />
+
 
     <Panel
       eyebrow="The whole idea"

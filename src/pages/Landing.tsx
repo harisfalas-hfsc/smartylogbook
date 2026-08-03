@@ -20,13 +20,24 @@ const Landing = () => {
           <span className="inline-flex animate-fade-in items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-[11px] font-semibold text-muted-foreground shadow-soft">
             <Sparkles className="h-3.5 w-3.5 text-primary" /> Powered by the Smarty Assistant
           </span>
-          <h1 className="mx-auto mt-5 animate-fade-up text-[30px] font-extrabold leading-[1.1] tracking-tight text-foreground md:text-5xl">
-            <span className="gradient-text">Smarty Logbook</span> — a logbook{' '}
+          <h1 className="mx-auto mt-5 animate-fade-up text-[30px] font-extrabold leading-[1.1] tracking-tight text-foreground md:whitespace-nowrap md:text-5xl">
+            <span className="gradient-text">Smarty Logbook</span>, a logbook{' '}
             <span className="gradient-text">with a brain.</span>
           </h1>
-          <p className="mx-auto mt-4 max-w-md animate-fade-up text-sm leading-relaxed text-muted-foreground md:text-base">
+          <p className="mx-auto mt-4 max-w-md animate-fade-up text-sm leading-relaxed text-muted-foreground md:hidden">
             Put anything in. It understands it, connects it, keeps it and finds it when you need it.
           </p>
+          <p className="mx-auto mt-5 hidden max-w-3xl animate-fade-up text-base leading-relaxed text-muted-foreground md:block md:text-lg">
+            Put anything in — a thought, a receipt, a lab result, a voice note, a PDF. Smarty Logbook
+            understands it, connects it to the rest of your life, keeps it safe and finds it the moment
+            you ask.
+          </p>
+          <p className="mx-auto mt-3 hidden max-w-2xl animate-fade-up text-sm leading-relaxed text-muted-foreground md:block">
+            No folders, no tags, no filing. The Smarty Assistant reads every entry, extracts the dates
+            and amounts, files it into the right life module, reminds you before things are due, and
+            answers any question about your own history in plain language.
+          </p>
+
           <div className="mt-7 flex animate-fade-up flex-col items-center gap-2.5">
             <Link
               to="/auth"
