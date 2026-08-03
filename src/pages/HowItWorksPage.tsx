@@ -20,14 +20,14 @@ const HowItWorksPage = () => (
     >
       <div className="grid gap-3 lg:grid-cols-2">
         <SubCard label="You put in" labelEmoji="📥">
-          <div className="grid gap-2 sm:grid-cols-2">
+          <div className="grid grid-cols-2 gap-2">
             {givesIn.map((c) => (
               <MiniRow key={c.t} emoji={c.e} title={c.t} text={c.s} />
             ))}
           </div>
         </SubCard>
         <SubCard label="It gives back" labelEmoji="✨">
-          <div className="grid gap-2 sm:grid-cols-2">
+          <div className="grid grid-cols-2 gap-2">
             {givesBack.map((c) => (
               <MiniRow key={c.t} emoji={c.e} title={c.t} text={c.s} />
             ))}
