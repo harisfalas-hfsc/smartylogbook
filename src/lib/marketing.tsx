@@ -292,21 +292,20 @@ export const DesktopIntro = ({
   <div className="mb-8 hidden lg:block">
     <div className="smarty-card relative overflow-hidden p-8 xl:p-10">
       <div className="pointer-events-none absolute inset-0 bg-gradient-halo opacity-60" />
-      <div className="relative grid gap-8 xl:grid-cols-[1.1fr_1fr] xl:items-center">
-        <div>
-          <h2 className="text-3xl font-extrabold leading-tight tracking-tight text-foreground xl:text-4xl">
-            <BrandText>{title}</BrandText>
-          </h2>
-          <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground">
-            <BrandText>{lead}</BrandText>
-          </p>
-        </div>
-        <div className="grid gap-2.5 sm:grid-cols-2">
+      <div className="relative flex flex-col items-center text-center">
+        <h2 className="text-3xl font-extrabold leading-tight tracking-tight text-foreground xl:text-4xl">
+          <BrandText>{title}</BrandText>
+        </h2>
+        <p className="mt-4 max-w-3xl text-base leading-relaxed text-muted-foreground">
+          <BrandText>{lead}</BrandText>
+        </p>
+        <div className="mt-7 grid w-full max-w-4xl gap-2.5 sm:grid-cols-2 xl:grid-cols-4">
           {points.map((p) => (
             <MiniRow key={p.t} emoji={p.e} title={p.t} text={p.s} />
           ))}
         </div>
       </div>
+
     </div>
   </div>
 );
