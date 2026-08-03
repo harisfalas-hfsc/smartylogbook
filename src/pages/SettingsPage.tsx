@@ -1,7 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Trash2, FolderInput,
-  Bell, ChevronRight, CreditCard, FileText, Fingerprint, LogOut, Moon, Shield, ShieldCheck, Sparkles, Target, User,
+  Bell, BellRing, ChevronRight, CreditCard, FileText, LogOut, Moon, Shield, ShieldCheck, Sparkles, Target, User,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
@@ -39,7 +39,6 @@ const SettingsPage = () => {
   const rows = [
     { icon: User, label: 'Account & data', value: user?.email ?? '', to: '/app/account' },
     { icon: CreditCard, label: 'My plan', value: 'Plan & billing', to: '/app/plan' },
-    { icon: Fingerprint, label: 'Biometric lock', value: 'Device', to: '/app/privacy' },
     { icon: Shield, label: 'Privacy & security', value: 'Encrypted', to: '/app/privacy' },
     { icon: Moon, label: 'Appearance', value: 'Light / Dark', to: '/app/appearance' },
   ];
@@ -145,37 +144,32 @@ const SettingsPage = () => {
             );
           })}
 
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 px-3 py-3">
-            <div className="min-w-[9rem] flex-1">
-              <p className="text-sm font-semibold text-foreground">Morning brief time</p>
-              <p className="text-[11px] text-muted-foreground">When today's recommendation lands</p>
-            </div>
+          <div className="px-3 py-3">
+            <p className="text-sm font-semibold text-foreground">Morning brief time</p>
+            <p className="text-[11px] text-muted-foreground">When today's recommendation lands</p>
             <input
               type="time"
               value={prefs?.coach_time ?? '07:30'}
               onChange={(e) => update({ coach_time: e.target.value })}
-              className="shrink-0 rounded-xl bg-secondary px-2 py-1 text-sm font-semibold text-primary outline-none"
+              className="mt-2 w-full max-w-full rounded-xl bg-secondary px-3 py-2 text-sm font-semibold text-primary outline-none sm:w-40"
             />
           </div>
 
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 px-3 py-3">
-            <div className="min-w-[9rem] flex-1">
-              <p className="text-sm font-semibold text-foreground">Quiet hours</p>
-              <p className="text-[11px] text-muted-foreground">No notifications in this window</p>
-            </div>
-            <div className="flex shrink-0 items-center gap-2">
+          <div className="px-3 py-3">
+            <p className="text-sm font-semibold text-foreground">Quiet hours</p>
+            <p className="text-[11px] text-muted-foreground">No notifications in this window</p>
+            <div className="mt-2 grid grid-cols-2 gap-2 sm:w-[21rem]">
               <input
                 type="time"
                 value={prefs?.quiet_hours_start ?? '22:00'}
                 onChange={(e) => update({ quiet_hours_start: e.target.value })}
-                className="rounded-xl bg-secondary px-2 py-1 text-sm font-semibold text-primary outline-none"
+                className="w-full min-w-0 rounded-xl bg-secondary px-3 py-2 text-sm font-semibold text-primary outline-none"
               />
-              <span className="text-xs text-muted-foreground">–</span>
               <input
                 type="time"
                 value={prefs?.quiet_hours_end ?? '07:00'}
                 onChange={(e) => update({ quiet_hours_end: e.target.value })}
-                className="rounded-xl bg-secondary px-2 py-1 text-sm font-semibold text-primary outline-none"
+                className="w-full min-w-0 rounded-xl bg-secondary px-3 py-2 text-sm font-semibold text-primary outline-none"
               />
             </div>
           </div>
