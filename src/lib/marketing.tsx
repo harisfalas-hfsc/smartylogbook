@@ -278,3 +278,35 @@ export const CtaCard = ({ title, text }: { title?: string; text?: string }) => (
     </Link>
   </section>
 );
+
+/* Desktop-only wide intro card shown at the top of marketing pages. */
+export const DesktopIntro = ({
+  title,
+  lead,
+  points,
+}: {
+  title: string;
+  lead: string;
+  points: { e: string; t: string; s: string }[];
+}) => (
+  <div className="mb-8 hidden lg:block">
+    <div className="smarty-card relative overflow-hidden p-8 xl:p-10">
+      <div className="pointer-events-none absolute inset-0 bg-gradient-halo opacity-60" />
+      <div className="relative grid gap-8 xl:grid-cols-[1.1fr_1fr] xl:items-center">
+        <div>
+          <h2 className="text-3xl font-extrabold leading-tight tracking-tight text-foreground xl:text-4xl">
+            <BrandText>{title}</BrandText>
+          </h2>
+          <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground">
+            <BrandText>{lead}</BrandText>
+          </p>
+        </div>
+        <div className="grid gap-2.5 sm:grid-cols-2">
+          {points.map((p) => (
+            <MiniRow key={p.t} emoji={p.e} title={p.t} text={p.s} />
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+);
