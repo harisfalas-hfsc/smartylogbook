@@ -10,6 +10,14 @@ export default {
       padding: "1.25rem",
       screens: { "2xl": "1280px" },
     },
+    screens: {
+      // Tablets always render the mobile experience: desktop layouts start at 1024px
+      sm: "1024px",
+      md: "1024px",
+      lg: "1024px",
+      xl: "1280px",
+      "2xl": "1536px",
+    },
     extend: {
       fontFamily: {
         sans: ['"Plus Jakarta Sans"', "system-ui", "sans-serif"],
