@@ -648,12 +648,16 @@ export type Database = {
           created_at: string
           current_period_end: string | null
           current_period_start: string | null
+          environment: string
           granted_by: string | null
           id: string
           plan: string
           plan_key: string | null
+          price_id: string | null
           source: string
           status: string
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
           updated_at: string
           user_id: string
         }
@@ -663,12 +667,16 @@ export type Database = {
           created_at?: string
           current_period_end?: string | null
           current_period_start?: string | null
+          environment?: string
           granted_by?: string | null
           id?: string
           plan?: string
           plan_key?: string | null
+          price_id?: string | null
           source?: string
           status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
           updated_at?: string
           user_id: string
         }
@@ -678,12 +686,16 @@ export type Database = {
           created_at?: string
           current_period_end?: string | null
           current_period_start?: string | null
+          environment?: string
           granted_by?: string | null
           id?: string
           plan?: string
           plan_key?: string | null
+          price_id?: string | null
           source?: string
           status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
           updated_at?: string
           user_id?: string
         }
