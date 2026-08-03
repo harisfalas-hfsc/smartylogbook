@@ -32,7 +32,7 @@ const StepsCircle = () => {
           const y = 50 + R * Math.sin(a);
           const deg = (a * 180) / Math.PI + 90;
           return (
-            <g key={i} transform={`translate(${x} ${y}) rotate(${deg})`}>
+            <g key={i} transform={`translate(${x} ${y}) rotate(${deg + 180})`}>
               <path d="M0,-2 L0,0" stroke="none" markerEnd="url(#scArrow)" className="stroke-primary" strokeWidth="0.8" />
             </g>
           );
