@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import {
-  BadgeCheck, CreditCard, Crown, Loader2, RefreshCw, Save, Search, ShieldCheck, SlidersHorizontal, TrendingUp, UserPlus, Users, XCircle,
+  ArrowLeft, BadgeCheck, ChevronRight, CreditCard, Crown, Loader2, Megaphone, RefreshCw, Save, Search, ShieldCheck, SlidersHorizontal, Timer, TrendingUp, UserPlus, Users, XCircle,
 } from 'lucide-react';
+
 import { toast } from 'sonner';
 import {
   AdminPayment, AdminStats, AdminUser, adminApi, euro, useIsAdmin,
@@ -14,8 +15,19 @@ import {
 import AdminJobsTab from '@/components/admin/AdminJobsTab';
 import AdminMessagesTab from '@/components/admin/AdminMessagesTab';
 
-const TABS = ['Overview', 'Customers', 'Subscriptions', 'Payments', 'Pricing', 'Jobs', 'Messages'] as const;
+const TABS = ['Revenue', 'Customers', 'Subscriptions', 'Payments', 'Pricing', 'Jobs', 'Messages'] as const;
 type Tab = (typeof TABS)[number];
+
+const TAB_META: Record<Tab, { icon: typeof Users; blurb: string; tint: string }> = {
+  Revenue: { icon: TrendingUp, blurb: 'MRR, total revenue and monthly trend', tint: 'from-emerald-500/15 to-emerald-500/5 text-emerald-600' },
+  Customers: { icon: Users, blurb: 'Every account — create, grant, revoke', tint: 'from-primary/15 to-primary/5 text-primary' },
+  Subscriptions: { icon: Crown, blurb: 'Active, granted and canceled plans', tint: 'from-amber-500/15 to-amber-500/5 text-amber-600' },
+  Payments: { icon: CreditCard, blurb: 'Recent transactions and their status', tint: 'from-sky-500/15 to-sky-500/5 text-sky-600' },
+  Pricing: { icon: SlidersHorizontal, blurb: 'Price, allowance and cost model', tint: 'from-violet-500/15 to-violet-500/5 text-violet-600' },
+  Jobs: { icon: Timer, blurb: 'Scheduled automations and their runs', tint: 'from-rose-500/15 to-rose-500/5 text-rose-600' },
+  Messages: { icon: Megaphone, blurb: 'Everything sent — edit or broadcast', tint: 'from-cyan-500/15 to-cyan-500/5 text-cyan-600' },
+};
+
 
 
 const fmtDate = (d?: string | null) =>
@@ -51,7 +63,7 @@ const Pill = ({ tone, children }: { tone: 'premium' | 'free' | 'canceled' | 'adm
 
 const AdminPage = () => {
   const { isAdmin, loading: roleLoading } = useIsAdmin();
-  const [tab, setTab] = useState<Tab>('Overview');
+  const [tab, setTab] = useState<Tab | null>(null);
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [payments, setPayments] = useState<AdminPayment[]>([]);
@@ -180,14 +192,39 @@ const AdminPage = () => {
     </div>
   );
 
+  const hubValue = (t: Tab): string => {
+    if (!stats) return '—';
+    switch (t) {
+      case 'Revenue': return euro(stats.totalRevenue);
+      case 'Customers': return String(stats.totalUsers);
+      case 'Subscriptions': return String(stats.activeSubscriptions);
+      case 'Payments': return String(stats.paymentsCount);
+      case 'Pricing': return euro(pricing.plans[0]?.price ?? 9.99);
+      default: return '';
+    }
+  };
+
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 lg:relative lg:left-1/2 lg:w-[min(1400px,calc(100vw-19rem))] lg:-translate-x-1/2">
       <header className="animate-fade-up flex items-start justify-between gap-3">
-        <div>
-          <h1 className="flex items-center gap-2 text-2xl font-extrabold tracking-tight text-foreground">
-            <ShieldCheck className="h-6 w-6 text-primary" /> Admin panel
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">Customers, revenue, automations and messages.</p>
+        <div className="flex min-w-0 items-start gap-2">
+          {tab && (
+            <button
+              onClick={() => setTab(null)}
+              aria-label="Back to admin home"
+              className="mt-1 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-primary hover:bg-primary/10"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+          )}
+          <div className="min-w-0">
+            <h1 className="flex items-center gap-2 text-2xl font-extrabold tracking-tight text-foreground">
+              <ShieldCheck className="h-6 w-6 shrink-0 text-primary" /> {tab ?? 'Admin panel'}
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {tab ? TAB_META[tab].blurb : 'Customers, revenue, automations and messages.'}
+            </p>
+          </div>
         </div>
         <button
           onClick={load}
@@ -197,22 +234,6 @@ const AdminPage = () => {
           <RefreshCw className={cn('h-4 w-4', loading && 'animate-spin')} />
         </button>
       </header>
-
-      <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-7">
-        {TABS.map((t) => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={cn(
-              'rounded-2xl px-2 py-2.5 text-center text-[11px] font-bold transition-smooth sm:text-xs',
-              tab === t ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground',
-            )}
-          >
-            {t}
-          </button>
-        ))}
-      </div>
-
 
       {error && (
         <div className="smarty-card border-destructive/40 p-4 text-sm font-semibold text-destructive">{error}</div>
@@ -224,8 +245,41 @@ const AdminPage = () => {
         </div>
       ) : (
         <>
-          {tab === 'Overview' && stats && (
+          {tab === null && (
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              {TABS.map((t) => {
+                const meta = TAB_META[t];
+                const value = hubValue(t);
+                return (
+                  <button
+                    key={t}
+                    onClick={() => setTab(t)}
+                    className="smarty-card group flex min-h-[132px] flex-col justify-between p-5 text-left transition-smooth active:scale-[0.99] hover:border-primary/40"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <span className={cn('inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br', meta.tint)}>
+                        <meta.icon className="h-6 w-6" />
+                      </span>
+                      {value ? (
+                        <span className="text-2xl font-extrabold tracking-tight text-foreground">{value}</span>
+                      ) : null}
+                    </div>
+                    <div className="mt-4">
+                      <p className="flex items-center gap-1 text-base font-extrabold text-foreground">
+                        {t}
+                        <ChevronRight className="h-4 w-4 text-muted-foreground transition-smooth group-hover:translate-x-0.5" />
+                      </p>
+                      <p className="mt-0.5 text-[12px] leading-snug text-muted-foreground">{meta.blurb}</p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {tab === 'Revenue' && stats && (
             <div className="space-y-4">
+
               <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
                 <StatCard icon={Users} label="Customers" value={String(stats.totalUsers)} sub={`${stats.newUsers30d} new in 30 days`} />
                 <StatCard icon={Crown} label="Active premium" value={String(stats.activeSubscriptions)} sub={`${stats.grantedSubscriptions} granted · ${stats.paidSubscriptions} paid`} />

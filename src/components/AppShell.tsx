@@ -45,7 +45,7 @@ const AppShell = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Desktop sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-border bg-card/60 px-4 py-6 md:flex">
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-border bg-card/60 px-4 py-6 lg:flex">
         <div className="mb-8 flex items-center gap-2 px-2">
           <BackButton className="-ml-1" />
           <Link
@@ -86,7 +86,7 @@ const AppShell = () => {
       </aside>
 
       {/* Mobile header — Smarty Wellness family style */}
-      <header className="sticky top-0 z-40 bg-background md:hidden">
+      <header className="sticky top-0 z-40 bg-background lg:hidden">
         <div className="flex h-11 items-center justify-between gap-2 px-3">
           <div className="flex items-center gap-2">
             <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
@@ -207,7 +207,7 @@ const AppShell = () => {
       </header>
 
       {/* Desktop top bar */}
-      <header className="sticky top-0 z-30 hidden border-b border-border/60 bg-background/80 backdrop-blur-xl md:block md:pl-64">
+      <header className="sticky top-0 z-30 hidden border-b border-border/60 bg-background/80 backdrop-blur-xl lg:block lg:pl-64">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-3">
           <p className="text-sm font-semibold text-foreground">
             {desktopLinks.find((l) => l.path === pathname)?.label ?? 'Smarty Logbook'}
@@ -243,14 +243,14 @@ const AppShell = () => {
         </div>
       </header>
 
-      <main className="mx-auto max-w-3xl px-4 pt-4 md:pl-64">
+      <main className="mx-auto max-w-3xl px-4 pt-4 lg:pl-64">
         <Outlet />
       </main>
 
-      <div className="hidden pb-8 pt-6 md:block md:pl-64">
+      <div className="hidden pb-8 pt-6 lg:block lg:pl-64">
         <SiteFooter />
       </div>
-      <div className="pb-28 md:hidden" />
+      <div className="pb-28 lg:hidden" />
 
       <BottomNav />
     </div>
