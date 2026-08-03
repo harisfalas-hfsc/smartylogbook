@@ -1,23 +1,24 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { HelpCircle, Sparkles, CreditCard, ShieldCheck } from 'lucide-react';
+import { HelpCircle, Sparkles, CreditCard } from 'lucide-react';
 import { PageHeader, Panel, BrandText, faqs } from '@/lib/marketing';
 
+/* Curated: the questions people actually ask. The rest lives in the pages themselves. */
 const groups = [
   {
     eyebrow: 'The basics',
     emoji: '🧭',
     badge: HelpCircle,
     title: <>What <span className="gradient-text">is</span> it?</>,
-    range: [0, 4] as const,
+    picks: [0, 1, 2, 3],
     accent: 'border-primary/45',
     chip: 'bg-primary/10 text-primary',
   },
   {
-    eyebrow: 'Capture & AI',
+    eyebrow: 'The Assistant',
     emoji: '🧠',
     badge: Sparkles,
     title: <>How the <span className="gradient-text">Assistant</span> works</>,
-    range: [4, 12] as const,
+    picks: [6, 7, 10, 20],
     accent: 'border-accent/45',
     chip: 'bg-accent/10 text-accent',
   },
@@ -26,32 +27,24 @@ const groups = [
     emoji: '💶',
     badge: CreditCard,
     title: <>What it <span className="gradient-text">costs</span></>,
-    range: [12, 19] as const,
+    picks: [12, 13, 16, 17],
     accent: 'border-mod-finance/45',
     chip: 'bg-mod-finance/10 text-mod-finance',
-  },
-  {
-    eyebrow: 'Privacy & limits',
-    emoji: '🔒',
-    badge: ShieldCheck,
-    title: <>Your <span className="gradient-text">data</span></>,
-    range: [19, 23] as const,
-    accent: 'border-mod-health/45',
-    chip: 'bg-mod-health/10 text-mod-health',
   },
 ];
 
 const FaqPage = () => (
-  <div className="mx-auto max-w-5xl px-3 py-7 sm:px-5 sm:py-10">
+  <div className="mx-auto max-w-4xl px-3 py-7 sm:px-5 sm:py-10">
     <PageHeader
       eyebrow="FAQ"
       title="Everything else you're wondering about Smarty Logbook."
     />
 
+
     {groups.map((g) => (
       <Panel key={g.eyebrow} eyebrow={g.eyebrow} eyebrowEmoji={g.emoji} badge={g.badge} title={g.title}>
         <Accordion type="single" collapsible className="space-y-2.5">
-          {faqs.slice(g.range[0], g.range[1]).map((f, i) => (
+          {g.picks.map((idx) => faqs[idx]).map((f, i) => (
             <AccordionItem
               key={f.q}
               value={`${g.eyebrow}-${i}`}
@@ -62,8 +55,9 @@ const FaqPage = () => (
                   <span
                     className={`mt-px flex h-6 w-6 shrink-0 items-center justify-center rounded-lg text-[11px] font-extrabold ${g.chip}`}
                   >
-                    {g.range[0] + i + 1}
+                    {i + 1}
                   </span>
+
                   <span>{f.q}</span>
                 </span>
               </AccordionTrigger>
