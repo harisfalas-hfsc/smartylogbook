@@ -1,4 +1,4 @@
-import { Sparkles, Layers, ShieldCheck } from 'lucide-react';
+import { Sparkles, Layers, ShieldCheck, Plus } from 'lucide-react';
 import { Panel, MiniRow, PageHeader, CtaCard } from '@/lib/marketing';
 import { MODULES } from '@/lib/constants';
 
@@ -42,7 +42,7 @@ const AboutPage = () => (
       eyebrowEmoji="🗂️"
       badge={Layers}
       title={<>It files it — <span className="gradient-text">you stay in control.</span></>}
-      lead="Every entry lands in the right area on its own. You can always move it yourself."
+      lead="Every entry lands in the right area on its own. Move it whenever you disagree — or create a module of your own."
     >
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
         {MODULES.map((m) => (
@@ -53,6 +53,12 @@ const AboutPage = () => (
             <p className="text-[13px] font-bold leading-tight text-foreground">{m.label}</p>
           </div>
         ))}
+        <div className="flex items-center gap-2.5 rounded-2xl border border-dashed border-primary/40 bg-primary/5 p-3">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+            <Plus className="h-4 w-4 text-primary" />
+          </span>
+          <p className="text-[13px] font-bold leading-tight text-primary">Add your own</p>
+        </div>
       </div>
     </Panel>
 
