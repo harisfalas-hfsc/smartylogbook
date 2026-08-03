@@ -205,12 +205,12 @@ export const Panel = ({ eyebrow, eyebrowEmoji, badge: Badge, title, lead, childr
       )}
     </div>
 
-    <div className="relative mt-5 sm:mt-7">
+    <div className="relative mt-5 text-center sm:mt-7">
       <h2 className="text-[22px] font-extrabold leading-[1.15] tracking-tight text-foreground sm:text-3xl md:text-[34px]">
         {title}
       </h2>
       {lead && (
-        <p className="mt-2.5 hidden max-w-3xl text-[13px] leading-relaxed text-muted-foreground sm:block sm:text-[15px]">
+        <p className="mx-auto mt-2.5 hidden max-w-3xl text-[13px] leading-relaxed text-muted-foreground sm:block sm:text-[15px]">
           <BrandText>{lead}</BrandText>
         </p>
       )}
