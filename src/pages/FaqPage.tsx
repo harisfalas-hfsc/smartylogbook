@@ -44,7 +44,7 @@ const FaqPage = () => (
     {groups.map((g) => (
       <Panel key={g.eyebrow} eyebrow={g.eyebrow} eyebrowEmoji={g.emoji} badge={g.badge} title={g.title}>
         <Accordion type="single" collapsible className="space-y-2.5">
-          {faqs.slice(g.range[0], g.range[1]).map((f, i) => (
+          {g.picks.map((idx, i) => faqs[idx]).map((f, i) => (
             <AccordionItem
               key={f.q}
               value={`${g.eyebrow}-${i}`}
@@ -55,8 +55,9 @@ const FaqPage = () => (
                   <span
                     className={`mt-px flex h-6 w-6 shrink-0 items-center justify-center rounded-lg text-[11px] font-extrabold ${g.chip}`}
                   >
-                    {g.range[0] + i + 1}
+                    {i + 1}
                   </span>
+
                   <span>{f.q}</span>
                 </span>
               </AccordionTrigger>
