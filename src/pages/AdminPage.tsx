@@ -205,7 +205,7 @@ const AdminPage = () => {
   };
 
   return (
-    <div className="space-y-5 lg:w-[calc(100vw-20rem)] lg:max-w-[1400px]">
+    <div className="space-y-5 lg:relative lg:left-1/2 lg:w-[min(1400px,calc(100vw-19rem))] lg:-translate-x-1/2">
       <header className="animate-fade-up flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-start gap-2">
           {tab && (
