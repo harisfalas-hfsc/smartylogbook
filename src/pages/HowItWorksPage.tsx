@@ -22,14 +22,14 @@ const HowItWorksPage = () => (
         <SubCard label="You put in" labelEmoji="📥">
           <div className="grid grid-cols-2 gap-2">
             {givesIn.map((c) => (
-              <MiniRow key={c.t} emoji={c.e} title={c.t} text={c.s} />
+              <MiniRow key={c.t} emoji={c.e} title={c.t} text={c.s} tint={c.tint} />
             ))}
           </div>
         </SubCard>
         <SubCard label="It gives back" labelEmoji="✨">
           <div className="grid grid-cols-2 gap-2">
             {givesBack.map((c) => (
-              <MiniRow key={c.t} emoji={c.e} title={c.t} text={c.s} />
+              <MiniRow key={c.t} emoji={c.e} title={c.t} text={c.s} tint={c.tint} />
             ))}
           </div>
         </SubCard>
