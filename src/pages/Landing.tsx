@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, Brain, Clock, Sparkles } from 'lucide-react';
 import { givesIn } from '@/lib/marketing';
+import InputsCircle from '@/components/InputsCircle';
+
 
 const highlights = [
   { icon: Sparkles, t: 'Capture in 3 seconds', s: 'Voice, photo or text. No folders, no tags.' },
@@ -61,21 +63,29 @@ const Landing = () => {
 
       {/* One line, four ways in */}
       <section className="mx-auto w-full max-w-5xl px-5 pb-14 md:px-8">
-        <div className="smarty-card flex flex-wrap items-center justify-center gap-2 p-4">
-          {givesIn.map((i) => (
-            <span
-              key={i.t}
-              className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-secondary/60 px-3 py-1.5 text-[12px] font-semibold text-foreground"
-            >
-              <span className="leading-none">{i.e}</span> {i.t}
+        <div className="smarty-card p-4">
+          {/* mobile: circle */}
+          <div className="lg:hidden">
+            <InputsCircle />
+          </div>
+          {/* desktop: pills */}
+          <div className="hidden flex-wrap items-center justify-center gap-2 lg:flex">
+            {givesIn.map((i) => (
+              <span
+                key={i.t}
+                className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-secondary/60 px-3 py-1.5 text-[12px] font-semibold text-foreground"
+              >
+                <span className="leading-none">{i.e}</span> {i.t}
+              </span>
+            ))}
+            <span className="px-1 text-muted-foreground">→</span>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-primary px-3 py-1.5 text-[12px] font-bold text-primary-foreground shadow-glow">
+              <Sparkles className="h-3.5 w-3.5" /> The Assistant does the rest
             </span>
-          ))}
-          <span className="px-1 text-muted-foreground">→</span>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-primary px-3 py-1.5 text-[12px] font-bold text-primary-foreground shadow-glow">
-            <Sparkles className="h-3.5 w-3.5" /> The Assistant does the rest
-          </span>
+          </div>
         </div>
       </section>
+
 
 
 
