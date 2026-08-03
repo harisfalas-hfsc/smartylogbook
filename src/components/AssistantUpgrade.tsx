@@ -123,7 +123,7 @@ export const PlanCard = ({ pricing, plan }: { pricing: PricingConfig; plan: Plan
         ))}
       </ul>
       <Link
-        to="/pricing"
+        to="/app/checkout"
         className={cn(
           'mt-5 flex items-center justify-center rounded-2xl px-4 py-3 text-sm font-semibold transition-smooth active:scale-95',
           plan.featured
@@ -131,7 +131,7 @@ export const PlanCard = ({ pricing, plan }: { pricing: PricingConfig; plan: Plan
             : 'border border-border bg-card text-foreground',
         )}
       >
-        Get {plan.name.replace('Smarty ', '')}
+        Get {plan.name.replace("Smarty ", "")} — €{plan.price.toFixed(2)}
       </Link>
     </div>
   );
@@ -176,10 +176,10 @@ const AssistantUpgrade = (props: Props) => {
 
     {compact && (
       <Link
-        to="/pricing"
+        to="/app/checkout"
         className="flex items-center justify-center rounded-2xl bg-gradient-primary px-4 py-3 text-sm font-semibold text-primary-foreground shadow-glow transition-smooth active:scale-95"
       >
-        See Assistant plans
+        Get Premium — €9.99 / month
       </Link>
     )}
   </div>
