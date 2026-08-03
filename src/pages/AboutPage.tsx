@@ -1,5 +1,5 @@
 import { Sparkles, Layers, ShieldCheck, Plus } from 'lucide-react';
-import { Panel, MiniRow, PageHeader, CtaCard } from '@/lib/marketing';
+import { Panel, MiniRow, PageHeader, CtaCard, DesktopIntro } from '@/lib/marketing';
 import { MODULES } from '@/lib/constants';
 
 const pillars = [
