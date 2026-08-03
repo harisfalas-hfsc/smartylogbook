@@ -32,6 +32,7 @@ import TrashPage from "./pages/TrashPage";
 import AdminPage from "./pages/AdminPage";
 import AccountPage from "./pages/AccountPage";
 import PlanPage from "./pages/PlanPage";
+import CheckoutPage from "./pages/CheckoutPage";
 import PrivacySecurityPage from "./pages/PrivacySecurityPage";
 import AppearancePage from "./pages/AppearancePage";
 import CalendarPage from "./pages/CalendarPage";
@@ -91,6 +92,7 @@ const App = () => (
               <Route path="trash" element={<TrashPage />} />
               <Route path="account" element={<AccountPage />} />
               <Route path="plan" element={<PlanPage />} />
+              <Route path="checkout" element={<CheckoutPage />} />
               <Route path="privacy" element={<PrivacySecurityPage />} />
               <Route path="appearance" element={<AppearancePage />} />
               <Route path="admin" element={<AdminPage />} />
