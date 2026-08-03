@@ -44,7 +44,7 @@ const FaqPage = () => (
     {groups.map((g) => (
       <Panel key={g.eyebrow} eyebrow={g.eyebrow} eyebrowEmoji={g.emoji} badge={g.badge} title={g.title}>
         <Accordion type="single" collapsible className="space-y-2.5">
-          {g.picks.map((idx, i) => faqs[idx]).map((f, i) => (
+          {g.picks.map((idx) => faqs[idx]).map((f, i) => (
             <AccordionItem
               key={f.q}
               value={`${g.eyebrow}-${i}`}
