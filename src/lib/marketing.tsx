@@ -37,17 +37,17 @@ export const features = [
 
 /* The whole product in two columns: what you put in, what comes back. */
 export const givesIn = [
-  { e: '⌨️', t: 'Type it', s: 'A thought, a number, a note.', tint: 'bg-mod-health/15' },
-  { e: '🎙️', t: 'Say it', s: 'Speak, it gets written down.', tint: 'bg-mod-fitness/15' },
-  { e: '📷', t: 'Snap it', s: 'A receipt, a label, a screen.', tint: 'bg-mod-finance/15' },
-  { e: '📎', t: 'Upload it', s: 'PDFs, reports, invoices.', tint: 'bg-mod-documents/15' },
+  { e: '⌨️', t: 'Type it', s: 'A thought, a number, a note.', tint: 'bg-mod-health/30' },
+  { e: '🎙️', t: 'Say it', s: 'Speak, it gets written down.', tint: 'bg-mod-fitness/30' },
+  { e: '📷', t: 'Snap it', s: 'A receipt, a label, a screen.', tint: 'bg-mod-finance/30' },
+  { e: '📎', t: 'Upload it', s: 'PDFs, reports, invoices.', tint: 'bg-mod-documents/30' },
 ];
 
 export const givesBack = [
-  { e: '🧠', t: 'Understands', s: 'Reads it and pulls out the details.', tint: 'bg-mod-personal/15' },
-  { e: '🔗', t: 'Relates', s: 'Attaches it to what already exists.', tint: 'bg-mod-business/15' },
-  { e: '📌', t: 'Remembers', s: 'Kept for as long as you want it.', tint: 'bg-mod-nutrition/15' },
-  { e: '🔎', t: 'Finds it', s: 'Ask in plain words, get the answer.', tint: 'bg-primary/15' },
+  { e: '🧠', t: 'Understands', s: 'Reads it and pulls out the details.', tint: 'bg-mod-personal/30' },
+  { e: '🔗', t: 'Relates', s: 'Attaches it to what already exists.', tint: 'bg-mod-business/30' },
+  { e: '📌', t: 'Remembers', s: 'Kept for as long as you want it.', tint: 'bg-mod-nutrition/30' },
+  { e: '🔎', t: 'Finds it', s: 'Ask in plain words, get the answer.', tint: 'bg-primary/30' },
 ];
 
 
