@@ -476,7 +476,10 @@ export type Database = {
           created_at: string
           currency: string
           description: string | null
+          environment: string
           id: string
+          provider: string
+          reference: string | null
           status: string
           user_id: string | null
         }
@@ -485,7 +488,10 @@ export type Database = {
           created_at?: string
           currency?: string
           description?: string | null
+          environment?: string
           id?: string
+          provider?: string
+          reference?: string | null
           status?: string
           user_id?: string | null
         }
@@ -494,7 +500,10 @@ export type Database = {
           created_at?: string
           currency?: string
           description?: string | null
+          environment?: string
           id?: string
+          provider?: string
+          reference?: string | null
           status?: string
           user_id?: string | null
         }
