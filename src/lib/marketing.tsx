@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import {
-  Brain, Camera, Clock, Fingerprint, Layers, Bell, Lock, Search, Shield,
+  Brain, Camera, Clock, Database, Layers, Bell, Lock, Search, Shield,
   Sparkles, Wand2, Link2, MessageCircle, FileText, Mic,
 } from 'lucide-react';
 
@@ -136,7 +136,7 @@ export const faqs = [
 
 export const securityPoints = [
   { icon: Lock, t: 'Encrypted storage', s: 'Protected at rest and in transit.' },
-  { icon: Fingerprint, t: 'Biometric lock', s: 'Face ID and fingerprint on native apps.' },
+  { icon: Database, t: 'Row-level security', s: 'Only your account can read your entries.' },
   { icon: Shield, t: 'You own it', s: 'Export or delete everything, any time.' },
 ];
 
