@@ -11,7 +11,7 @@ const StepsCircle = () => {
   return (
     <div className="relative mx-auto aspect-square w-full max-w-[330px]">
       {/* connecting ring */}
-      <svg viewBox="0 0 100 100" className="absolute inset-0 h-full w-full -rotate-90">
+      <svg viewBox="0 0 100 100" className="absolute inset-0 h-full w-full ">
         <circle
           cx="50"
           cy="50"
@@ -22,13 +22,13 @@ const StepsCircle = () => {
           strokeDasharray="2 2.5"
         />
         {steps.map((_, i) => {
-          const a = ((i + 0.5) / n) * Math.PI * 2;
+          const a = ((i + 0.5) / n) * Math.PI * 2 - Math.PI / 2;
           const x = 50 + R * Math.cos(a);
           const y = 50 + R * Math.sin(a);
           // clockwise tangent direction at this point
           const deg = (Math.atan2(Math.cos(a), -Math.sin(a)) * 180) / Math.PI;
           return (
-            <g key={i} transform={`translate(${x} ${y}) rotate(${deg + 270})`}>
+            <g key={i} transform={`translate(${x} ${y}) rotate(${deg})`}>
               <path d="M-1.6,-2 L2.4,0 L-1.6,2 Z" className="fill-primary" />
             </g>
           );
