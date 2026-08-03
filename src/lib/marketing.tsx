@@ -37,17 +37,17 @@ export const features = [
 
 /* The whole product in two columns: what you put in, what comes back. */
 export const givesIn = [
-  { e: '⌨️', t: 'Type it', s: 'A thought, a number, a note.' },
-  { e: '🎙️', t: 'Say it', s: 'Speak, it gets written down.' },
-  { e: '📷', t: 'Snap it', s: 'A receipt, a label, a screen.' },
-  { e: '📎', t: 'Upload it', s: 'PDFs, reports, invoices.' },
+  { e: '⌨️', t: 'Type it', s: 'A thought, a number, a note.', tint: 'bg-mod-health/30' },
+  { e: '🎙️', t: 'Say it', s: 'Speak, it gets written down.', tint: 'bg-mod-fitness/30' },
+  { e: '📷', t: 'Snap it', s: 'A receipt, a label, a screen.', tint: 'bg-mod-finance/30' },
+  { e: '📎', t: 'Upload it', s: 'PDFs, reports, invoices.', tint: 'bg-mod-documents/30' },
 ];
 
 export const givesBack = [
-  { e: '🧠', t: 'Understands', s: 'Reads it and pulls out the details.' },
-  { e: '🔗', t: 'Relates', s: 'Attaches it to what already exists.' },
-  { e: '📌', t: 'Remembers', s: 'Kept for as long as you want it.' },
-  { e: '🔎', t: 'Finds it', s: 'Ask in plain words, get the answer.' },
+  { e: '🧠', t: 'Understands', s: 'Reads it and pulls out the details.', tint: 'bg-mod-personal/30' },
+  { e: '🔗', t: 'Relates', s: 'Attaches it to what already exists.', tint: 'bg-mod-business/30' },
+  { e: '📌', t: 'Remembers', s: 'Kept for as long as you want it.', tint: 'bg-mod-nutrition/30' },
+  { e: '🔎', t: 'Finds it', s: 'Ask in plain words, get the answer.', tint: 'bg-primary/30' },
 ];
 
 
@@ -237,9 +237,16 @@ export const SubCard = ({
   </div>
 );
 
-export const MiniRow = ({ emoji, title, text }: { emoji: string; title: string; text?: string }) => (
+export const MiniRow = ({
+  emoji,
+  title,
+  text,
+  tint,
+}: { emoji: string; title: string; text?: string; tint?: string }) => (
   <div className="flex items-center gap-2.5 rounded-2xl border border-primary/15 bg-card p-2.5 sm:items-start sm:p-3">
-    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-secondary text-sm">{emoji}</span>
+    <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-sm ${tint ?? 'bg-secondary'}`}>
+      {emoji}
+    </span>
     <div className="min-w-0">
       <p className="text-[13px] font-bold leading-snug text-foreground">{title}</p>
       {text && <p className="mt-0.5 hidden text-[11.5px] leading-relaxed text-muted-foreground sm:block">{text}</p>}
