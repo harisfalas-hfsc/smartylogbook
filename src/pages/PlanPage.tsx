@@ -6,6 +6,8 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSubscription } from '@/lib/subscription';
+import { supabase } from '@/integrations/supabase/client';
+import { getStripeEnvironment } from '@/lib/stripe';
 import { FREE_BENEFITS, ASSISTANT_BENEFITS } from '@/lib/pricing';
 import { cn } from '@/lib/utils';
 
@@ -16,8 +18,25 @@ const PlanPage = () => {
   const navigate = useNavigate();
   const {
     loading, plan, active, allowance, used, remaining, renewsAt,
-    renewNow, cancelAtPeriodEnd, cancelPlan, resumePlan,
+    renewNow, cancelAtPeriodEnd, cancelPlan, resumePlan, subscription,
   } = useSubscription();
+  const isPaid = subscription?.source === 'paid';
+  const [portalBusy, setPortalBusy] = useState(false);
+
+  /** Open Stripe's billing portal (payment method, invoices, cancellation). */
+  const openBillingPortal = async () => {
+    setPortalBusy(true);
+    const { data, error } = await supabase.functions.invoke('create-portal-session', {
+      body: { returnUrl: `${window.location.origin}/app/plan`, environment: getStripeEnvironment() },
+    });
+    setPortalBusy(false);
+    const message = (data as { error?: string } | null)?.error ?? error?.message;
+    if (message || !(data as { url?: string } | null)?.url) {
+      toast.error(message ?? 'Could not open billing');
+      return;
+    }
+    window.open((data as { url: string }).url, '_blank', 'noopener');
+  };
   const [busy, setBusy] = useState<'renew' | 'cancel' | 'resume' | null>(null);
   const [confirmCancel, setConfirmCancel] = useState(false);
 
@@ -101,12 +120,12 @@ const PlanPage = () => {
               conversations. Your next renewal date moves to one month from today.
             </p>
             <button
-              onClick={() => run('renew', renewNow, 'Cycle restarted — your allowance is fresh')}
+              onClick={() => (isPaid ? void openBillingPortal() : run('renew', renewNow, 'Cycle restarted — your allowance is fresh'))}
               disabled={busy !== null}
               className="flex w-full items-center justify-center gap-2 rounded-2xl border border-border bg-card px-4 py-3 text-sm font-semibold text-foreground transition-smooth active:scale-[0.99] disabled:opacity-60"
             >
-              {busy === 'renew' ? <Loader2 className="h-4 w-4 animate-spin text-primary" /> : <RefreshCw className="h-4 w-4 text-primary" />}
-              Renew now — €{plan.price.toFixed(2)}
+              {busy === 'renew' || portalBusy ? <Loader2 className="h-4 w-4 animate-spin text-primary" /> : <RefreshCw className="h-4 w-4 text-primary" />}
+              {isPaid ? 'Manage billing & renew' : `Renew now — €${plan.price.toFixed(2)}`}
             </button>
           </section>
 
@@ -182,13 +201,13 @@ const PlanPage = () => {
               ))}
             </ul>
             <Link
-              to="/pricing"
+              to="/app/checkout"
               className={cn(
                 'mt-4 flex items-center justify-center rounded-2xl bg-white/95 px-4 py-3 text-sm font-bold text-primary',
                 'transition-smooth active:scale-[0.99]',
               )}
             >
-              See what Premium does
+              Get Premium — €9.99 / month
             </Link>
           </section>
         </>
