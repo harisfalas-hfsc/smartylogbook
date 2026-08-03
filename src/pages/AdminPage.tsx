@@ -327,7 +327,9 @@ const AdminPage = () => {
                 />
               </div>
               {filtered.length === 0 && <p className="px-1 text-sm text-muted-foreground">No customers found.</p>}
-              {filtered.map((u) => <UserRow key={u.id} u={u} />)}
+              <div className="grid gap-3 xl:grid-cols-2">
+                {filtered.map((u) => <UserRow key={u.id} u={u} />)}
+              </div>
             </div>
           )}
 
@@ -336,7 +338,9 @@ const AdminPage = () => {
               {subscribers.length === 0 && (
                 <p className="px-1 text-sm text-muted-foreground">No subscriptions yet. Grant premium from the Customers tab.</p>
               )}
-              {subscribers.map((u) => <UserRow key={u.id} u={u} />)}
+              <div className="grid gap-3 xl:grid-cols-2">
+                {subscribers.map((u) => <UserRow key={u.id} u={u} />)}
+              </div>
             </div>
           )}
 
@@ -345,18 +349,25 @@ const AdminPage = () => {
               {payments.length === 0 && (
                 <p className="px-1 text-sm text-muted-foreground">No payments recorded yet.</p>
               )}
-              {payments.map((p) => (
-                <div key={p.id} className="smarty-card flex items-center gap-3 p-4">
-                  <CreditCard className="h-4 w-4 text-primary" />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-bold text-foreground">{p.description ?? 'Payment'}</p>
-                    <p className="text-[11px] text-muted-foreground">{fmtDate(p.created_at)} · {p.status}</p>
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                {payments.map((p) => (
+                  <div key={p.id} className="smarty-card flex items-center gap-3 p-4">
+                    <CreditCard className="h-4 w-4 shrink-0 text-primary" />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-bold text-foreground">{p.description ?? 'Payment'}</p>
+                      <p className="text-[11px] text-muted-foreground">{fmtDate(p.created_at)} · {p.status}</p>
+                    </div>
+                    <span className="text-sm font-extrabold text-foreground">{euro(Number(p.amount_eur))}</span>
                   </div>
-                  <span className="text-sm font-extrabold text-foreground">{euro(Number(p.amount_eur))}</span>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           )}
+
+          {tab === 'Jobs' && <AdminJobsTab />}
+
+          {tab === 'Messages' && <AdminMessagesTab />}
+
 
           {tab === 'Pricing' && (
             <div className="space-y-4">
