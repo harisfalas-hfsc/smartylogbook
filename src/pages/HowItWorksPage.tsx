@@ -76,13 +76,13 @@ const HowItWorksPage = () => (
     >
       <div className="grid gap-3 lg:grid-cols-2">
         <SubCard label="Free forever — €0" labelEmoji="♾️">
-          <div className="grid gap-2">
+          <div className="grid grid-cols-2 gap-2 lg:grid-cols-1">
             <MiniRow emoji="📥" title="Unlimited capture" text="Text, voice, photos, PDFs — no storage limits." />
             <MiniRow emoji="🗂️" title="Timeline & search" text="Filter by day, week, month or year and find anything you saved." />
           </div>
         </SubCard>
         <SubCard label="Smarty Premium — €9.99 / month" labelEmoji="✨">
-          <div className="grid gap-2">
+          <div className="grid grid-cols-2 gap-2 lg:grid-cols-1">
             <MiniRow emoji="💬" title="300 AI Conversations" text="About 10 a day. One conversation is one topic, follow-ups included." />
             <MiniRow emoji="🧠" title="The Assistant switches on" text="Reasoning, analysis, predictions and your daily brief." />
           </div>
