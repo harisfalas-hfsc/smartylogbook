@@ -1,5 +1,7 @@
 import { Wand2, Brain, CreditCard } from 'lucide-react';
 import { Panel, SubCard, MiniRow, DesktopOnly, PageHeader, CtaCard, steps, givesIn, givesBack } from '@/lib/marketing';
+import StepsCircle from '@/components/StepsCircle';
+
 
 const HowItWorksPage = () => (
   <div className="mx-auto max-w-5xl px-3 py-7 sm:px-5 sm:py-10">
