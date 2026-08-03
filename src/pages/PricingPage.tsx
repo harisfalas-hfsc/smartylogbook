@@ -49,7 +49,7 @@ const PricingPage = () => {
             Your complete logbook — unlimited, no card needed. Without the Assistant.
           </p>
 
-          <ul className="relative mt-5 space-y-2">
+          <ul className="relative mt-5 flex-1 space-y-2">
             {FREE_BENEFITS.slice(0, 4).map((b) => (
               <li key={b} className="flex items-start gap-2.5 text-[13px] text-foreground">
                 <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-emerald-500/15">
@@ -62,7 +62,7 @@ const PricingPage = () => {
 
           <Link
             to="/auth"
-            className="relative mt-auto flex items-center justify-center rounded-2xl border border-border bg-card px-5 py-3.5 text-sm font-bold text-foreground transition-smooth active:scale-[0.98] sm:mt-6"
+            className="relative mt-6 flex items-center justify-center rounded-2xl bg-gradient-primary px-5 py-3.5 text-sm font-bold text-primary-foreground shadow-glow transition-smooth active:scale-[0.98]"
           >
             Start free
           </Link>
@@ -94,7 +94,7 @@ const PricingPage = () => {
             </div>
           </div>
 
-          <ul className="relative mt-5 space-y-2">
+          <ul className="relative mt-5 flex-1 space-y-2">
             <li className="flex items-start gap-2.5 text-[13px] font-bold text-foreground">
               <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-primary/15">
                 <Check className="h-2.5 w-2.5 text-primary" />
@@ -113,7 +113,7 @@ const PricingPage = () => {
 
           <Link
             to="/auth"
-            className="relative mt-auto flex items-center justify-center rounded-2xl bg-gradient-primary px-5 py-3.5 text-sm font-bold text-primary-foreground shadow-glow transition-smooth active:scale-[0.98] sm:mt-6"
+            className="relative mt-6 flex items-center justify-center rounded-2xl bg-gradient-primary px-5 py-3.5 text-sm font-bold text-primary-foreground shadow-glow transition-smooth active:scale-[0.98]"
           >
             Get Premium
           </Link>
