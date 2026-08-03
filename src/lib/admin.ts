@@ -86,3 +86,70 @@ export interface AdminPayment {
   description: string | null;
   created_at: string;
 }
+
+export interface CronRun {
+  runid: number;
+  status: string;
+  return_message: string;
+  start_time: string | null;
+  end_time: string | null;
+}
+
+export interface CronJob {
+  jobid: number;
+  jobname: string;
+  schedule: string;
+  command: string;
+  active: boolean;
+  runs: CronRun[];
+}
+
+export interface AdminMessage {
+  id: string;
+  user_id: string;
+  email: string;
+  kind: string | null;
+  title: string | null;
+  body: string | null;
+  level: string | null;
+  module: string | null;
+  action_label: string | null;
+  action_url: string | null;
+  read_at: string | null;
+  created_at: string;
+}
+
+/** Plain-language explanation of what a scheduled job does. */
+export const describeJob = (job: CronJob) => {
+  const c = `${job.jobname} ${job.command}`.toLowerCase();
+  if (c.includes('proactive-scan'))
+    return 'Scans every account for due bills, tasks, health check-ins and upcoming events, writes alerts into the Message Center and sends each user their morning brief at their chosen time.';
+  if (c.includes('purge_expired_trash'))
+    return 'Permanently deletes items that have been sitting in Trash for more than 30 days.';
+  if (c.includes('ai-brain')) return 'Runs a Smarty Assistant background task.';
+  return 'Runs a scheduled database or function task.';
+};
+
+/** Human-readable cron expression, e.g. "10 * * * *" → "every hour at :10". */
+export const describeSchedule = (expr: string) => {
+  const parts = expr.trim().split(/\s+/);
+  if (parts.length !== 5) return expr;
+  const [min, hour, dom, mon, dow] = parts;
+  if (min === '*' && hour === '*') return 'every minute';
+  if (hour === '*' && dom === '*' && mon === '*' && dow === '*')
+    return `every hour at :${min.padStart(2, '0')}`;
+  if (dom === '*' && mon === '*' && dow === '*')
+    return `every day at ${hour.padStart(2, '0')}:${min.padStart(2, '0')} UTC`;
+  if (dom === '*' && mon === '*')
+    return `weekly (day ${dow}) at ${hour.padStart(2, '0')}:${min.padStart(2, '0')} UTC`;
+  return expr;
+};
+
+export const SCHEDULE_PRESETS: { label: string; value: string }[] = [
+  { label: 'Every 15 minutes', value: '*/15 * * * *' },
+  { label: 'Every 30 minutes', value: '*/30 * * * *' },
+  { label: 'Hourly at :10', value: '10 * * * *' },
+  { label: 'Daily 07:00 UTC', value: '0 7 * * *' },
+  { label: 'Daily 20:00 UTC', value: '0 20 * * *' },
+  { label: 'Weekly Monday 08:00 UTC', value: '0 8 * * 1' },
+];

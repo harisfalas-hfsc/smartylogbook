@@ -11,9 +11,12 @@ import { cn } from '@/lib/utils';
 import {
   DEFAULT_PRICING, PlanConfig, PricingConfig, conversationCost, planAllowance, planMargin,
 } from '@/lib/pricing';
+import AdminJobsTab from '@/components/admin/AdminJobsTab';
+import AdminMessagesTab from '@/components/admin/AdminMessagesTab';
 
-const TABS = ['Overview', 'Customers', 'Subscriptions', 'Payments', 'Pricing'] as const;
+const TABS = ['Overview', 'Customers', 'Subscriptions', 'Payments', 'Pricing', 'Jobs', 'Messages'] as const;
 type Tab = (typeof TABS)[number];
+
 
 const fmtDate = (d?: string | null) =>
   d ? new Date(d).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
@@ -184,7 +187,7 @@ const AdminPage = () => {
           <h1 className="flex items-center gap-2 text-2xl font-extrabold tracking-tight text-foreground">
             <ShieldCheck className="h-6 w-6 text-primary" /> Admin panel
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground">Customers, subscriptions and revenue.</p>
+          <p className="mt-1 text-sm text-muted-foreground">Customers, revenue, automations and messages.</p>
         </div>
         <button
           onClick={load}
@@ -195,13 +198,13 @@ const AdminPage = () => {
         </button>
       </header>
 
-      <div className="flex gap-2 overflow-x-auto pb-1">
+      <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-7">
         {TABS.map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
             className={cn(
-              'shrink-0 rounded-2xl px-4 py-2 text-xs font-bold transition-smooth',
+              'rounded-2xl px-2 py-2.5 text-center text-[11px] font-bold transition-smooth sm:text-xs',
               tab === t ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground',
             )}
           >
@@ -209,6 +212,7 @@ const AdminPage = () => {
           </button>
         ))}
       </div>
+
 
       {error && (
         <div className="smarty-card border-destructive/40 p-4 text-sm font-semibold text-destructive">{error}</div>
@@ -323,7 +327,9 @@ const AdminPage = () => {
                 />
               </div>
               {filtered.length === 0 && <p className="px-1 text-sm text-muted-foreground">No customers found.</p>}
-              {filtered.map((u) => <UserRow key={u.id} u={u} />)}
+              <div className="grid gap-3 xl:grid-cols-2">
+                {filtered.map((u) => <UserRow key={u.id} u={u} />)}
+              </div>
             </div>
           )}
 
@@ -332,7 +338,9 @@ const AdminPage = () => {
               {subscribers.length === 0 && (
                 <p className="px-1 text-sm text-muted-foreground">No subscriptions yet. Grant premium from the Customers tab.</p>
               )}
-              {subscribers.map((u) => <UserRow key={u.id} u={u} />)}
+              <div className="grid gap-3 xl:grid-cols-2">
+                {subscribers.map((u) => <UserRow key={u.id} u={u} />)}
+              </div>
             </div>
           )}
 
@@ -341,18 +349,25 @@ const AdminPage = () => {
               {payments.length === 0 && (
                 <p className="px-1 text-sm text-muted-foreground">No payments recorded yet.</p>
               )}
-              {payments.map((p) => (
-                <div key={p.id} className="smarty-card flex items-center gap-3 p-4">
-                  <CreditCard className="h-4 w-4 text-primary" />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-bold text-foreground">{p.description ?? 'Payment'}</p>
-                    <p className="text-[11px] text-muted-foreground">{fmtDate(p.created_at)} · {p.status}</p>
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                {payments.map((p) => (
+                  <div key={p.id} className="smarty-card flex items-center gap-3 p-4">
+                    <CreditCard className="h-4 w-4 shrink-0 text-primary" />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-bold text-foreground">{p.description ?? 'Payment'}</p>
+                      <p className="text-[11px] text-muted-foreground">{fmtDate(p.created_at)} · {p.status}</p>
+                    </div>
+                    <span className="text-sm font-extrabold text-foreground">{euro(Number(p.amount_eur))}</span>
                   </div>
-                  <span className="text-sm font-extrabold text-foreground">{euro(Number(p.amount_eur))}</span>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           )}
+
+          {tab === 'Jobs' && <AdminJobsTab />}
+
+          {tab === 'Messages' && <AdminMessagesTab />}
+
 
           {tab === 'Pricing' && (
             <div className="space-y-4">

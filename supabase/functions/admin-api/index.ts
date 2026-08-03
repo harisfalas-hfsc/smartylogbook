@@ -328,7 +328,133 @@ Deno.serve(async (req) => {
       return json({ payments: data ?? [] });
     }
 
+    // ---- scheduled jobs (pg_cron) ---------------------------------------
+    if (action === "cron_jobs") {
+      const { data, error } = await admin.rpc("admin_list_cron_jobs");
+      if (error) return json({ error: error.message }, 400);
+      return json({ jobs: data ?? [] });
+    }
+
+    if (action === "cron_save") {
+      const jobname = String(body?.jobname ?? "").trim();
+      const schedule = String(body?.schedule ?? "").trim();
+      const command = String(body?.command ?? "").trim();
+      const active = body?.active !== false;
+      if (!jobname || !schedule || !command) {
+        return json({ error: "Name, schedule and command are all required" }, 400);
+      }
+      const { data, error } = await admin.rpc("admin_save_cron_job", {
+        _jobname: jobname,
+        _schedule: schedule,
+        _command: command,
+        _active: active,
+      });
+      if (error) return json({ error: error.message }, 400);
+      return json({ ok: true, result: data });
+    }
+
+    if (action === "cron_toggle") {
+      const { error } = await admin.rpc("admin_set_cron_active", {
+        _jobid: Number(body?.jobid),
+        _active: Boolean(body?.active),
+      });
+      if (error) return json({ error: error.message }, 400);
+      return json({ ok: true });
+    }
+
+    if (action === "cron_delete") {
+      const { error } = await admin.rpc("admin_delete_cron_job", { _jobid: Number(body?.jobid) });
+      if (error) return json({ error: error.message }, 400);
+      return json({ ok: true });
+    }
+
+    if (action === "cron_run") {
+      const { error } = await admin.rpc("admin_run_cron_job", { _jobid: Number(body?.jobid) });
+      if (error) return json({ error: error.message }, 400);
+      return json({ ok: true });
+    }
+
+    // ---- messages / notifications ---------------------------------------
+    if (action === "list_messages") {
+      const search = String(body?.search ?? "").trim().toLowerCase();
+      const { data, error } = await admin
+        .from("messages")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(200);
+      if (error) return json({ error: error.message }, 400);
+      const users = await listAllAuthUsers();
+      const emailById = new Map(users.map((u) => [u.id, u.email ?? "—"]));
+      const rows = (data ?? [])
+        .map((m) => ({ ...m, email: emailById.get(m.user_id) ?? "—" }))
+        .filter(
+          (m) =>
+            !search ||
+            `${m.title ?? ""} ${m.body ?? ""} ${m.email} ${m.kind ?? ""}`.toLowerCase().includes(search),
+        );
+      const byKind = new Map<string, number>();
+      for (const m of data ?? []) byKind.set(m.kind ?? "other", (byKind.get(m.kind ?? "other") ?? 0) + 1);
+      return json({
+        messages: rows,
+        total: (data ?? []).length,
+        unread: (data ?? []).filter((m) => !m.read_at).length,
+        byKind: [...byKind.entries()].map(([kind, count]) => ({ kind, count })).sort((a, b) => b.count - a.count),
+      });
+    }
+
+    if (action === "update_message") {
+      const id = String(body?.id ?? "");
+      if (!id) return json({ error: "Invalid message id" }, 400);
+      const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
+      for (const k of ["title", "body", "level", "kind", "action_label", "action_url"]) {
+        if (body?.[k] !== undefined) patch[k] = body[k];
+      }
+      const { error } = await admin.from("messages").update(patch).eq("id", id);
+      if (error) return json({ error: error.message }, 400);
+      return json({ ok: true });
+    }
+
+    if (action === "delete_message") {
+      const id = String(body?.id ?? "");
+      if (!id) return json({ error: "Invalid message id" }, 400);
+      const { error } = await admin.from("messages").delete().eq("id", id);
+      if (error) return json({ error: error.message }, 400);
+      return json({ ok: true });
+    }
+
+    if (action === "broadcast_message") {
+      const title = String(body?.title ?? "").trim();
+      const text = String(body?.body ?? "").trim();
+      const audience = String(body?.audience ?? "all");
+      if (!title || !text) return json({ error: "Title and body are required" }, 400);
+
+      const users = await listAllAuthUsers();
+      const { data: subs } = await admin.from("subscriptions").select("*");
+      const subMap = new Map((subs ?? []).map((s) => [s.user_id, s as Sub]));
+      const targets = users.filter((u) => {
+        if (audience === "all") return true;
+        const e = effective(subMap.get(u.id));
+        return audience === "premium" ? e.plan === "premium" : e.plan !== "premium";
+      });
+      if (targets.length === 0) return json({ error: "No recipients match that audience" }, 400);
+
+      const now = new Date().toISOString();
+      const rows = targets.map((u) => ({
+        user_id: u.id,
+        kind: "announcement",
+        title,
+        body: text,
+        level: String(body?.level ?? "info"),
+        related_at: now,
+        metadata: { sent_by: caller.id, audience },
+      }));
+      const { error } = await admin.from("messages").insert(rows);
+      if (error) return json({ error: error.message }, 400);
+      return json({ ok: true, sent: rows.length });
+    }
+
     return json({ error: "Invalid action" }, 400);
+
   } catch (e) {
     return json({ error: e instanceof Error ? e.message : "Unexpected error" }, 500);
   }
