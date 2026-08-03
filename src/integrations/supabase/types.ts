@@ -775,6 +775,22 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_delete_cron_job: { Args: { _jobid: number }; Returns: undefined }
+      admin_list_cron_jobs: { Args: never; Returns: Json }
+      admin_run_cron_job: { Args: { _jobid: number }; Returns: undefined }
+      admin_save_cron_job: {
+        Args: {
+          _active?: boolean
+          _command: string
+          _jobname: string
+          _schedule: string
+        }
+        Returns: Json
+      }
+      admin_set_cron_active: {
+        Args: { _active: boolean; _jobid: number }
+        Returns: undefined
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
