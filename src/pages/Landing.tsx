@@ -59,27 +59,24 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* You put in → it gives back */}
-      <section className="mx-auto w-full max-w-5xl px-5 md:px-8 pb-14">
-        <div className="grid gap-2.5 md:grid-cols-2">
-          {[
-            { label: 'You put in', emoji: '📥', items: givesIn },
-            { label: 'It gives back', emoji: '✨', items: givesBack },
-          ].map((col) => (
-            <div key={col.label} className="smarty-card p-4">
-              <div className="mb-3 flex items-center gap-2">
-                <span className="text-sm leading-none">{col.emoji}</span>
-                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary">{col.label}</p>
-              </div>
-              <div className="grid gap-2">
-                {col.items.map((i) => (
-                  <MiniRow key={i.t} emoji={i.e} title={i.t} text={i.s} />
-                ))}
-              </div>
-            </div>
+      {/* One line, four ways in */}
+      <section className="mx-auto w-full max-w-5xl px-5 pb-14 md:px-8">
+        <div className="smarty-card flex flex-wrap items-center justify-center gap-2 p-4">
+          {givesIn.map((i) => (
+            <span
+              key={i.t}
+              className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-secondary/60 px-3 py-1.5 text-[12px] font-semibold text-foreground"
+            >
+              <span className="leading-none">{i.e}</span> {i.t}
+            </span>
           ))}
+          <span className="px-1 text-muted-foreground">→</span>
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-primary px-3 py-1.5 text-[12px] font-bold text-primary-foreground shadow-glow">
+            <Sparkles className="h-3.5 w-3.5" /> The Assistant does the rest
+          </span>
         </div>
       </section>
+
 
 
     </div>
