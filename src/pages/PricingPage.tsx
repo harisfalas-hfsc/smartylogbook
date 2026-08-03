@@ -25,6 +25,9 @@ const GOOD_TO_KNOW = [
 
 const PricingPage = () => {
   const { pricing } = usePricing();
+  const { user } = useAuth();
+  const premiumHref = user ? '/app/checkout' : '/auth?next=/app/checkout';
+
   const premium = pricing.plans[0];
   const allowance = premium ? planAllowance(pricing, premium) : 300;
 
