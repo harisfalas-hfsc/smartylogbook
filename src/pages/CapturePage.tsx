@@ -310,7 +310,7 @@ const CapturePage = () => {
         setExtracted(data as Extracted);
         if (data.module) setModule(data.module as string);
         if (data.kind === 'receipt' || data.kind === 'expense') setKind('receipt');
-        if (!text.trim() && data.summary) setText(String(data.summary));
+        /* The AI never writes the note for you. Your own words stay your own words. */
       } else if (data?.upgrade) {
         toast.info('Reading documents is part of Smarty Assistant, your file is still saved.');
       } else if (data?.error) {
