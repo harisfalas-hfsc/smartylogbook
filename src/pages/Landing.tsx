@@ -21,7 +21,7 @@ const Landing = () => {
             <Sparkles className="h-3.5 w-3.5 text-primary" /> Powered by the Smarty Assistant
           </span>
           <h1 className="mx-auto mt-5 animate-fade-up text-[30px] font-extrabold leading-[1.1] tracking-tight text-foreground md:whitespace-nowrap md:text-5xl">
-            <span className="gradient-text">Smarty Logbook</span>, a logbook{' '}
+            <span className="gradient-text">Smarty Logbook</span>. A logbook{' '}
             <span className="gradient-text">with a brain.</span>
           </h1>
           <p className="mx-auto mt-4 max-w-md animate-fade-up text-sm leading-relaxed text-muted-foreground md:mt-5 md:max-w-2xl md:text-lg">
