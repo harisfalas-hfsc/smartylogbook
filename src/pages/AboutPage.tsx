@@ -1,6 +1,8 @@
 import { Sparkles, Layers, ShieldCheck, Plus } from 'lucide-react';
 import { Panel, MiniRow, PageHeader, CtaCard, DesktopIntro } from '@/lib/marketing';
 import { MODULES } from '@/lib/constants';
+import PillarsCircle from '@/components/PillarsCircle';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const pillars = [
   { e: '📥', t: 'Put anything in', s: 'Type it, say it, snap it, upload it.' },
@@ -15,7 +17,9 @@ const promises = [
   { e: '🔒', t: 'Private by default', s: 'Encrypted, yours only, export or delete any time.' },
 ];
 
-const AboutPage = () => (
+const AboutPage = () => {
+  const isMobile = useIsMobile();
+  return (
   <div className="mx-auto max-w-5xl px-3 py-7 sm:px-5 sm:py-10">
     <PageHeader
       eyebrow="About"
@@ -37,12 +41,17 @@ const AboutPage = () => (
       title={<>A logbook <span className="gradient-text">with a brain.</span></>}
       lead="You put things in; the Smarty Assistant makes sense of them. Six seconds of effort from you — everything after that is Smarty Logbook."
     >
-      <div className="grid gap-2 sm:grid-cols-2">
-        {pillars.map((p) => (
-          <MiniRow key={p.t} emoji={p.e} title={p.t} text={p.s} />
-        ))}
-      </div>
+      {isMobile ? (
+        <PillarsCircle items={pillars} />
+      ) : (
+        <div className="grid gap-2 sm:grid-cols-2">
+          {pillars.map((p) => (
+            <MiniRow key={p.t} emoji={p.e} title={p.t} text={p.s} />
+          ))}
+        </div>
+      )}
     </Panel>
+
 
     <Panel
       eyebrow="Life modules"
@@ -85,6 +94,7 @@ const AboutPage = () => (
 
     <CtaCard text="Free to begin. Capture your first memory in under ten seconds — the Smarty Assistant handles the rest." />
   </div>
-);
+  );
+};
 
 export default AboutPage;
