@@ -50,6 +50,8 @@ const AboutPage = () => {
           ))}
         </div>
       )}
+    </Panel>
+
 
     <Panel
       eyebrow="Life modules"
