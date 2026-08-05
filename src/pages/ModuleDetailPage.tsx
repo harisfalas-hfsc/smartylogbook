@@ -36,14 +36,20 @@ const groupKey = (m: Memory, mode: GroupMode) => {
 
 const ModuleDetailPage = () => {
   const { id } = useParams<{ id: string }>();
-  const { getCategory } = useCategories();
+  const navigate = useNavigate();
+  const { getCategory, custom, updateCategory, removeCategory } = useCategories();
   const module = getCategory(id ?? 'personal');
-  const { memories, loading, remove, reclassify, update } = useMemories({ module: module.id });
+  const { memories, loading, remove, reclassify, update, moveAll } = useMemories({ module: module.id });
   const [selected, setSelected] = useState<Memory | null>(null);
   const isMedia = module.id === 'photos' || module.id === 'videos';
   const [view, setView] = useState<ViewMode>(isMedia ? 'grid' : 'list');
   const [group, setGroup] = useState<GroupMode>(isMedia ? 'month' : 'day');
   const [album, setAlbum] = useState<string | null>(null);
+  const own = custom.find((c) => c.id === module.id);
+  const [editOpen, setEditOpen] = useState(false);
+  const [name, setName] = useState(module.label);
+  const [icon, setIcon] = useState(own?.icon ?? 'folder');
+  const [saving, setSaving] = useState(false);
 
   const albums = useMemo(() => albumsOf(memories), [memories]);
   const visible = useMemo(
@@ -62,19 +68,71 @@ const ModuleDetailPage = () => {
     return out;
   }, [visible, group]);
 
+  const openEdit = () => { setName(module.label); setIcon(own?.icon ?? 'folder'); setEditOpen(true); };
+
+  const saveEdit = async () => {
+    if (!own) return;
+    setSaving(true);
+    const { error } = await updateCategory(own.id, { label: name, icon });
+    setSaving(false);
+    if (error) { toast.error(error.message); return; }
+    toast.success('Category updated');
+    setEditOpen(false);
+  };
+
+  const deleteCategory = async () => {
+    if (!own) return;
+    const count = memories.length;
+    const ok = window.confirm(
+      count
+        ? `Delete "${module.label}"? Nothing is lost: ${count} entr${count === 1 ? 'y' : 'ies'} will move to Personal.`
+        : `Delete "${module.label}"?`
+    );
+    if (!ok) return;
+    if (count) {
+      const { error } = await moveAll(own.id, 'personal');
+      if (error) { toast.error(error.message); return; }
+    }
+    const { error } = await removeCategory(own.id);
+    if (error) { toast.error(error.message); return; }
+    toast.success(count ? `"${module.label}" deleted, ${count} moved to Personal` : `"${module.label}" deleted`);
+    navigate('/app/modules');
+  };
+
   return (
     <div className="space-y-5">
       <header className="flex animate-fade-up items-center gap-3">
-        <div className={`flex h-11 w-11 items-center justify-center rounded-2xl ${module.tint}`}>
+        <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${module.tint}`}>
           <module.icon className={`h-5 w-5 ${module.color}`} />
         </div>
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <h1 className="text-xl font-extrabold tracking-tight text-foreground">{module.label}</h1>
           <p className="truncate text-xs text-muted-foreground">
             {visible.length} {visible.length === 1 ? 'record' : 'records'} , {module.description}
           </p>
         </div>
+        {own ? (
+          <div className="flex shrink-0 items-center gap-1">
+            <button
+              type="button"
+              onClick={openEdit}
+              aria-label={`Edit ${module.label}`}
+              className="grid h-9 w-9 place-items-center rounded-xl border border-border bg-card text-muted-foreground transition-smooth hover:bg-secondary active:scale-95"
+            >
+              <Pencil className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={deleteCategory}
+              aria-label={`Delete ${module.label}`}
+              className="grid h-9 w-9 place-items-center rounded-xl border border-border bg-card text-destructive transition-smooth hover:bg-destructive/10 active:scale-95"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          </div>
+        ) : null}
       </header>
+
 
       <div className="flex flex-wrap items-center gap-2">
         <div className="flex rounded-2xl bg-secondary p-1">
