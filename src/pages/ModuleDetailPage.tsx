@@ -1,5 +1,5 @@
-import { Link, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, LayoutGrid, List, Loader2, Plus, Sparkles } from 'lucide-react';
+import { Link, useParams } from 'react-router-dom';
+import { LayoutGrid, List, Loader2, Plus, Sparkles } from 'lucide-react';
 import { useCategories } from '@/lib/categories';
 import { useMemo, useState } from 'react';
 import { useMemories, Memory } from '@/lib/memories';
@@ -29,7 +29,6 @@ const groupKey = (m: Memory, mode: GroupMode) => {
 
 const ModuleDetailPage = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const { getCategory } = useCategories();
   const module = getCategory(id ?? 'personal');
   const { memories, loading, remove, reclassify, update } = useMemories({ module: module.id });
@@ -59,14 +58,6 @@ const ModuleDetailPage = () => {
   return (
     <div className="space-y-5">
       <header className="flex animate-fade-up items-center gap-3">
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          aria-label="Back"
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-secondary text-secondary-foreground transition-smooth active:scale-95"
-        >
-          <ArrowLeft className="h-4.5 w-4.5" />
-        </button>
         <div className={`flex h-11 w-11 items-center justify-center rounded-2xl ${module.tint}`}>
           <module.icon className={`h-5 w-5 ${module.color}`} />
         </div>

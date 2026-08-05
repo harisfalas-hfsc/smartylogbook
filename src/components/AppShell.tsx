@@ -14,6 +14,7 @@ import { usePreferences } from '@/lib/preferences';
 import { useNotificationEngine } from '@/lib/reminders';
 import { useMemoryIndex } from '@/lib/semantic';
 import { useUnreadMessages } from '@/lib/messages';
+import { useCategories } from '@/lib/categories';
 
 const AppShell = () => {
   const { pathname } = useLocation();
@@ -25,7 +26,11 @@ const AppShell = () => {
   useNotificationEngine(prefs);
   useMemoryIndex(!prefsLoading && !!user);
   const unread = useUnreadMessages();
+  const { getCategory } = useCategories();
   const initial = (profile?.username ?? user?.email ?? 'S').charAt(0).toUpperCase();
+  const categoryMatch = pathname.match(/^\/app\/module\/([^/]+)$/);
+  const activeCategory = categoryMatch?.[1] ? getCategory(decodeURIComponent(categoryMatch[1])) : null;
+  const desktopTitle = activeCategory?.label ?? desktopLinks.find((link) => link.path === pathname)?.label ?? 'Smarty Logbook';
 
   const desktopLinks = [...NAV_TABS.filter((t) => t.path !== '/app/capture'), ...MORE_LINKS];
 
@@ -47,7 +52,6 @@ const AppShell = () => {
       {/* Desktop sidebar */}
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-border bg-card/60 px-4 py-6 lg:flex">
         <div className="mb-8 flex items-center gap-2 px-2">
-          <BackButton className="-ml-1" />
           <Link
             to="/app"
             onClick={(e) => {
@@ -163,7 +167,6 @@ const AppShell = () => {
                 </nav>
               </SheetContent>
             </Sheet>
-            <BackButton />
             <Link
               to="/app"
               aria-label="Smarty Logbook home"
@@ -210,9 +213,10 @@ const AppShell = () => {
       {/* Desktop top bar */}
       <header className="sticky top-0 z-30 hidden border-b border-border/60 bg-background/80 backdrop-blur-xl lg:block lg:pl-64">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-3">
-          <p className="text-sm font-semibold text-foreground">
-            {desktopLinks.find((l) => l.path === pathname)?.label ?? 'Smarty Logbook'}
-          </p>
+          <div className="flex min-w-0 items-center gap-2">
+            <BackButton />
+            <p className="truncate text-sm font-semibold text-foreground">{desktopTitle}</p>
+          </div>
           <div className="flex items-center gap-2">
             <Link
               to="/app/search"
