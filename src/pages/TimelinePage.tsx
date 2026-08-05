@@ -23,9 +23,12 @@ const EXAMPLES = [
   'show me health notes this year',
 ];
 
+const PAGE = 25;
+
 const TimelinePage = () => {
   const { memories, loading, remove, reclassify, update } = useMemories();
-  const [range, setRange] = useState<(typeof RANGES)[number]['id']>('week');
+  const { categories } = useCategories();
+  const [range, setRange] = useState<(typeof RANGES)[number]['id']>('all');
   const [module, setModule] = useState<string | null>(null);
   const [query, setQuery] = useState('');
   const [ask, setAsk] = useState('');
@@ -33,7 +36,9 @@ const TimelinePage = () => {
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
   const [showDates, setShowDates] = useState(false);
+  const [visible, setVisible] = useState(PAGE);
   const [selected, setSelected] = useState<Memory | null>(null);
+
 
   const runPlainLanguage = (raw: string) => {
     const parsed = parsePlainLanguage(raw);
