@@ -37,11 +37,17 @@ const HowItWorksPage = () => (
       eyebrowEmoji="🔄"
       badge={Brain}
       title={<>What happens the <span className="gradient-text">moment you save.</span></>}
-      lead="Six quiet stages, in order, every time."
     >
-      <StepsCircle />
-
+      <SubCard>
+        <p className="mx-auto max-w-3xl text-center text-[14px] leading-relaxed text-foreground sm:text-base md:text-lg">
+          The moment you save it, your logbook takes over. Every note, photo, receipt, report and
+          number is read, given a date and a meaning, and filed into the right category — without you
+          choosing anything. The Smarty Assistant understands what it is, connects it to what you
+          already have, keeps everything in order, and brings it back to you the moment it matters.
+        </p>
+      </SubCard>
     </Panel>
+
 
   </div>
 );
