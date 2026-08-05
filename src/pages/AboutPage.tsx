@@ -2,6 +2,7 @@ import { Sparkles, Layers, ShieldCheck, Plus } from 'lucide-react';
 import { Panel, MiniRow, PageHeader, CtaCard } from '@/lib/marketing';
 import { MODULES } from '@/lib/constants';
 import PillarsCircle from '@/components/PillarsCircle';
+import LifeModulesOrbit from '@/components/LifeModulesOrbit';
 
 const pillars = [
   { e: '📥', t: 'Put anything in', s: 'Type it, say it, snap it, upload it.' },
@@ -45,7 +46,10 @@ const AboutPage = () => {
       title={<>It files it — <span className="gradient-text">you stay in control.</span></>}
       lead="Every entry lands in the right area on its own. Move it whenever you disagree — or create a module of your own."
     >
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+      <div className="sm:hidden">
+        <LifeModulesOrbit />
+      </div>
+      <div className="hidden sm:grid sm:grid-cols-3 lg:grid-cols-4 gap-2">
         {MODULES.map((m) => (
           <div key={m.id} className="flex items-center gap-2.5 rounded-2xl border border-primary/15 bg-card p-3">
             <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${m.tint}`}>
