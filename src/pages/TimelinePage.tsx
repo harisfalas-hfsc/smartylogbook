@@ -214,7 +214,7 @@ const TimelinePage = () => {
         >
           All
         </button>
-        {MODULES.map((m) => (
+        {categories.map((m) => (
           <button
             key={m.id}
             onClick={() => setModule(module === m.id ? null : m.id)}
