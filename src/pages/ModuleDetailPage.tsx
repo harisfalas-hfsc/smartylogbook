@@ -1,13 +1,20 @@
-import { Link, useParams } from 'react-router-dom';
-import { LayoutGrid, List, Loader2, Plus, Sparkles } from 'lucide-react';
-import { useCategories } from '@/lib/categories';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { LayoutGrid, List, Loader2, Pencil, Plus, Sparkles, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { useCategories, CATEGORY_ICONS } from '@/lib/categories';
 import { useMemo, useState } from 'react';
 import { useMemories, Memory } from '@/lib/memories';
 import MemoryCard from '@/components/MemoryCard';
 import MediaTile from '@/components/MediaTile';
 import MemoryDetailSheet from '@/components/MemoryDetailSheet';
 import { albumOf, albumsOf } from '@/lib/media';
+import {
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+
 
 type ViewMode = 'grid' | 'list';
 type GroupMode = 'day' | 'month' | 'year' | 'album';
