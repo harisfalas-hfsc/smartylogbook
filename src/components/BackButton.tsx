@@ -60,7 +60,7 @@ const BackButton = ({ className }: { className?: string }) => {
       aria-label="Go back"
       onClick={() => navigate(-1)}
       className={cn(
-        'hidden h-8 w-8 shrink-0 items-center justify-center rounded-full text-primary transition-colors hover:bg-primary/10 md:inline-flex',
+        'inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-primary transition-colors hover:bg-primary/10',
         className
       )}
     >

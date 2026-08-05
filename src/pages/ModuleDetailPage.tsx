@@ -58,13 +58,14 @@ const ModuleDetailPage = () => {
   return (
     <div className="space-y-5">
       <header className="flex animate-fade-up items-center gap-3">
-        <Link
-          to="/app/modules"
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
           aria-label="Back"
           className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-secondary text-secondary-foreground transition-smooth active:scale-95"
         >
           <ArrowLeft className="h-4.5 w-4.5" />
-        </Link>
+        </button>
         <div className={`flex h-11 w-11 items-center justify-center rounded-2xl ${module.tint}`}>
           <module.icon className={`h-5 w-5 ${module.color}`} />
         </div>

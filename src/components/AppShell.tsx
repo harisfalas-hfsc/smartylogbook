@@ -163,6 +163,7 @@ const AppShell = () => {
                 </nav>
               </SheetContent>
             </Sheet>
+            <BackButton />
             <Link
               to="/app"
               aria-label="Smarty Logbook home"
