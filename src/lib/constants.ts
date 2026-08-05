@@ -2,11 +2,12 @@ import {
   Activity, Apple, Brain, Briefcase, Camera, CreditCard, Dumbbell, FileText,
   Heart, Home, Image, Lightbulb, MapPin, Mic, NotebookPen, Receipt, Search,
   Smile, Sparkles, Timer, Utensils, Wallet, CheckSquare, Bell, Stethoscope,
-  User, Settings, BarChart3, Clock, Plus, CalendarClock, Inbox,
+  User, Settings, BarChart3, Clock, Plus, CalendarClock, Inbox, Clapperboard, Video,
 } from 'lucide-react';
 
 export type ModuleId =
-  | 'health' | 'fitness' | 'nutrition' | 'finance' | 'business' | 'documents' | 'personal';
+  | 'health' | 'fitness' | 'nutrition' | 'finance' | 'business' | 'documents'
+  | 'photos' | 'videos' | 'personal';
 
 export interface ModuleInfo {
   id: ModuleId;
@@ -50,6 +51,16 @@ export const MODULES: ModuleInfo[] = [
     topics: ['Passport', 'Insurance', 'Certificates', 'Photos', 'PDF files', 'Receipts'],
   },
   {
+    id: 'photos', label: 'Photo album', icon: Image, color: 'text-mod-personal', tint: 'bg-mod-personal/10',
+    description: 'Pictures, albums & moments',
+    topics: ['Albums', 'Family', 'Friends', 'Travel', 'Events', 'Screenshots'],
+  },
+  {
+    id: 'videos', label: 'Video album', icon: Clapperboard, color: 'text-mod-business', tint: 'bg-mod-business/10',
+    description: 'Clips, recordings & memories',
+    topics: ['Albums', 'Family', 'Trips', 'Recordings', 'Short clips'],
+  },
+  {
     id: 'personal', label: 'Personal', icon: Heart, color: 'text-mod-personal', tint: 'bg-mod-personal/10',
     description: 'Ideas, journal, travel & more',
     topics: ['Ideas', 'Journal', 'Travel', 'Books', 'Movies', 'Important dates', 'Wishlist'],
@@ -60,13 +71,14 @@ export const getModule = (id: string): ModuleInfo =>
   MODULES.find((m) => m.id === id) ?? MODULES[MODULES.length - 1];
 
 export type CaptureKind =
-  | 'text' | 'voice' | 'photo' | 'receipt' | 'document' | 'medical' | 'workout'
+  | 'text' | 'voice' | 'photo' | 'video' | 'receipt' | 'document' | 'medical' | 'workout'
   | 'meal' | 'expense' | 'task' | 'reminder' | 'idea' | 'journal' | 'mood' | 'location';
 
 export const CAPTURE_KINDS: { id: CaptureKind; label: string; icon: typeof Heart }[] = [
   { id: 'text', label: 'Note', icon: NotebookPen },
   { id: 'voice', label: 'Voice', icon: Mic },
   { id: 'photo', label: 'Photo', icon: Camera },
+  { id: 'video', label: 'Video', icon: Video },
   { id: 'receipt', label: 'Receipt', icon: Receipt },
   { id: 'document', label: 'Document', icon: FileText },
   { id: 'medical', label: 'Medical', icon: Stethoscope },
