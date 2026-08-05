@@ -31,6 +31,7 @@ const toLocalInput = (iso: string) => {
 const MemoryDetailSheet = ({
   memory, open, onOpenChange, allMemories = [], onOpenMemory, onSave, onMove, onDelete,
 }: Props) => {
+  const navigate = useNavigate();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState<Partial<Memory>>({});
   const [tagsText, setTagsText] = useState('');
