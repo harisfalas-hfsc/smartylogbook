@@ -1,0 +1,1 @@
+UPDATE public.memories SET content = NULL WHERE id = '780e723d-0f21-4e77-849a-221ebee48619';
