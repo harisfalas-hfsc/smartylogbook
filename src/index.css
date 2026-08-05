@@ -133,8 +133,24 @@
 
 @layer components {
   .smarty-card {
-    @apply rounded-3xl border border-primary/25 bg-card shadow-card;
+    @apply rounded-3xl border-2 border-primary/35 bg-card shadow-card transition-smooth;
   }
+
+  /* Hover enhancement only on pointer devices (desktop) */
+  @media (hover: hover) and (pointer: fine) {
+    .smarty-card:hover {
+      @apply border-primary/70 shadow-elevated;
+      transform: translateY(-3px);
+    }
+    .smarty-sub:hover {
+      @apply border-primary/60 bg-secondary/80;
+    }
+    .smarty-mini:hover {
+      @apply border-primary/50 shadow-card;
+      transform: translateY(-2px);
+    }
+  }
+
 
   .glass {
     @apply border border-white/40 bg-white/70 backdrop-blur-xl;
