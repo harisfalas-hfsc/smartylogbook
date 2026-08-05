@@ -230,13 +230,23 @@ const CapturePage = () => {
   };
 
   // Home-screen shortcuts: /app/capture?mode=voice | photo | file
-  const modeParam = new URLSearchParams(useLocation().search).get('mode');
+  const search = useLocation().search;
+  const modeParam = new URLSearchParams(search).get('mode');
+  const moduleParam = new URLSearchParams(search).get('module');
   useEffect(() => {
     if (modeParam === 'voice') startVoice();
     if (modeParam === 'photo') cameraInput.current?.click();
     if (modeParam === 'file') fileInput.current?.click();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [modeParam]);
+
+  useEffect(() => {
+    if (moduleParam) setModule(moduleParam);
+  }, [moduleParam]);
+
+  const activeModule = moduleParam ?? module;
+  const tipsFor = activeModule ? getModule(activeModule)?.label ?? null : null;
+  const tips = (activeModule && MODULE_TIPS[activeModule]) || GENERIC_TIPS;
 
 
 
