@@ -57,8 +57,11 @@ const TimelinePage = () => {
     setApplied(null);
     setQuery('');
     setModule(null);
-    setRange('week');
+    setRange('all');
+    setFrom('');
+    setTo('');
   };
+
 
   const filtered = useMemo(() => {
     const days = RANGES.find((r) => r.id === range)?.days ?? 0;
