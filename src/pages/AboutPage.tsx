@@ -17,7 +17,9 @@ const promises = [
   { e: '🔒', t: 'Private by default', s: 'Encrypted, yours only, export or delete any time.' },
 ];
 
-const AboutPage = () => (
+const AboutPage = () => {
+  const isMobile = useIsMobile();
+  return (
   <div className="mx-auto max-w-5xl px-3 py-7 sm:px-5 sm:py-10">
     <PageHeader
       eyebrow="About"
