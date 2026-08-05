@@ -537,7 +537,7 @@ const CapturePage = () => {
       </section>
 
       <section className="animate-fade-up">
-        <p className="mb-2.5 text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">Module (optional)</p>
+        <p className="mb-2.5 text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">Category (optional)</p>
         <div className="flex flex-wrap gap-2">
           {MODULES.map((m) => (
             <button

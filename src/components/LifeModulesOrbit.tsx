@@ -16,7 +16,7 @@ const LifeModulesOrbit = () => {
   const radius = 38;
 
   return (
-    <div className="relative mx-auto aspect-square w-full max-w-[330px]" aria-label="Life modules">
+    <div className="relative mx-auto aspect-square w-full max-w-[330px]" aria-label="Life categories">
       <svg viewBox="0 0 100 100" className="absolute inset-0 h-full w-full" aria-hidden="true">
         <circle
           cx="50"

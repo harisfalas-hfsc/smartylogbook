@@ -40,11 +40,11 @@ const AboutPage = () => {
 
 
     <Panel
-      eyebrow="Life modules"
+      eyebrow="Life categories"
       eyebrowEmoji="🗂️"
       badge={Layers}
       title={<>It files it, <span className="gradient-text">you stay in control.</span></>}
-      lead="Every entry lands in the right area on its own. Move it whenever you disagree, or create a module of your own."
+      lead="Every entry lands in the right area on its own. Move it whenever you disagree, or create a category of your own."
     >
       <div className="sm:hidden">
         <LifeModulesOrbit />
