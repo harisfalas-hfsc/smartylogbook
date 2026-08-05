@@ -1,8 +1,7 @@
 import { Sparkles, Layers, ShieldCheck, Plus } from 'lucide-react';
-import { Panel, MiniRow, PageHeader, CtaCard, DesktopIntro } from '@/lib/marketing';
+import { Panel, MiniRow, PageHeader, CtaCard } from '@/lib/marketing';
 import { MODULES } from '@/lib/constants';
 import PillarsCircle from '@/components/PillarsCircle';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 const pillars = [
   { e: '📥', t: 'Put anything in', s: 'Type it, say it, snap it, upload it.' },
@@ -18,7 +17,6 @@ const promises = [
 ];
 
 const AboutPage = () => {
-  const isMobile = useIsMobile();
   return (
   <div className="mx-auto max-w-5xl px-3 py-7 sm:px-5 sm:py-10">
     <PageHeader
@@ -27,11 +25,6 @@ const AboutPage = () => {
       subtitle="Put anything in. It understands it, relates it to the rest of your life, and finds it the moment you ask."
     />
 
-    <DesktopIntro
-      title="What Smarty Logbook actually is"
-      lead="Smarty Logbook is one place for everything that happens in your life — notes, receipts, lab results, workouts, bills, appointments and ideas. You capture it in a few seconds and the Smarty Assistant does the rest: it reads what you sent, pulls out the dates, amounts and details, files it in the right life module, links it to what already exists, and reminds you before it matters. Nothing to name, nothing to tag, nothing to file. When you need something back, you ask in plain words."
-      points={[...pillars.map((p) => ({ e: p.e, t: p.t, s: p.s }))]}
-    />
 
 
     <Panel
@@ -41,15 +34,7 @@ const AboutPage = () => {
       title={<>A logbook <span className="gradient-text">with a brain.</span></>}
       lead="You put things in; the Smarty Assistant makes sense of them. Six seconds of effort from you — everything after that is Smarty Logbook."
     >
-      {isMobile ? (
-        <PillarsCircle items={pillars} />
-      ) : (
-        <div className="grid gap-2 sm:grid-cols-2">
-          {pillars.map((p) => (
-            <MiniRow key={p.t} emoji={p.e} title={p.t} text={p.s} />
-          ))}
-        </div>
-      )}
+      <PillarsCircle items={pillars} />
     </Panel>
 
 

@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, Brain, Clock, Sparkles } from 'lucide-react';
-import { givesIn } from '@/lib/marketing';
 import InputsCircle from '@/components/InputsCircle';
 
 
@@ -24,20 +23,9 @@ const Landing = () => {
             <span className="gradient-text">Smarty Logbook</span>, a logbook{' '}
             <span className="gradient-text">with a brain.</span>
           </h1>
-          <p className="mx-auto mt-4 max-w-md animate-fade-up text-sm leading-relaxed text-muted-foreground md:hidden">
+          <p className="mx-auto mt-4 max-w-md animate-fade-up text-sm leading-relaxed text-muted-foreground md:mt-5 md:max-w-2xl md:text-lg">
             Put anything in. It understands it, connects it, keeps it and finds it when you need it.
           </p>
-          <p className="mx-auto mt-5 hidden max-w-3xl animate-fade-up text-base leading-relaxed text-muted-foreground md:block md:text-lg">
-            Put anything in — a thought, a receipt, a lab result, a voice note, a PDF. Smarty Logbook
-            understands it, connects it to the rest of your life, keeps it safe and finds it the moment
-            you ask.
-          </p>
-          <p className="mx-auto mt-3 hidden max-w-2xl animate-fade-up text-sm leading-relaxed text-muted-foreground md:block">
-            No folders, no tags, no filing. The Smarty Assistant reads every entry, extracts the dates
-            and amounts, files it into the right life module, reminds you before things are due, and
-            answers any question about your own history in plain language.
-          </p>
-
           <div className="mt-7 flex animate-fade-up flex-col items-center gap-2.5">
             <Link
               to="/auth"
@@ -74,26 +62,8 @@ const Landing = () => {
 
       {/* One line, four ways in */}
       <section className="mx-auto w-full max-w-5xl px-5 pb-14 md:px-8">
-        <div className="smarty-card p-4">
-          {/* mobile: circle */}
-          <div className="lg:hidden">
-            <InputsCircle />
-          </div>
-          {/* desktop: pills */}
-          <div className="hidden flex-wrap items-center justify-center gap-2 lg:flex">
-            {givesIn.map((i) => (
-              <span
-                key={i.t}
-                className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-secondary/60 px-3 py-1.5 text-[12px] font-semibold text-foreground"
-              >
-                <span className="leading-none">{i.e}</span> {i.t}
-              </span>
-            ))}
-            <span className="px-1 text-muted-foreground">→</span>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-primary px-3 py-1.5 text-[12px] font-bold text-primary-foreground shadow-glow">
-              <Sparkles className="h-3.5 w-3.5" /> The Assistant does the rest
-            </span>
-          </div>
+        <div className="smarty-card p-4 md:p-8">
+          <InputsCircle />
         </div>
       </section>
 
