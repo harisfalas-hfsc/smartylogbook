@@ -195,6 +195,11 @@ const ModuleDetailPage = () => {
         </div>
       )}
 
+      <p className="px-0.5 text-[11px] text-muted-foreground">
+        Albums work as subfolders inside this category. Open any record and set its album to file it.
+      </p>
+
+
       <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 scrollbar-hide">
         {module.topics.map((t) => (
           <span key={t} className="shrink-0 rounded-2xl bg-secondary px-3 py-1.5 text-[11px] font-semibold text-secondary-foreground">
