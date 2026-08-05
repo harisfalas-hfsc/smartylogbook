@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Brain, Camera, Dumbbell, FileText, FolderTree, Lightbulb, Link2, Loader2, Mic, Paperclip, SlidersHorizontal, Sparkles, Square, Stethoscope, Utensils, Wallet, X } from 'lucide-react';
+import { Brain, Camera, FileText, FolderTree, Link2, Loader2, Mic, Paperclip, SlidersHorizontal, Sparkles, Square, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -11,13 +11,56 @@ import { CAPTURE_KINDS, MODULES, CaptureKind, getModule } from '@/lib/constants'
 import { useReminders } from '@/lib/reminders';
 import { cn } from '@/lib/utils';
 
-const suggestions: { text: string; icon: typeof Camera; color: string; tint: string }[] = [
-  { text: 'Upper body session, 48 minutes, felt strong', icon: Dumbbell, color: 'text-mod-fitness', tint: 'bg-mod-fitness/10' },
-  { text: 'Lunch: grilled salmon, rice and salad', icon: Utensils, color: 'text-mod-nutrition', tint: 'bg-mod-nutrition/10' },
-  { text: 'Paid €42.10 at the supermarket', icon: Wallet, color: 'text-mod-finance', tint: 'bg-mod-finance/10' },
-  { text: 'Idea: a weekly review email for the team', icon: Lightbulb, color: 'text-mod-business', tint: 'bg-mod-business/10' },
-  { text: 'Call the clinic about the blood test results', icon: Stethoscope, color: 'text-mod-health', tint: 'bg-mod-health/10' },
+/** Short, practical instructions shown per category (no fake sample entries). */
+const GENERIC_TIPS = [
+  'Write it the way you would say it, full sentences are not needed.',
+  'Add numbers, names and dates when you have them, the Assistant keeps them searchable.',
+  'Attach a photo, a file or record your voice, it is read and summarised for you.',
 ];
+
+const MODULE_TIPS: Record<string, string[]> = {
+  health: [
+    'Log symptoms, appointments, medication and how you felt.',
+    'Attach blood tests or reports, values are extracted automatically.',
+    'Add the date of the result if it is not today.',
+  ],
+  fitness: [
+    'Log the session, the duration and how it felt.',
+    'Weights, reps and distances are picked up and tracked over time.',
+  ],
+  nutrition: [
+    'Log meals in plain words, portions and drinks included.',
+    'Snap the plate or the label instead of typing it out.',
+  ],
+  finance: [
+    'Include the amount, the currency and who it was paid to.',
+    'Snap receipts and bills, the total and due date are read for you.',
+    'Say if it repeats monthly so it becomes a tracked bill.',
+  ],
+  business: [
+    'Log meetings, decisions and follow-ups with the people involved.',
+    'Attach invoices or contracts to keep them findable later.',
+  ],
+  documents: [
+    'Upload the file and add what it is and when it expires.',
+    'Passports, insurance and certificates are kept private and searchable.',
+  ],
+  photos: [
+    'Upload the photo and write who or what is in it and where it was taken.',
+    'Use an album name to group it, for example a trip or a month.',
+    'Details you write are what makes it findable later.',
+  ],
+  videos: [
+    'Upload the clip, up to 200 MB, length is detected automatically.',
+    'Use an album name to group clips together.',
+    'Add a line about what happens in it so you can find it later.',
+  ],
+  personal: [
+    'Ideas, journal notes, books, trips and important dates all belong here.',
+    'Anything that does not fit elsewhere is safe to write here.',
+  ],
+};
+
 
 interface Extracted {
   title?: string;
@@ -187,13 +230,23 @@ const CapturePage = () => {
   };
 
   // Home-screen shortcuts: /app/capture?mode=voice | photo | file
-  const modeParam = new URLSearchParams(useLocation().search).get('mode');
+  const search = useLocation().search;
+  const modeParam = new URLSearchParams(search).get('mode');
+  const moduleParam = new URLSearchParams(search).get('module');
   useEffect(() => {
     if (modeParam === 'voice') startVoice();
     if (modeParam === 'photo') cameraInput.current?.click();
     if (modeParam === 'file') fileInput.current?.click();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [modeParam]);
+
+  useEffect(() => {
+    if (moduleParam) setModule(moduleParam);
+  }, [moduleParam]);
+
+  const activeModule = moduleParam ?? module;
+  const tipsFor = activeModule ? getModule(activeModule)?.label ?? null : null;
+  const tips = (activeModule && MODULE_TIPS[activeModule]) || GENERIC_TIPS;
 
 
 
@@ -614,19 +667,15 @@ const CapturePage = () => {
       )}
 
       <section className="animate-fade-up">
-        <p className="mb-2.5 text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">Try one</p>
-        <div className="space-y-2">
-          {suggestions.map((s) => (
-            <button
-              key={s.text}
-              onClick={() => setText(s.text)}
-              className="smarty-card flex w-full items-center gap-3 p-3 text-left transition-smooth hover:border-primary/40 active:scale-[0.99]"
-            >
-              <span className={cn('grid h-8 w-8 shrink-0 place-items-center rounded-xl', s.tint)}>
-                <s.icon className={cn('h-4 w-4', s.color)} />
-              </span>
-              <span className="min-w-0 flex-1 text-xs font-medium text-foreground">{s.text}</span>
-            </button>
+        <p className="mb-2.5 text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
+          {tipsFor ? `How to log ${tipsFor.toLowerCase()}` : 'How to capture'}
+        </p>
+        <div className="smarty-card space-y-2.5 p-4">
+          {tips.map((t) => (
+            <div key={t} className="flex items-start gap-2.5">
+              <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
+              <p className="text-xs leading-relaxed text-muted-foreground">{t}</p>
+            </div>
           ))}
         </div>
       </section>

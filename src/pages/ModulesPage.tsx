@@ -14,7 +14,7 @@ import { formatBytes, STORAGE_QUOTA_BYTES, useStorageUsage } from '@/lib/media';
 import { useSubscription } from '@/lib/subscription';
 
 const ModulesPage = () => {
-  const { memories } = useMemories();
+  const { memories, moveAll } = useMemories();
   const { used, files } = useStorageUsage();
   const { active } = useSubscription();
   const quota = active ? STORAGE_QUOTA_BYTES.premium : STORAGE_QUOTA_BYTES.free;
@@ -40,16 +40,20 @@ const ModulesPage = () => {
   };
 
   const del = async (c: CustomCategory) => {
-    const used = memories.filter((m) => m.module === c.id).length;
+    const count = memories.filter((m) => m.module === c.id).length;
     const ok = window.confirm(
-      used
-        ? `Delete "${c.label}"? ${used} entr${used === 1 ? 'y' : 'ies'} will move back to Personal.`
+      count
+        ? `Delete "${c.label}"? Nothing is lost: ${count} entr${count === 1 ? 'y' : 'ies'} will move to Personal.`
         : `Delete "${c.label}"?`
     );
     if (!ok) return;
+    if (count) {
+      const { error } = await moveAll(c.id, 'personal');
+      if (error) { toast.error(error.message); return; }
+    }
     const { error } = await removeCategory(c.id);
     if (error) { toast.error(error.message); return; }
-    toast.success(`"${c.label}" deleted`);
+    toast.success(count ? `"${c.label}" deleted, ${count} moved to Personal` : `"${c.label}" deleted`);
   };
 
   return (

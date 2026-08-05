@@ -123,6 +123,20 @@ export const useMemories = (options?: { module?: string; limit?: number }) => {
     return { error: null };
   };
 
+  /** Bulk move used when a category is deleted, records are kept, not trashed. */
+  const moveAll = async (fromModule: string, toModule: string) => {
+    if (!user) return { error: new Error('Not signed in') };
+    const { error } = await supabase
+      .from('memories')
+      .update({ module: toModule })
+      .eq('user_id', user.id)
+      .eq('module', fromModule);
+    if (!error) {
+      setMemories((prev) => prev.map((m) => (m.module === fromModule ? { ...m, module: toModule } : m)));
+    }
+    return { error };
+  };
+
   /** Soft delete: the record moves to Trash for 30 days and is hidden from the assistant. */
   const remove = async (id: string) => {
     const { error } = await supabase
@@ -133,7 +147,7 @@ export const useMemories = (options?: { module?: string; limit?: number }) => {
     return { error };
   };
 
-  return { memories, loading, reload: load, create, remove, reclassify, update };
+  return { memories, loading, reload: load, create, remove, reclassify, update, moveAll };
 };
 
 export const groupByDay = (memories: Memory[]) => {
