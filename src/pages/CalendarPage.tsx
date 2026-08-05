@@ -11,7 +11,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useMemories } from '@/lib/memories';
+import { useMemories, whenLabel } from '@/lib/memories';
 import { REMINDER_TYPES, ReminderType, reminderIcon, requestNotificationPermission, useReminders } from '@/lib/reminders';
 import { getModule, kindIcon } from '@/lib/constants';
 import { cn } from '@/lib/utils';

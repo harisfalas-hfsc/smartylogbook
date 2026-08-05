@@ -388,6 +388,7 @@ const CapturePage = () => {
         : [],
       relation_note: classified?.relation_note ?? null,
       metadata: {
+        date_only: !!classified?.date,
         ...(classified
           ? {
               merchant: classified.merchant ?? null,
