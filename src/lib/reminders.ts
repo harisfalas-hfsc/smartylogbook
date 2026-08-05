@@ -119,7 +119,7 @@ export const useReminders = () => {
 
 const typeEnabled = (prefs: Preferences, type: string) => {
   if (type === 'bill') return prefs.notify_bills;
-  if (type === 'health') return prefs.notify_health;
+  if (type === 'health' || type === 'fitness' || type === 'nutrition') return prefs.notify_health;
   if (type === 'event') return prefs.notify_events;
   return prefs.notify_tasks;
 };
