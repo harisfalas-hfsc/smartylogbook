@@ -203,6 +203,16 @@ const MemoryDetailSheet = ({
                   <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">{memory.content}</p>
                 </div>
               )}
+              <button
+                type="button"
+                onClick={() => {
+                  onOpenChange(false);
+                  navigate(`/app/assistant?ask=${encodeURIComponent(`About my entry "${memory.title}": `)}`);
+                }}
+                className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-3.5 py-2 text-xs font-semibold text-primary"
+              >
+                <Sparkles className="h-3.5 w-3.5" /> Ask Smarty Assistant about this
+              </button>
               {memory.attachment_url && attachment && (
                 isVideoMemory(memory) ? (
                   <video src={attachment} controls playsInline className="w-full overflow-hidden rounded-2xl border border-border" />
