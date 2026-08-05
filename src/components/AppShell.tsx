@@ -28,11 +28,10 @@ const AppShell = () => {
   const unread = useUnreadMessages();
   const { getCategory } = useCategories();
   const initial = (profile?.username ?? user?.email ?? 'S').charAt(0).toUpperCase();
+  const desktopLinks = [...NAV_TABS.filter((t) => t.path !== '/app/capture'), ...MORE_LINKS];
   const categoryMatch = pathname.match(/^\/app\/module\/([^/]+)$/);
   const activeCategory = categoryMatch?.[1] ? getCategory(decodeURIComponent(categoryMatch[1])) : null;
   const desktopTitle = activeCategory?.label ?? desktopLinks.find((link) => link.path === pathname)?.label ?? 'Smarty Logbook';
-
-  const desktopLinks = [...NAV_TABS.filter((t) => t.path !== '/app/capture'), ...MORE_LINKS];
 
   const sections = [
     { heading: 'Your Logbook', items: NAV_TABS },
