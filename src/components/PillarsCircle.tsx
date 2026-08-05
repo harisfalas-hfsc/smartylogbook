@@ -27,7 +27,7 @@ const PillarsCircle = ({
     ? 'h-[84px] w-[84px] lg:h-[110px] lg:w-[110px]'
     : 'h-[104px] w-[104px] lg:h-[150px] lg:w-[150px]';
   const centreText = sm ? 'text-[10px] lg:text-[12px]' : 'text-[11px] lg:text-[14px]';
-  const nodeWidth = sm ? 'w-[70px] lg:w-[92px]' : 'w-[80px] lg:w-[120px]';
+  const nodeWidth = sm ? 'w-[84px] lg:w-[104px]' : 'w-[92px] lg:w-[124px]';
   const bubble = sm ? 'h-9 w-9 lg:h-12 lg:w-12 text-sm lg:text-xl' : 'h-10 w-10 lg:h-14 lg:w-14 text-base lg:text-2xl';
   const nodeText = sm ? 'text-[11px] lg:text-[13px]' : 'text-[11.5px] lg:text-[14px]';
 
