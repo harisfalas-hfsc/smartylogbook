@@ -139,13 +139,22 @@ const MessagesPage = () => {
                     )}
                   </div>
                 </div>
-                <button
-                  onClick={() => archive(m.id)}
-                  aria-label="Dismiss message"
-                  className="h-7 w-7 shrink-0 rounded-full text-muted-foreground hover:bg-secondary"
-                >
-                  <X className="mx-auto h-4 w-4" />
-                </button>
+                <div className="flex shrink-0 flex-col gap-1">
+                  <button
+                    onClick={() => (showArchived ? unarchive(m.id) : archive(m.id))}
+                    aria-label={showArchived ? 'Restore message' : 'Archive message'}
+                    className="grid h-7 w-7 place-items-center rounded-full text-muted-foreground hover:bg-secondary"
+                  >
+                    {showArchived ? <ArchiveRestore className="h-4 w-4" /> : <Archive className="h-4 w-4" />}
+                  </button>
+                  <button
+                    onClick={() => remove(m.id)}
+                    aria-label="Delete message"
+                    className="grid h-7 w-7 place-items-center rounded-full text-destructive hover:bg-destructive/10"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
               </li>
             );
           })}
