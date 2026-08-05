@@ -1,5 +1,5 @@
 import { Wand2, Brain } from 'lucide-react';
-import { Panel, SubCard, MiniRow, PageHeader, steps, givesIn, givesBack } from '@/lib/marketing';
+import { Panel, SubCard, MiniRow, PageHeader, givesIn, givesBack } from '@/lib/marketing';
 import StepsCircle from '@/components/StepsCircle';
 
 
