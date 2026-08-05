@@ -242,8 +242,14 @@ const TimelinePage = () => {
       ) : groups.length === 0 ? (
         <div className="smarty-card p-10 text-center">
           <Sparkles className="mx-auto h-6 w-6 text-primary" />
-          <p className="mt-3 text-sm font-semibold text-foreground">No memories here yet</p>
-          <p className="mt-1 text-xs text-muted-foreground">Widen the range or capture something new.</p>
+          <p className="mt-3 text-sm font-semibold text-foreground">Nothing matches these filters</p>
+          <p className="mt-1 text-xs text-muted-foreground">Clear the filters below or capture something new.</p>
+          <button
+            onClick={clearPlainLanguage}
+            className="mt-3 rounded-2xl bg-secondary px-4 py-2 text-xs font-semibold text-secondary-foreground"
+          >
+            Clear all filters
+          </button>
         </div>
       ) : (
         <div className="space-y-6">
@@ -260,9 +266,19 @@ const TimelinePage = () => {
         </div>
       )}
 
+      {filtered.length > shown.length && (
+        <button
+          onClick={() => setVisible((v) => v + PAGE)}
+          className="w-full rounded-2xl border border-border bg-card py-3 text-xs font-bold text-primary transition-smooth active:scale-[0.99]"
+        >
+          Show {Math.min(PAGE, filtered.length - shown.length)} more
+        </button>
+      )}
+
       <p className="pb-2 text-center text-[11px] text-muted-foreground">
-        {filtered.length} {filtered.length === 1 ? 'record' : 'records'}, tap any record to open, edit or move it.
+        Showing {shown.length} of {filtered.length} {filtered.length === 1 ? 'record' : 'records'}.
       </p>
+
 
       <MemoryDetailSheet
         memory={selected}
