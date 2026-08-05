@@ -1,4 +1,4 @@
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, LayoutGrid, List, Loader2, Plus, Sparkles } from 'lucide-react';
 import { useCategories } from '@/lib/categories';
 import { useMemo, useState } from 'react';
@@ -29,6 +29,7 @@ const groupKey = (m: Memory, mode: GroupMode) => {
 
 const ModuleDetailPage = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { getCategory } = useCategories();
   const module = getCategory(id ?? 'personal');
   const { memories, loading, remove, reclassify, update } = useMemories({ module: module.id });
