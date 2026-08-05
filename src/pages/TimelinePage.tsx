@@ -88,7 +88,10 @@ const TimelinePage = () => {
     });
   }, [memories, range, module, query, from, to]);
 
-  const groups = groupByDay(filtered);
+  useEffect(() => { setVisible(PAGE); }, [range, module, query, from, to]);
+
+  const shown = filtered.slice(0, visible);
+  const groups = groupByDay(shown);
 
   return (
     <div className="space-y-5">
@@ -96,9 +99,10 @@ const TimelinePage = () => {
         <div className="min-w-0 flex-1">
           <h1 className="text-2xl font-extrabold tracking-tight text-foreground">Timeline</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Tap a record to open or edit it · tap its category chip to move it.
+            Everything you have saved, newest first. Tap a record to open or edit it, tap its category chip to move it.
           </p>
         </div>
+
         <Link
           to="/app/trash"
           aria-label="Trash"
