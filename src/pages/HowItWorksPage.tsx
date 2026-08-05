@@ -1,5 +1,5 @@
 import { Wand2, Brain, Inbox, Sparkles } from 'lucide-react';
-import { Panel, SubCard, PageHeader, givesIn, givesBack } from '@/lib/marketing';
+import { Panel, SubCard, PageHeader, givesIn, givesBack, Hl } from '@/lib/marketing';
 
 import PillarsCircle from '@/components/PillarsCircle';
 
