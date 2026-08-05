@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { kindIcon } from '@/lib/constants';
 import { albumOf, formatBytes, formatDuration, durationOf, isVideoMemory, useSignedUrl } from '@/lib/media';
 import { useCategories } from '@/lib/categories';
-import { Memory } from '@/lib/memories';
+import { Memory, isDateOnly } from '@/lib/memories';
 import { cn } from '@/lib/utils';
 
 interface Props {
@@ -179,7 +179,8 @@ const MemoryDetailSheet = ({
                 <span className="inline-flex items-center gap-1">
                   <CalendarIcon className="h-3.5 w-3.5" />
                   {new Date(memory.occurred_at).toLocaleString([], {
-                    weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
+                    weekday: 'short', day: 'numeric', month: 'short', year: 'numeric',
+                    ...(isDateOnly(memory) ? {} : { hour: '2-digit', minute: '2-digit' }),
                   })}
                 </span>
                 {memory.amount != null && (

@@ -2,7 +2,7 @@ import { Check, Link2, MapPin, Trash2, FolderInput } from 'lucide-react';
 import { toast } from 'sonner';
 import { kindIcon } from '@/lib/constants';
 import { useCategories } from '@/lib/categories';
-import { Memory, timeOf } from '@/lib/memories';
+import { Memory, whenLabel } from '@/lib/memories';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
   DropdownMenuSeparator, DropdownMenuTrigger,
@@ -36,7 +36,7 @@ const MemoryCard = ({ memory, onDelete, onMove, onOpen }: Props) => {
           <div className="flex items-start justify-between gap-2">
             <p className="truncate text-sm font-semibold text-foreground">{memory.title}</p>
             <span className="shrink-0 text-[11px] font-medium tabular-nums text-muted-foreground">
-              {timeOf(memory.occurred_at)}
+              {whenLabel(memory)}
             </span>
           </div>
           {memory.summary && (
