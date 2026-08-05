@@ -1,11 +1,11 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { CalendarRange, Loader2, Search, Sparkles, Trash2, X } from 'lucide-react';
 import { groupByDay, useMemories, Memory } from '@/lib/memories';
 import MemoryCard from '@/components/MemoryCard';
 import MemoryDetailSheet from '@/components/MemoryDetailSheet';
 import { Input } from '@/components/ui/input';
-import { MODULES } from '@/lib/constants';
+import { useCategories } from '@/lib/categories';
 import { describeQuery, parsePlainLanguage } from '@/lib/nlSearch';
 import { cn } from '@/lib/utils';
 
@@ -23,9 +23,12 @@ const EXAMPLES = [
   'show me health notes this year',
 ];
 
+const PAGE = 25;
+
 const TimelinePage = () => {
   const { memories, loading, remove, reclassify, update } = useMemories();
-  const [range, setRange] = useState<(typeof RANGES)[number]['id']>('week');
+  const { categories } = useCategories();
+  const [range, setRange] = useState<(typeof RANGES)[number]['id']>('all');
   const [module, setModule] = useState<string | null>(null);
   const [query, setQuery] = useState('');
   const [ask, setAsk] = useState('');
@@ -33,7 +36,9 @@ const TimelinePage = () => {
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
   const [showDates, setShowDates] = useState(false);
+  const [visible, setVisible] = useState(PAGE);
   const [selected, setSelected] = useState<Memory | null>(null);
+
 
   const runPlainLanguage = (raw: string) => {
     const parsed = parsePlainLanguage(raw);
@@ -52,8 +57,11 @@ const TimelinePage = () => {
     setApplied(null);
     setQuery('');
     setModule(null);
-    setRange('week');
+    setRange('all');
+    setFrom('');
+    setTo('');
   };
+
 
   const filtered = useMemo(() => {
     const days = RANGES.find((r) => r.id === range)?.days ?? 0;
@@ -80,7 +88,10 @@ const TimelinePage = () => {
     });
   }, [memories, range, module, query, from, to]);
 
-  const groups = groupByDay(filtered);
+  useEffect(() => { setVisible(PAGE); }, [range, module, query, from, to]);
+
+  const shown = filtered.slice(0, visible);
+  const groups = groupByDay(shown);
 
   return (
     <div className="space-y-5">
@@ -88,9 +99,10 @@ const TimelinePage = () => {
         <div className="min-w-0 flex-1">
           <h1 className="text-2xl font-extrabold tracking-tight text-foreground">Timeline</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Tap a record to open or edit it · tap its category chip to move it.
+            Everything you have saved, newest first. Tap a record to open or edit it, tap its category chip to move it.
           </p>
         </div>
+
         <Link
           to="/app/trash"
           aria-label="Trash"
@@ -209,7 +221,7 @@ const TimelinePage = () => {
         >
           All
         </button>
-        {MODULES.map((m) => (
+        {categories.map((m) => (
           <button
             key={m.id}
             onClick={() => setModule(module === m.id ? null : m.id)}
@@ -230,8 +242,14 @@ const TimelinePage = () => {
       ) : groups.length === 0 ? (
         <div className="smarty-card p-10 text-center">
           <Sparkles className="mx-auto h-6 w-6 text-primary" />
-          <p className="mt-3 text-sm font-semibold text-foreground">No memories here yet</p>
-          <p className="mt-1 text-xs text-muted-foreground">Widen the range or capture something new.</p>
+          <p className="mt-3 text-sm font-semibold text-foreground">Nothing matches these filters</p>
+          <p className="mt-1 text-xs text-muted-foreground">Clear the filters below or capture something new.</p>
+          <button
+            onClick={clearPlainLanguage}
+            className="mt-3 rounded-2xl bg-secondary px-4 py-2 text-xs font-semibold text-secondary-foreground"
+          >
+            Clear all filters
+          </button>
         </div>
       ) : (
         <div className="space-y-6">
@@ -248,9 +266,19 @@ const TimelinePage = () => {
         </div>
       )}
 
+      {filtered.length > shown.length && (
+        <button
+          onClick={() => setVisible((v) => v + PAGE)}
+          className="w-full rounded-2xl border border-border bg-card py-3 text-xs font-bold text-primary transition-smooth active:scale-[0.99]"
+        >
+          Show {Math.min(PAGE, filtered.length - shown.length)} more
+        </button>
+      )}
+
       <p className="pb-2 text-center text-[11px] text-muted-foreground">
-        {filtered.length} {filtered.length === 1 ? 'record' : 'records'}, tap any record to open, edit or move it.
+        Showing {shown.length} of {filtered.length} {filtered.length === 1 ? 'record' : 'records'}.
       </p>
+
 
       <MemoryDetailSheet
         memory={selected}
