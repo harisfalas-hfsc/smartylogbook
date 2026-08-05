@@ -25,7 +25,7 @@ const MessagesPage = () => {
 
   /* First visit: greet the user so the inbox is never empty. */
   useEffect(() => {
-    if (loading || !user || messages.length) return;
+    if (loading || !user || messages.length || showArchived) return;
     void (async () => {
       await supabase.from('messages').insert([{
         user_id: user.id,
