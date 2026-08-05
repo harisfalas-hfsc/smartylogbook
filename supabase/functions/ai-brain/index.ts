@@ -87,7 +87,7 @@ const prompts: Record<Mode, string> = {
   classify: `You are the automatic classification engine of Smarty Logbook.
 The user NEVER picks a category. From the raw capture alone you must understand what it is, where it belongs, what to extract and what it connects to.
 Return STRICT JSON only, no markdown:
-{"title":"short title max 60 chars","summary":"one sentence summary","module":"health|fitness|nutrition|finance|business|documents|personal","secondary_modules":["other modules it also belongs to, max 2"],"kind":"text|voice|photo|receipt|document|medical|workout|meal|expense|task|reminder|idea|journal|mood|location","ai_tags":["max 4 short lowercase tags"],"amount":number or null,"currency":"3-letter code or null","merchant":"string or null","date":"YYYY-MM-DD or null","location":"string or null","details":{"any structured facts you extracted, e.g. duration, muscle groups, biomarkers, due date, company"},"related_ids":[],"relation_note":null,"reminder":null,"facts":[],"money":[]}
+{"title":"short title max 60 chars","summary":"one sentence summary","module":"health|fitness|nutrition|finance|business|documents|photos|videos|personal","secondary_modules":["other modules it also belongs to, max 2"],"kind":"text|voice|photo|video|receipt|document|medical|workout|meal|expense|task|reminder|idea|journal|mood|location","ai_tags":["max 4 short lowercase tags"],"amount":number or null,"currency":"3-letter code or null","merchant":"string or null","date":"YYYY-MM-DD or null","location":"string or null","details":{"any structured facts you extracted, e.g. duration, muscle groups, biomarkers, due date, company"},"related_ids":[],"relation_note":null,"reminder":null,"facts":[],"money":[]}
 
 ${FACT_RULES}
 
@@ -126,7 +126,7 @@ SUBSCRIPTION AWARENESS, you know the user's own Smarty Logbook plan, allowance a
 ALWAYS reply with STRICT JSON only, no markdown fences:
 {"answer":"your reply","question":null,"save":null,"calendar":[]}
 - "question": the single follow-up question you need answered, or null.
-- "save": null, or {"title":"short title max 60 chars","summary":"one sentence","content":"full details","module":"health|fitness|nutrition|finance|business|documents|personal","kind":"text|workout|meal|expense|task|note|medical|idea|journal","ai_tags":["max 4"],"amount":number or null,"related_ids":["ids of existing entries this connects to"],"reminder":null or {"title":"short","type":"task|bill|health|event","due_date":"YYYY-MM-DD"}}
+- "save": null, or {"title":"short title max 60 chars","summary":"one sentence","content":"full details","module":"health|fitness|nutrition|finance|business|documents|photos|videos|personal","kind":"text|workout|meal|expense|task|note|medical|idea|journal","ai_tags":["max 4"],"amount":number or null,"related_ids":["ids of existing entries this connects to"],"reminder":null or {"title":"short","type":"task|bill|health|event","due_date":"YYYY-MM-DD"}}
 - "calendar": array of calendar operations (empty when none).
 Never claim you logged or scheduled something unless you filled "save" or "calendar".`,
   brief: `You are Smarty Assistant writing the user's daily brief in Smarty Logbook. Given their recent entries, return STRICT JSON only:
@@ -140,13 +140,13 @@ If goals, focus areas or a tone are provided, follow them.`,
 Be concise and concrete: give real numbers, dates, merchants and names. Connect related entries when useful.
 If the answer is not in the data, say so plainly and ask one intelligent follow-up question (e.g. offer to have it uploaded). Never invent facts. Plain text, no markdown headers.`,
   insights: `You are the intelligence engine of Smarty Logbook. Analyse the entries and return STRICT JSON only:
-{"summaries":[{"module":"health|fitness|nutrition|finance|business|documents|personal","title":"e.g. Health summary","lines":["short plain-language observations, max 4"]}],"patterns":[{"title":"short pattern","detail":"one sentence"}],"attention":[{"title":"what needs attention","detail":"one sentence with the concrete reason"}],"overview":"2-3 sentence plain-language summary of how life looks right now"}
+{"summaries":[{"module":"health|fitness|nutrition|finance|business|documents|photos|videos|personal","title":"e.g. Health summary","lines":["short plain-language observations, max 4"]}],"patterns":[{"title":"short pattern","detail":"one sentence"}],"attention":[{"title":"what needs attention","detail":"one sentence with the concrete reason"}],"overview":"2-3 sentence plain-language summary of how life looks right now"}
 ABSOLUTELY NO scores, ratings, percentages, grades or numeric evaluations of the user. Describe and explain instead.
 Only include modules the user actually has data for. Max 5 summaries, 4 patterns, 4 attention items.
 If there is too little data, return fewer items and say so in the overview.`,
   extract: `You read photos, receipts, documents and PDFs for Smarty Logbook and classify them automatically, the user never chooses a category.
 Return STRICT JSON only, no markdown:
-{"title":"short title max 60 chars","summary":"one sentence of what this is","module":"health|fitness|nutrition|finance|business|documents|personal","kind":"photo|receipt|document|medical|meal|expense","ai_tags":["max 4 short lowercase tags"],"amount":number or null,"currency":"3-letter code or null","merchant":"string or null","date":"YYYY-MM-DD or null","due_date":"YYYY-MM-DD or null","paid":true|false|null,"category":"string or null","items":["max 6 line items"],"details":{"structured facts, e.g. biomarkers with values and ranges, laboratory name, policy number, expiry date"},"related_ids":[],"relation_note":null,"reminder":null,"facts":[],"money":[]}
+{"title":"short title max 60 chars","summary":"one sentence of what this is","module":"health|fitness|nutrition|finance|business|documents|photos|videos|personal","kind":"photo|video|receipt|document|medical|meal|expense","ai_tags":["max 4 short lowercase tags"],"amount":number or null,"currency":"3-letter code or null","merchant":"string or null","date":"YYYY-MM-DD or null","due_date":"YYYY-MM-DD or null","paid":true|false|null,"category":"string or null","items":["max 6 line items"],"details":{"structured facts, e.g. biomarkers with values and ranges, laboratory name, policy number, expiry date"},"related_ids":[],"relation_note":null,"reminder":null,"facts":[],"money":[]}
 For receipts and bills always read the total, the company and the due date, and whether it is paid.
 For medical documents extract biomarkers with their values and reference ranges, the date and the laboratory.
 
