@@ -41,12 +41,15 @@ const AboutPage = () => {
       title={<>A logbook <span className="gradient-text">with a brain.</span></>}
       lead="You put things in; the Smarty Assistant makes sense of them. Six seconds of effort from you — everything after that is Smarty Logbook."
     >
-      <div className="grid gap-2 sm:grid-cols-2">
-        {pillars.map((p) => (
-          <MiniRow key={p.t} emoji={p.e} title={p.t} text={p.s} />
-        ))}
-      </div>
-    </Panel>
+      {isMobile ? (
+        <PillarsCircle items={pillars} />
+      ) : (
+        <div className="grid gap-2 sm:grid-cols-2">
+          {pillars.map((p) => (
+            <MiniRow key={p.t} emoji={p.e} title={p.t} text={p.s} />
+          ))}
+        </div>
+      )}
 
     <Panel
       eyebrow="Life modules"
