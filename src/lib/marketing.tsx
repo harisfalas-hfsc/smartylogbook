@@ -194,13 +194,15 @@ export const BrandText = ({ children }: { children: string }) => {
 };
 
 
-export const PageHeader = ({ eyebrow, title, subtitle }: { eyebrow: string; title: string; subtitle?: string }) => (
+export const PageHeader = ({ eyebrow, title, subtitle }: { eyebrow: string; title: React.ReactNode; subtitle?: string }) => (
   <div className="mx-auto mb-8 max-w-2xl text-center">
     <span className="inline-block rounded-full bg-secondary px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-primary">
       {eyebrow}
     </span>
-    <h1 className="mt-4 text-[26px] font-extrabold leading-tight tracking-tight text-foreground md:text-4xl"><BrandText>{title}</BrandText></h1>
-    {subtitle && <p className="mt-3 text-sm leading-relaxed text-muted-foreground md:text-base"><BrandText>{subtitle}</BrandText></p>}
+    <h1 className="mt-4 text-balance text-[26px] font-extrabold leading-tight tracking-tight text-foreground md:text-4xl">
+      {typeof title === 'string' ? <BrandText>{title}</BrandText> : title}
+    </h1>
+    {subtitle && <p className="mt-3 text-balance text-sm leading-relaxed text-muted-foreground md:text-base"><BrandText>{subtitle}</BrandText></p>}
   </div>
 );
 

@@ -20,12 +20,13 @@ const Landing = () => {
           <span className="inline-flex animate-fade-in items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-[11px] font-semibold text-muted-foreground shadow-soft">
             <Sparkles className="h-3.5 w-3.5 text-primary" /> Powered by the Smarty Assistant
           </span>
-          <h1 className="mx-auto mt-5 animate-fade-up text-[30px] font-extrabold leading-[1.1] tracking-tight text-foreground md:whitespace-nowrap md:text-5xl">
-            <span className="gradient-text">Smarty Logbook</span>. A logbook{' '}
-            <span className="gradient-text">with a brain.</span>
+          <h1 className="mx-auto mt-5 animate-fade-up text-[30px] font-extrabold leading-[1.15] tracking-tight md:text-5xl">
+            <span className="block gradient-text">Smarty Logbook.</span>
+            <span className="block gradient-text">A logbook with a brain.</span>
           </h1>
-          <p className="mx-auto mt-4 max-w-md animate-fade-up text-sm leading-relaxed text-muted-foreground md:mt-5 md:max-w-2xl md:text-lg">
-            <Hl>Put anything in.</Hl> It <Hl>understands</Hl> it, connects it, keeps it and <Hl>finds it</Hl> when you need it.
+          <p className="mx-auto mt-4 max-w-md animate-fade-up text-balance text-sm leading-relaxed text-muted-foreground md:mt-5 md:max-w-2xl md:text-lg">
+            <Hl>Put anything in.</Hl> It <Hl>understands&nbsp;it</Hl>, connects&nbsp;it, keeps&nbsp;it and{' '}
+            <Hl>finds&nbsp;it</Hl> when you need it.
           </p>
           <div className="mt-7 flex animate-fade-up flex-col items-center justify-center gap-2.5 md:flex-row">
             <Link

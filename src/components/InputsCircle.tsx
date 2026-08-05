@@ -50,7 +50,7 @@ const InputsCircle = () => {
         return (
           <div
             key={item.t}
-            className="absolute flex w-[76px] lg:w-[120px] -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1"
+            className="absolute flex w-[92px] lg:w-[124px] -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1"
             style={{ left: `${left}%`, top: `${top}%` }}
           >
             <span
@@ -58,7 +58,7 @@ const InputsCircle = () => {
             >
               {item.e}
             </span>
-            <p className="text-center text-[11.5px] lg:text-[14px] font-bold leading-tight text-foreground">
+            <p className="text-center text-[11.5px] lg:text-[14px] font-bold leading-tight text-foreground [hyphens:none] [overflow-wrap:normal]">
               {item.t}
             </p>
           </div>
