@@ -11,13 +11,56 @@ import { CAPTURE_KINDS, MODULES, CaptureKind, getModule } from '@/lib/constants'
 import { useReminders } from '@/lib/reminders';
 import { cn } from '@/lib/utils';
 
-const suggestions: { text: string; icon: typeof Camera; color: string; tint: string }[] = [
-  { text: 'Upper body session, 48 minutes, felt strong', icon: Dumbbell, color: 'text-mod-fitness', tint: 'bg-mod-fitness/10' },
-  { text: 'Lunch: grilled salmon, rice and salad', icon: Utensils, color: 'text-mod-nutrition', tint: 'bg-mod-nutrition/10' },
-  { text: 'Paid €42.10 at the supermarket', icon: Wallet, color: 'text-mod-finance', tint: 'bg-mod-finance/10' },
-  { text: 'Idea: a weekly review email for the team', icon: Lightbulb, color: 'text-mod-business', tint: 'bg-mod-business/10' },
-  { text: 'Call the clinic about the blood test results', icon: Stethoscope, color: 'text-mod-health', tint: 'bg-mod-health/10' },
+/** Short, practical instructions shown per category (no fake sample entries). */
+const GENERIC_TIPS = [
+  'Write it the way you would say it, full sentences are not needed.',
+  'Add numbers, names and dates when you have them, the Assistant keeps them searchable.',
+  'Attach a photo, a file or record your voice, it is read and summarised for you.',
 ];
+
+const MODULE_TIPS: Record<string, string[]> = {
+  health: [
+    'Log symptoms, appointments, medication and how you felt.',
+    'Attach blood tests or reports, values are extracted automatically.',
+    'Add the date of the result if it is not today.',
+  ],
+  fitness: [
+    'Log the session, the duration and how it felt.',
+    'Weights, reps and distances are picked up and tracked over time.',
+  ],
+  nutrition: [
+    'Log meals in plain words, portions and drinks included.',
+    'Snap the plate or the label instead of typing it out.',
+  ],
+  finance: [
+    'Include the amount, the currency and who it was paid to.',
+    'Snap receipts and bills, the total and due date are read for you.',
+    'Say if it repeats monthly so it becomes a tracked bill.',
+  ],
+  business: [
+    'Log meetings, decisions and follow-ups with the people involved.',
+    'Attach invoices or contracts to keep them findable later.',
+  ],
+  documents: [
+    'Upload the file and add what it is and when it expires.',
+    'Passports, insurance and certificates are kept private and searchable.',
+  ],
+  photos: [
+    'Upload the photo and write who or what is in it and where it was taken.',
+    'Use an album name to group it, for example a trip or a month.',
+    'Details you write are what makes it findable later.',
+  ],
+  videos: [
+    'Upload the clip, up to 200 MB, length is detected automatically.',
+    'Use an album name to group clips together.',
+    'Add a line about what happens in it so you can find it later.',
+  ],
+  personal: [
+    'Ideas, journal notes, books, trips and important dates all belong here.',
+    'Anything that does not fit elsewhere is safe to write here.',
+  ],
+};
+
 
 interface Extracted {
   title?: string;
