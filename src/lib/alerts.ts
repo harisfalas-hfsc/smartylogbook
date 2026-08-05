@@ -41,7 +41,32 @@ export const useProactiveAlerts = () => {
       .order('severity', { ascending: true })
       .order('created_at', { ascending: false })
       .limit(20);
-    setAlerts((data ?? []) as ProactiveAlert[]);
+    const rows = (data ?? []) as ProactiveAlert[];
+    const reminderRows = rows.filter((alert) => alert.dedupe_key?.startsWith('reminder:'));
+    if (!reminderRows.length) {
+      setAlerts(rows);
+      setLoading(false);
+      return;
+    }
+
+    const reminderIds = reminderRows
+      .map((alert) => alert.dedupe_key.split(':')[1])
+      .filter(Boolean);
+    const { data: activeReminders } = await supabase
+      .from('reminders')
+      .select('id')
+      .in('id', reminderIds)
+      .eq('done', false);
+    const activeIds = new Set((activeReminders ?? []).map((reminder) => reminder.id));
+    const stale = reminderRows.filter((alert) => !activeIds.has(alert.dedupe_key.split(':')[1]));
+    if (stale.length) {
+      await supabase
+        .from('proactive_alerts')
+        .update({ dismissed: true, seen: true })
+        .in('id', stale.map((alert) => alert.id));
+    }
+    const staleIds = new Set(stale.map((alert) => alert.id));
+    setAlerts(rows.filter((alert) => !staleIds.has(alert.id)));
     setLoading(false);
   }, [user]);
 

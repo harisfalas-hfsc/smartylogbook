@@ -9,7 +9,10 @@ const TestimonialsPage = () => (
         <div key={t.name} className="smarty-card p-5">
           <div className="flex gap-0.5">
             {Array.from({ length: 5 }).map((_, i) => (
-              <Star key={i} className="h-3.5 w-3.5 fill-warning text-warning" />
+              <Star
+                key={i}
+                className={`h-3.5 w-3.5 ${i < t.rating ? 'fill-warning text-warning' : 'text-muted-foreground/40'}`}
+              />
             ))}
           </div>
           <p className="mt-2.5 text-sm leading-relaxed text-foreground">"{t.text}"</p>

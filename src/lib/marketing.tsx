@@ -103,9 +103,13 @@ export const plans = [
 ];
 
 export const testimonials = [
-  { name: 'Elena R.', role: 'Founder', text: 'It found the connection between my sleep and my worst work days. Nothing else ever told me that.' },
-  { name: 'Marcus T.', role: 'Athlete', text: 'Every session, every ache, every meal, one place. My physio asks for the export now.' },
-  { name: 'Sofia K.', role: 'Doctor', text: 'I photograph a report and forget it. The AI remembers it better than I ever could.' },
+  { name: 'Elena R.', role: 'Founder', rating: 5, text: 'It found the connection between my sleep and my worst work days. Nothing else ever told me that.' },
+  { name: 'Marcus T.', role: 'Athlete', rating: 5, text: 'Every session, every ache, every meal, one place. My physio asks for the export now.' },
+  { name: 'Sofia K.', role: 'Doctor', rating: 5, text: 'I photograph a report and forget it. The AI remembers it better than I ever could.' },
+  { name: 'Nadia P.', role: 'Project manager', rating: 4, text: 'I finally have one place for errands, appointments and the little details I normally lose during a busy week.' },
+  { name: 'Theo M.', role: 'Small business owner', rating: 5, text: 'Receipts and notes take seconds to capture, and finding an old expense in plain words feels effortless.' },
+  { name: 'Anna L.', role: 'Parent', rating: 4, text: 'It keeps family dates and health notes organised without making me maintain another complicated system.' },
+  { name: 'Daniel C.', role: 'Consultant', rating: 5, text: 'The Assistant connects meeting notes I had forgotten about and brings the right detail back when I need it.' },
 ];
 
 export const faqs = [

@@ -1,6 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useEffect, useRef } from "react";
-import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -47,37 +46,6 @@ import { HelmetProvider } from "react-helmet-async";
 
 const queryClient = new QueryClient();
 
-const StartupRouteGuard = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const initialPath = useRef(location.pathname);
-  const initialSearch = useRef(location.search);
-
-  useEffect(() => {
-    const navigatorWithStandalone = navigator as Navigator & { standalone?: boolean };
-    const isInstalled =
-      window.matchMedia('(display-mode: standalone)').matches ||
-      window.matchMedia('(display-mode: fullscreen)').matches ||
-      window.matchMedia('(display-mode: minimal-ui)').matches ||
-      navigatorWithStandalone.standalone === true ||
-      new URLSearchParams(initialSearch.current).get('source') === 'pwa';
-
-    if (!isInstalled) return;
-
-    // Installed app must always cold-start on the public homepage, regardless of
-    // the start_url cached at install time (/auth, /app, ...).
-    const launchPath = initialPath.current;
-    const isColdStartElsewhere = launchPath === '/auth' || launchPath === '/app' || launchPath === '/app/';
-
-    if (isColdStartElsewhere) {
-      navigate('/', { replace: true });
-    }
-  }, [navigate]);
-
-  return null;
-};
-
-
 const App = () => (
   <HelmetProvider>
   <QueryClientProvider client={queryClient}>
@@ -86,7 +54,6 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <StartupRouteGuard />
           <RouteSeo />
           <AnalyticsTracker />
           <Routes>
