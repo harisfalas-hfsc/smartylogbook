@@ -18,7 +18,9 @@ const when = (iso: string) => {
 
 const MessagesPage = () => {
   const { user } = useAuth();
-  const { messages, loading, unread, markRead, markAllRead, archive, reload } = useMessages();
+  const [showArchived, setShowArchived] = useState(false);
+  const { messages, loading, unread, markRead, markAllRead, archive, unarchive, remove, reload } =
+    useMessages(showArchived);
   const { canUseAssistant, plan, renewsAt, isAdmin, loading: planLoading } = useSubscription();
 
   /* First visit: greet the user so the inbox is never empty. */
