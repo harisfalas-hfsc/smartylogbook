@@ -171,22 +171,8 @@ export const groupByDay = (memories: Memory[]) => {
 export const timeOf = (iso: string) =>
   new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-/**
- * True when only a calendar date is known (for example a date read off a photo
- * or a receipt). In that case we never invent a clock time.
- */
-export const isDateOnly = (m: Pick<Memory, 'metadata' | 'occurred_at' | 'created_at'>) => {
-  const flag = (m.metadata as Record<string, unknown> | null)?.date_only;
-  if (typeof flag === 'boolean') return flag;
-  if (!m.created_at) return false;
-  return new Date(m.occurred_at).toDateString() !== new Date(m.created_at).toDateString();
-};
-
-/** Time label for a record, or the short date when no real time is known. */
-export const whenLabel = (m: Pick<Memory, 'metadata' | 'occurred_at' | 'created_at'>) =>
-  isDateOnly(m)
-    ? new Date(m.occurred_at).toLocaleDateString([], { day: 'numeric', month: 'short', year: 'numeric' })
-    : timeOf(m.occurred_at);
+/** A record is stamped with the moment it was captured, so we always show that time. */
+export const whenLabel = (m: Pick<Memory, 'occurred_at'>) => timeOf(m.occurred_at);
 
 
 export const TRASH_RETENTION_DAYS = 30;
