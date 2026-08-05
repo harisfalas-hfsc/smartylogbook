@@ -40,7 +40,7 @@ export const MESSAGE_KINDS: Record<string, { label: string; icon: typeof Bell; t
 export const messageStyle = (kind: string) => MESSAGE_KINDS[kind] ?? MESSAGE_KINDS.info;
 
 /** Everything Smarty Assistant wants to tell the user, in one inbox. */
-export const useMessages = () => {
+export const useMessages = (archived = false) => {
   const { user } = useAuth();
   const [messages, setMessages] = useState<MessageRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -51,15 +51,12 @@ export const useMessages = () => {
       setLoading(false);
       return;
     }
-    const { data } = await supabase
-      .from('messages')
-      .select('*')
-      .is('archived_at', null)
-      .order('created_at', { ascending: false })
-      .limit(120);
+    let query = supabase.from('messages').select('*');
+    query = archived ? query.not('archived_at', 'is', null) : query.is('archived_at', null);
+    const { data } = await query.order('created_at', { ascending: false }).limit(120);
     setMessages((data ?? []) as MessageRow[]);
     setLoading(false);
-  }, [user?.id]);
+  }, [user?.id, archived]);
 
   useEffect(() => { void load(); }, [load]);
 
@@ -79,9 +76,19 @@ export const useMessages = () => {
     await supabase.from('messages').update({ archived_at: new Date().toISOString() }).eq('id', id);
   };
 
+  const unarchive = async (id: string) => {
+    setMessages((prev) => prev.filter((m) => m.id !== id));
+    await supabase.from('messages').update({ archived_at: null }).eq('id', id);
+  };
+
+  const remove = async (id: string) => {
+    setMessages((prev) => prev.filter((m) => m.id !== id));
+    await supabase.from('messages').delete().eq('id', id);
+  };
+
   const unread = messages.filter((m) => !m.read_at).length;
 
-  return { messages, loading, unread, reload: load, markRead, markAllRead, archive };
+  return { messages, loading, unread, reload: load, markRead, markAllRead, archive, unarchive, remove };
 };
 
 /** Lightweight unread counter for the header bell. */
