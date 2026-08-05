@@ -21,6 +21,7 @@ export interface ProactiveAlert {
   dismissed: boolean;
   notified_at: string | null;
   created_at: string;
+  dedupe_key: string;
 }
 
 export const useProactiveAlerts = () => {
