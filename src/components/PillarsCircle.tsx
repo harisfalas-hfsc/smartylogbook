@@ -80,7 +80,7 @@ const PillarsCircle = ({
             >
               {item.e}
             </span>
-            <p className={`text-center ${nodeText} font-bold leading-tight text-foreground`}>
+            <p className={`text-center ${nodeText} font-bold leading-tight text-foreground [hyphens:none] [overflow-wrap:normal] [text-wrap:balance]`}>
               {item.t}
             </p>
           </div>
