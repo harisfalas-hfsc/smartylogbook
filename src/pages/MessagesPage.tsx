@@ -52,15 +52,27 @@ const MessagesPage = () => {
             Everything Smarty Assistant wants you to know, reminders, bills, health, calendar and your plan.
           </p>
         </div>
-        {unread > 0 && (
+        <div className="flex shrink-0 items-center gap-1.5">
+          {unread > 0 && !showArchived && (
+            <button
+              onClick={markAllRead}
+              className="flex items-center gap-1.5 rounded-2xl bg-secondary px-3 py-2 text-xs font-semibold text-secondary-foreground active:scale-95"
+            >
+              <CheckCheck className="h-4 w-4" /> Mark all
+            </button>
+          )}
           <button
-            onClick={markAllRead}
-            className="flex shrink-0 items-center gap-1.5 rounded-2xl bg-secondary px-3 py-2 text-xs font-semibold text-secondary-foreground active:scale-95"
+            onClick={() => setShowArchived((v) => !v)}
+            className={cn(
+              'flex items-center gap-1.5 rounded-2xl px-3 py-2 text-xs font-semibold active:scale-95',
+              showArchived ? 'bg-primary/10 text-primary' : 'bg-secondary text-secondary-foreground'
+            )}
           >
-            <CheckCheck className="h-4 w-4" /> Mark all
+            <Archive className="h-4 w-4" /> {showArchived ? 'Inbox' : 'Archive'}
           </button>
-        )}
+        </div>
       </header>
+
 
       {!planLoading && !canUseAssistant && (
         <div className="smarty-card p-4">
