@@ -71,6 +71,8 @@ const CapturePage = () => {
 
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
+  const [duration, setDuration] = useState<number | null>(null);
+  const [album, setAlbum] = useState('');
   const [extracting, setExtracting] = useState(false);
   const [extracted, setExtracted] = useState<Extracted | null>(null);
   const cameraInput = useRef<HTMLInputElement>(null);
@@ -197,21 +199,47 @@ const CapturePage = () => {
 
   /* ---------- files ---------- */
 
+  const readVideoDuration = (f: File) =>
+    new Promise<number | null>((resolve) => {
+      const url = URL.createObjectURL(f);
+      const el = document.createElement('video');
+      el.preload = 'metadata';
+      el.onloadedmetadata = () => {
+        URL.revokeObjectURL(url);
+        resolve(Number.isFinite(el.duration) ? el.duration : null);
+      };
+      el.onerror = () => {
+        URL.revokeObjectURL(url);
+        resolve(null);
+      };
+      el.src = url;
+    });
+
   const pickFile = async (chosen: File | undefined, asKind: CaptureKind) => {
     if (!chosen) return;
     const isImage = chosen.type.startsWith('image/');
+    const isVideo = chosen.type.startsWith('video/');
     const isPdf = chosen.type === 'application/pdf';
-    if (!isImage && !isPdf) {
-      toast.error('Choose an image or a PDF');
+    if (!isImage && !isPdf && !isVideo) {
+      toast.error('Choose an image, a video or a PDF');
       return;
     }
-    if (chosen.size > 8 * 1024 * 1024) {
-      toast.error('File is larger than 8 MB');
+    const limit = isVideo ? 200 * 1024 * 1024 : 8 * 1024 * 1024;
+    if (chosen.size > limit) {
+      toast.error(isVideo ? 'Video is larger than 200 MB' : 'File is larger than 8 MB');
       return;
     }
     setFile(chosen);
-    setKind(isPdf ? 'document' : asKind);
+    setKind(isPdf ? 'document' : isVideo ? 'video' : asKind);
     setExtracted(null);
+
+    if (isVideo) {
+      setPreview(null);
+      setDuration(await readVideoDuration(chosen));
+      if (!module) setModule('videos');
+      return;
+    }
+    setDuration(null);
 
     if (!isImage) {
       setPreview(null);
@@ -244,6 +272,7 @@ const CapturePage = () => {
 
   const clearFile = () => {
     setFile(null);
+    setDuration(null);
     setPreview(null);
     setExtracted(null);
     if (cameraInput.current) cameraInput.current.value = '';
@@ -303,16 +332,31 @@ const CapturePage = () => {
         ? classified!.related_ids!.map(String).filter((id) => recent.some((m) => m.id === id)).slice(0, 5)
         : [],
       relation_note: classified?.relation_note ?? null,
-      metadata: classified
-        ? {
-            merchant: classified.merchant ?? null,
-            category: classified.category ?? null,
-            date: classified.date ?? null,
-            due_date: classified.due_date ?? null,
-            items: classified.items ?? [],
-            details: classified.details ?? {},
-          }
-        : {},
+      metadata: {
+        ...(classified
+          ? {
+              merchant: classified.merchant ?? null,
+              category: classified.category ?? null,
+              date: classified.date ?? null,
+              due_date: classified.due_date ?? null,
+              items: classified.items ?? [],
+              details: classified.details ?? {},
+            }
+          : {}),
+        ...(file
+          ? {
+              file_size: file.size,
+              file_type: file.type,
+              file_name: file.name,
+              ...(duration != null ? { duration_seconds: Math.round(duration) } : {}),
+            }
+          : {}),
+        album:
+          album.trim() ||
+          (file
+            ? new Date(occurredAt ?? new Date().toISOString()).toLocaleDateString([], { month: 'long', year: 'numeric' })
+            : null),
+      },
     });
     setSaving(false);
 
@@ -341,6 +385,7 @@ const CapturePage = () => {
     setText('');
     setKind(null);
     setModule(null);
+    setAlbum('');
     clearFile();
     navigate('/app/timeline');
   };
@@ -414,6 +459,18 @@ const CapturePage = () => {
           </div>
         )}
 
+        {file && (
+          <div className="mt-3">
+            <label className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">Album (optional)</label>
+            <input
+              value={album}
+              onChange={(e) => setAlbum(e.target.value)}
+              placeholder="December 2025, Greece trip..."
+              className="mt-1 w-full rounded-2xl border border-border bg-card px-3 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground"
+            />
+          </div>
+        )}
+
         {file && !preview && (
           <div className="mt-3 flex items-center gap-2 rounded-2xl border border-border bg-secondary/50 px-3 py-2.5">
             <FileText className="h-4 w-4 text-primary" />
@@ -435,7 +492,7 @@ const CapturePage = () => {
         <input
           ref={fileInput}
           type="file"
-          accept="image/*,application/pdf"
+          accept="image/*,video/*,application/pdf"
           hidden
           onChange={(e) => pickFile(e.target.files?.[0], 'photo')}
         />
