@@ -94,6 +94,7 @@ const AboutPage = () => {
 
     <CtaCard text="Free to begin. Capture your first memory in under ten seconds — the Smarty Assistant handles the rest." />
   </div>
-);
+  );
+};
 
 export default AboutPage;
