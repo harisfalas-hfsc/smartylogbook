@@ -5,7 +5,7 @@ import { groupByDay, useMemories, Memory } from '@/lib/memories';
 import MemoryCard from '@/components/MemoryCard';
 import MemoryDetailSheet from '@/components/MemoryDetailSheet';
 import { Input } from '@/components/ui/input';
-import { MODULES } from '@/lib/constants';
+import { useCategories } from '@/lib/categories';
 import { describeQuery, parsePlainLanguage } from '@/lib/nlSearch';
 import { cn } from '@/lib/utils';
 
