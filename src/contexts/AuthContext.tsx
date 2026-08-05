@@ -101,7 +101,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const deleteAccount = async () => {
-    // Sign out — actual deletion would need an edge function with service role
+    // Sign out, actual deletion would need an edge function with service role
     await signOut();
     return { error: null };
   };

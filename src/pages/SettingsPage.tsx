@@ -49,7 +49,7 @@ const SettingsPage = () => {
       toast.error(
         perm === 'unsupported'
           ? 'This browser cannot show notifications'
-          : 'Notifications are blocked — enable them in your browser settings',
+          : 'Notifications are blocked, enable them in your browser settings',
       );
       return;
     }
@@ -123,7 +123,7 @@ const SettingsPage = () => {
         <div className="smarty-card p-4">
           <p className="text-[11px] leading-relaxed text-muted-foreground">
             Tap any record in Timeline, Home or a category to open, edit or move it. Tap its
-            category chip to file it somewhere else — every move, edit and restore teaches Smarty
+            category chip to file it somewhere else, every move, edit and restore teaches Smarty
             Assistant how you think, so next time it classifies it your way.
           </p>
           <Link
@@ -271,7 +271,7 @@ const SettingsPage = () => {
         <Sparkles className="h-5 w-5" />
         <p className="mt-2 text-sm font-bold">Smarty Assistant</p>
         <p className="mt-1 text-xs opacity-85">
-          Everything you capture is classified, connected and remembered for you — then turned into
+          Everything you capture is classified, connected and remembered for you, then turned into
           plain-language answers, reminders and insights.
         </p>
       </section>

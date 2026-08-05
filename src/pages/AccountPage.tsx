@@ -50,7 +50,7 @@ const AccountPage = () => {
       const files = (data.files as { url: string | null }[]) ?? [];
       toast.success(
         files.length
-          ? `Export ready — includes ${files.length} uploaded document link${files.length > 1 ? 's' : ''} (valid 1 hour)`
+          ? `Export ready, includes ${files.length} uploaded document link${files.length > 1 ? 's' : ''} (valid 1 hour)`
           : 'Export downloaded'
       );
     } catch (e) {
@@ -101,7 +101,7 @@ const AccountPage = () => {
       <header className="animate-fade-up">
         <h1 className="text-2xl font-extrabold tracking-tight text-foreground">Account management</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Your data, your rights — access, portability and erasure under GDPR.
+          Your data, your rights, access, portability and erasure under GDPR.
         </p>
       </header>
 
@@ -118,7 +118,7 @@ const AccountPage = () => {
             Role: {roles.length ? roles.join(', ') : 'user'}
           </span>
           <span className="rounded-2xl bg-secondary px-3 py-1.5 text-[11px] font-semibold text-muted-foreground">
-            Member since {user?.created_at ? new Date(user.created_at).toLocaleDateString() : '—'}
+            Member since {user?.created_at ? new Date(user.created_at).toLocaleDateString() : '-'}
           </span>
         </div>
       </section>

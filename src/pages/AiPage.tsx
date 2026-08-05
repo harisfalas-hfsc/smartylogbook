@@ -61,7 +61,7 @@ const AiPage = () => {
       <header className="animate-fade-up">
         <h1 className="text-2xl font-extrabold tracking-tight text-foreground">Ask your life</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          No folders. No filters. Just ask — {memories.length} memories indexed.
+          No folders. No filters. Just ask, {memories.length} memories indexed.
         </p>
       </header>
 

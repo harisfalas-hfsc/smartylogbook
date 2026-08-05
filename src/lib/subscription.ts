@@ -73,7 +73,7 @@ export const useSubscription = () => {
 
   useEffect(() => { void load(); }, [load]);
 
-  /* Administrators always have full Premium access — never show them upsells. */
+  /* Administrators always have full Premium access, never show them upsells. */
   const active = isAdmin || isActive(sub);
   const plan = active ? findPlan(pricing, sub?.plan_key) : null;
   const allowance = active && plan ? planAllowance(pricing, plan) : 0;

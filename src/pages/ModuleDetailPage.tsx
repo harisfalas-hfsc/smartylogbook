@@ -56,7 +56,7 @@ const ModuleDetailPage = () => {
         <div className="smarty-card p-10 text-center">
           <Sparkles className="mx-auto h-6 w-6 text-primary" />
           <p className="mt-3 text-sm font-semibold text-foreground">This module is empty</p>
-          <p className="mt-1 text-xs text-muted-foreground">Capture anything — the AI will route it here automatically.</p>
+          <p className="mt-1 text-xs text-muted-foreground">Capture anything, the AI will route it here automatically.</p>
         </div>
       ) : (
         <div className="space-y-6">

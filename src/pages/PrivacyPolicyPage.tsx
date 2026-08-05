@@ -31,11 +31,11 @@ const PrivacyPolicyPage = () => (
 
     <LegalSection title="3. Why we process it and on what legal basis">
       <ul>
-        <li><strong>Providing the service</strong> (storing your entries, timeline, search) — performance of a contract, Art. 6(1)(b).</li>
-        <li><strong>Special category / health data</strong> — your explicit consent, Art. 9(2)(a). You give it by choosing to record health information, and you can withdraw it at any time by deleting that content or your account.</li>
-        <li><strong>AI processing</strong> (classification, extraction from documents, transcription, coaching and insights) — performance of a contract and, for health content, your explicit consent.</li>
-        <li><strong>Security, abuse prevention and service improvement</strong> — our legitimate interests, Art. 6(1)(f).</li>
-        <li><strong>Notifications and reminders you enable</strong> — consent, withdrawable in Settings.</li>
+        <li><strong>Providing the service</strong> (storing your entries, timeline, search), performance of a contract, Art. 6(1)(b).</li>
+        <li><strong>Special category / health data</strong>, your explicit consent, Art. 9(2)(a). You give it by choosing to record health information, and you can withdraw it at any time by deleting that content or your account.</li>
+        <li><strong>AI processing</strong> (classification, extraction from documents, transcription, coaching and insights), performance of a contract and, for health content, your explicit consent.</li>
+        <li><strong>Security, abuse prevention and service improvement</strong>, our legitimate interests, Art. 6(1)(f).</li>
+        <li><strong>Notifications and reminders you enable</strong>, consent, withdrawable in Settings.</li>
       </ul>
     </LegalSection>
 
@@ -80,7 +80,7 @@ const PrivacyPolicyPage = () => (
       <ul>
         <li>Access to your data and a copy of it (Art. 15).</li>
         <li>Rectification of inaccurate data (Art. 16).</li>
-        <li>Erasure — "right to be forgotten" (Art. 17).</li>
+        <li>Erasure, "right to be forgotten" (Art. 17).</li>
         <li>Restriction of processing (Art. 18).</li>
         <li>Data portability in a machine-readable format (Art. 20).</li>
         <li>Objection to processing based on legitimate interests (Art. 21).</li>

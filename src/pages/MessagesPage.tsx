@@ -47,7 +47,7 @@ const MessagesPage = () => {
             Message <span className="gradient-text">Center</span>
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Everything Smarty Assistant wants you to know — reminders, bills, health, calendar and your plan.
+            Everything Smarty Assistant wants you to know, reminders, bills, health, calendar and your plan.
           </p>
         </div>
         {unread > 0 && (
@@ -75,8 +75,8 @@ const MessagesPage = () => {
 
       {canUseAssistant && plan && (
         <p className="text-xs text-muted-foreground">
-          {isAdmin ? 'Administrator — full access' : plan.name}
-          {!isAdmin && renewsAt ? ` — renews ${new Date(renewsAt).toLocaleDateString()}` : ''}
+          {isAdmin ? 'Administrator, full access' : plan.name}
+          {!isAdmin && renewsAt ? `, renews ${new Date(renewsAt).toLocaleDateString()}` : ''}
         </p>
       )}
 

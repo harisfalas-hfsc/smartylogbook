@@ -85,7 +85,7 @@ const AppShell = () => {
         </Link>
       </aside>
 
-      {/* Mobile header — Smarty Wellness family style */}
+      {/* Mobile header, Smarty Wellness family style */}
       <header className="sticky top-0 z-40 bg-background lg:hidden">
         <div className="flex h-11 items-center justify-between gap-2 px-3">
           <div className="flex items-center gap-2">

@@ -98,7 +98,7 @@ const CalendarPage = () => {
     }
     setTitle('');
     toast.success(
-      permission === 'granted' ? 'Added to your calendar' : 'Saved — allow notifications to be nudged'
+      permission === 'granted' ? 'Added to your calendar' : 'Saved, allow notifications to be nudged'
     );
   };
 

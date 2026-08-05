@@ -80,7 +80,7 @@ const Dashboard = () => {
         </h1>
       </header>
 
-      {/* Quick capture — the primary action, Keep-style */}
+      {/* Quick capture, the primary action, Keep-style */}
       <section className="animate-fade-up">
         <div className="smarty-card flex items-center gap-1.5 p-2 pl-4">
           <button
@@ -114,7 +114,7 @@ const Dashboard = () => {
         </div>
       </section>
 
-      {/* Smarty Assistant — one line, no chores */}
+      {/* Smarty Assistant, one line, no chores */}
       <section className="animate-fade-up">
         <div className="smarty-card p-4">
           <div className="flex items-center justify-between">
@@ -185,7 +185,7 @@ const Dashboard = () => {
 
 
 
-      {/* Categories — always a clean 4-across grid */}
+      {/* Categories, always a clean 4-across grid */}
       <section className="animate-fade-up">
         <div className="mb-2 flex items-center justify-between px-0.5">
           <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">Categories</h2>
@@ -219,7 +219,7 @@ const Dashboard = () => {
         </div>
       </section>
 
-      {/* Recent — short, tappable */}
+      {/* Recent, short, tappable */}
       <section className="animate-fade-up">
         <div className="mb-2 flex items-center justify-between px-0.5">
           <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
@@ -235,7 +235,7 @@ const Dashboard = () => {
           <div className="smarty-card p-6 text-center">
             <Sparkles className="mx-auto h-5 w-5 text-primary" />
             <p className="mt-2 text-sm font-semibold text-foreground">Your logbook is empty</p>
-            <p className="mt-0.5 text-xs text-muted-foreground">A thought, a meal, a receipt — start anywhere.</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">A thought, a meal, a receipt, start anywhere.</p>
           </div>
         ) : (
           <div className="smarty-card divide-y divide-border p-1.5">
@@ -266,7 +266,7 @@ const Dashboard = () => {
           <DialogHeader>
             <DialogTitle>New category</DialogTitle>
             <DialogDescription>
-              Add your own category — the assistant can file entries into it too.
+              Add your own category, the assistant can file entries into it too.
             </DialogDescription>
           </DialogHeader>
           <Input

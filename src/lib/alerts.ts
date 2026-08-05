@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 
 /**
  * Proactive alerts written by the daily background scan (edge function
- * `proactive-scan`, scheduled server-side) — bills due, overdue payments,
+ * `proactive-scan`, scheduled server-side), bills due, overdue payments,
  * stale health values, documents about to expire. They exist even when the
  * app is closed; the client only reads, notifies and dismisses.
  */

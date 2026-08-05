@@ -1,4 +1,4 @@
-# Smarty Logbook — robots.txt
+# Smarty Logbook: robots.txt
 # AI-powered universal digital logbook and life operating system.
 
 User-agent: *

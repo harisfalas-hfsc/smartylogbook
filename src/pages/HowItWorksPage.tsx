@@ -9,7 +9,7 @@ const HowItWorksPage = () => (
     <PageHeader
       eyebrow="How it works"
       title="You put it in. Smarty Logbook does the thinking."
-      subtitle="Four ways in — type, say, snap, upload. Then it understands, relates, remembers and finds it for you."
+      subtitle="Four ways in, type, say, snap, upload. Then it understands, relates, remembers and finds it for you."
     />
 
 
@@ -41,7 +41,7 @@ const HowItWorksPage = () => (
       <SubCard>
         <p className="mx-auto max-w-3xl text-center text-[14px] leading-relaxed text-foreground sm:text-base md:text-lg">
           The moment you save it, your logbook takes over. Every note, photo, receipt, report and
-          number is read, given a date and a meaning, and filed into the right category — without you
+          number is read, given a date and a meaning, and filed into the right category, without you
           choosing anything. The Smarty Assistant understands what it is, connects it to what you
           already have, keeps everything in order, and brings it back to you the moment it matters.
         </p>

@@ -1,0 +1,1 @@
+UPDATE public.pricing_config SET config = replace(config::text, ' — ', ', ')::jsonb WHERE config::text LIKE '%—%';

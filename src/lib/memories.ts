@@ -98,7 +98,7 @@ export const useMemories = (options?: { module?: string; limit?: number }) => {
     return { error };
   };
 
-  /** User moves an entry to another category — and the assistant learns from it. */
+  /** User moves an entry to another category, and the assistant learns from it. */
   const reclassify = async (memory: Memory, toModule: string, note?: string) => {
     if (!user) return { error: new Error('Not signed in') };
     if (memory.module === toModule) return { error: null };

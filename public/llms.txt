@@ -1,6 +1,6 @@
 # Smarty Logbook
 
-> Smarty Logbook is an AI-powered universal digital logbook and life operating system. It lets anyone create unlimited logbooks for any subject — health, fitness, nutrition, finance, investments, business, clients, habits, goals, journaling, learning, medical history, medication, travel, projects, vehicles, home, pets, parenting, sleep, mood, recipes, collections and more — and the AI automatically classifies, links, analyses and explains every entry.
+> Smarty Logbook is an AI-powered universal digital logbook and life operating system. It lets anyone create unlimited logbooks for any subject, health, fitness, nutrition, finance, investments, business, clients, habits, goals, journaling, learning, medical history, medication, travel, projects, vehicles, home, pets, parenting, sleep, mood, recipes, collections and more, and the AI automatically classifies, links, analyses and explains every entry.
 
 ## What it is
 - Category: Personal knowledge management, AI journaling, life tracking, personal database, second brain.
@@ -12,8 +12,8 @@
 Individuals, professionals, freelancers, patients, athletes, students, parents, investors, business owners and anyone who wants one private, searchable archive of their life and work.
 
 ## Plans
-- Free — €0. Capture and organise logbooks.
-- Premium — €9.99 / month. Full Smarty Assistant, insights, proactive reminders.
+- Free, €0. Capture and organise logbooks.
+- Premium, €9.99 / month. Full Smarty Assistant, insights, proactive reminders.
 
 ## Privacy
 Data is private to each user, protected by authenticated access and row-level security. Users can export or permanently delete all of their data (GDPR).

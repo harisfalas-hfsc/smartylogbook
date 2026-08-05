@@ -12,7 +12,7 @@ import { FREE_BENEFITS, ASSISTANT_BENEFITS } from '@/lib/pricing';
 import { cn } from '@/lib/utils';
 
 const fmtDate = (d?: string | null) =>
-  d ? new Date(d).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }) : '—';
+  d ? new Date(d).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }) : '-';
 
 const PlanPage = () => {
   const navigate = useNavigate();
@@ -120,12 +120,12 @@ const PlanPage = () => {
               conversations. Your next renewal date moves to one month from today.
             </p>
             <button
-              onClick={() => (isPaid ? void openBillingPortal() : run('renew', renewNow, 'Cycle restarted — your allowance is fresh'))}
+              onClick={() => (isPaid ? void openBillingPortal() : run('renew', renewNow, 'Cycle restarted, your allowance is fresh'))}
               disabled={busy !== null}
               className="flex w-full items-center justify-center gap-2 rounded-2xl border border-border bg-card px-4 py-3 text-sm font-semibold text-foreground transition-smooth active:scale-[0.99] disabled:opacity-60"
             >
               {busy === 'renew' || portalBusy ? <Loader2 className="h-4 w-4 animate-spin text-primary" /> : <RefreshCw className="h-4 w-4 text-primary" />}
-              {isPaid ? 'Manage billing & renew' : `Renew now — €${plan.price.toFixed(2)}`}
+              {isPaid ? 'Manage billing & renew' : `Renew now, €${plan.price.toFixed(2)}`}
             </button>
           </section>
 
@@ -174,7 +174,7 @@ const PlanPage = () => {
             <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-emerald-600">
               <InfinityIcon className="h-3 w-3" /> Your current plan
             </span>
-            <p className="mt-2.5 text-xl font-extrabold text-foreground">Free logbook — €0</p>
+            <p className="mt-2.5 text-xl font-extrabold text-foreground">Free logbook, €0</p>
             <p className="mt-1 text-xs text-muted-foreground">
               Unlimited capture, storage, timeline, reminders and search. Forever.
             </p>
@@ -191,7 +191,7 @@ const PlanPage = () => {
             <Sparkles className="h-5 w-5" />
             <p className="mt-2 text-lg font-extrabold">Add the premium brain</p>
             <p className="mt-1 text-xs opacity-90">
-              Smarty Premium — €9.99 a month, 300 AI conversations (about 10 a day). Cancel any time.
+              Smarty Premium, €9.99 a month, 300 AI conversations (about 10 a day). Cancel any time.
             </p>
             <ul className="mt-3 space-y-1.5">
               {ASSISTANT_BENEFITS.slice(0, 4).map((b) => (
@@ -207,7 +207,7 @@ const PlanPage = () => {
                 'transition-smooth active:scale-[0.99]',
               )}
             >
-              Get Premium — €9.99 / month
+              Get Premium, €9.99 / month
             </Link>
           </section>
         </>

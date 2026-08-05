@@ -75,13 +75,13 @@ Deno.serve(async (req) => {
         amount_eur: price,
         currency: "EUR",
         status: "pending",
-        description: "Early renewal — billing cycle restarted",
+        description: "Early renewal, billing cycle restarted",
       });
 
       return json({ ok: true, current_period_start: start.toISOString(), current_period_end: end.toISOString() });
     }
 
-    /* Cancel at period end — keeps access until the paid cycle finishes. */
+    /* Cancel at period end, keeps access until the paid cycle finishes. */
     if (action === "cancel" || action === "resume") {
       const { data: existing } = await admin
         .from("subscriptions")

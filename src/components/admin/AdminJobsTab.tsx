@@ -12,7 +12,7 @@ const fmtTime = (d?: string | null) =>
         hour: '2-digit',
         minute: '2-digit',
       })
-    : '—';
+    : '-';
 
 const EMPTY = { jobname: '', schedule: '0 7 * * *', command: '' };
 

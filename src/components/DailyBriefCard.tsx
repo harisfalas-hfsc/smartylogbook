@@ -12,7 +12,7 @@ interface Props {
 
 /**
  * One suggestion per day from Smarty Assistant, generated from what the user
- * actually logged. It is a prompt, not a task — no checkboxes, no "setup" chores.
+ * actually logged. It is a prompt, not a task, no checkboxes, no "setup" chores.
  */
 const DailyBriefCard = ({ brief, generating, onRegenerate, onAsk }: Props) => {
   return (

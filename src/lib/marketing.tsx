@@ -12,16 +12,16 @@ export const problems = [
 ];
 
 export const steps = [
-  { icon: Camera, emoji: '📥', title: 'Capture', text: 'Type it, say it, or snap it. Text, voice, photo, receipt, PDF — one tap, no forms.' },
+  { icon: Camera, emoji: '📥', title: 'Capture', text: 'Type it, say it, or snap it. Text, voice, photo, receipt, PDF, one tap, no forms.' },
   { icon: Wand2, emoji: '🧠', title: 'Understand', text: 'The Smarty Assistant reads it, extracts dates, amounts and details, and files it where it belongs.' },
-  { icon: Link2, emoji: '🔗', title: 'Connect', text: 'It links the new entry to what already exists — a scan to an old injury, a receipt to a recurring bill.' },
+  { icon: Link2, emoji: '🔗', title: 'Connect', text: 'It links the new entry to what already exists, a scan to an old injury, a receipt to a recurring bill.' },
   { icon: Bell, emoji: '⏰', title: 'Remind', text: 'Follow-ups, renewals, appointments and important dates are scheduled automatically.' },
   { icon: MessageCircle, emoji: '💬', title: 'Ask', text: 'Ask anything in plain language. The Assistant searches your whole logbook and answers.' },
   { icon: Sparkles, emoji: '☀️', title: 'Guide', text: 'Every morning a short brief: what matters today, what is coming, what changed.' },
 ];
 
 export const features = [
-  { icon: Sparkles, emoji: '⚡', title: 'Quick Capture', text: 'Text, voice, camera and files — always one thumb away.' },
+  { icon: Sparkles, emoji: '⚡', title: 'Quick Capture', text: 'Text, voice, camera and files, always one thumb away.' },
   { icon: Mic, emoji: '🎙️', title: 'Voice to memory', text: 'Speak naturally. It is transcribed, understood and stored.' },
   { icon: FileText, emoji: '🧾', title: 'Document intelligence', text: 'Receipts, lab results and invoices: key details extracted for you.' },
   { icon: Wand2, emoji: '🪄', title: 'Auto-classification', text: 'No folders, no tags, no category picker. Ever.' },
@@ -98,37 +98,37 @@ export const plans = [
     ],
     cta: 'Get Premium',
     featured: true,
-    tagline: '300 AI Conversations a month — around 10 every day.',
+    tagline: '300 AI Conversations a month, around 10 every day.',
   },
 ];
 
 export const testimonials = [
   { name: 'Elena R.', role: 'Founder', text: 'It found the connection between my sleep and my worst work days. Nothing else ever told me that.' },
-  { name: 'Marcus T.', role: 'Athlete', text: 'Every session, every ache, every meal — one place. My physio asks for the export now.' },
+  { name: 'Marcus T.', role: 'Athlete', text: 'Every session, every ache, every meal, one place. My physio asks for the export now.' },
   { name: 'Sofia K.', role: 'Doctor', text: 'I photograph a report and forget it. The AI remembers it better than I ever could.' },
 ];
 
 export const faqs = [
-  { q: 'What is Smarty Logbook?', a: 'Smarty Logbook is a second brain for your life. You capture anything — a thought, a receipt, a lab report, a voice note — and the Smarty Assistant reads it, files it, connects it to what you already have and reminds you when it matters.' },
+  { q: 'What is Smarty Logbook?', a: 'Smarty Logbook is a second brain for your life. You capture anything, a thought, a receipt, a lab report, a voice note, and the Smarty Assistant reads it, files it, connects it to what you already have and reminds you when it matters.' },
   { q: 'Is it just another note app?', a: 'No. Notes store text and forget it. Smarty Logbook understands what you capture, extracts the details, links related entries and can answer questions about your own life.' },
-  { q: 'How do I add something?', a: 'Open Capture and type it, speak it, take a photo or attach a file. That is the whole flow — no title, no category, no tags.' },
+  { q: 'How do I add something?', a: 'Open Capture and type it, speak it, take a photo or attach a file. That is the whole flow, no title, no category, no tags.' },
   { q: 'Do I have to choose a category?', a: 'Never. The Assistant classifies every entry into the right life module automatically, and you can always see and change where it landed.' },
-  { q: 'Can it read receipts, invoices and medical reports?', a: 'Yes. Photograph or upload a document and the Assistant extracts the key details — dates, amounts, merchants, values — and stores them with the entry.' },
+  { q: 'Can it read receipts, invoices and medical reports?', a: 'Yes. Photograph or upload a document and the Assistant extracts the key details, dates, amounts, merchants, values, and stores them with the entry.' },
   { q: 'Does voice really work?', a: 'Yes. Speak naturally; your recording is transcribed, understood and saved as a normal entry. You can also talk to the Assistant by voice.' },
   { q: 'What is the Smarty Assistant?', a: 'Your personal assistant inside the logbook. It classifies what you capture, links related entries, writes your daily brief, reminds you proactively and answers any question about your own history in plain language.' },
-  { q: 'How do I find something later?', a: 'Ask in plain language — "what did the doctor say in March?" or "how much did I spend on restaurants?" You can also scroll the timeline and filter by day, week, month or year.' },
-  { q: 'What are life modules?', a: 'Modules are the areas your entries are filed into — health, fitness, nutrition, finance, business, documents and personal. You never pick one; the Assistant does.' },
+  { q: 'How do I find something later?', a: 'Ask in plain language, "what did the doctor say in March?" or "how much did I spend on restaurants?" You can also scroll the timeline and filter by day, week, month or year.' },
+  { q: 'What are life modules?', a: 'Modules are the areas your entries are filed into, health, fitness, nutrition, finance, business, documents and personal. You never pick one; the Assistant does.' },
   { q: 'How does it connect my entries?', a: 'The relationship engine looks for links: a new scan attaches to an old injury, a receipt to a recurring bill, a meeting to the person involved. Over time your logbook becomes a knowledge graph of your life.' },
   { q: 'Will it remind me about things?', a: 'Yes. Bills, renewals, appointments, follow-up tests and important dates are detected and scheduled automatically, and you control which notifications you receive.' },
   { q: 'Are there scores or ratings?', a: 'No. Scores were removed on purpose. The Assistant writes plain-language summaries and observations instead of numbers you have to interpret.' },
-  { q: 'What does it cost?', a: 'Two plans only. The logbook is free forever and unlimited — notes, documents, photos, receipts, reminders, timeline and search. Smarty Premium is €9.99 per month and adds Smarty Assistant with 300 AI Conversations, around 10 every day.' },
-  { q: 'What is an AI Conversation?', a: 'One complete interaction with Smarty Assistant on a single topic — comparing two blood tests, planning a workout, analysing spending, summarising a document — including the natural follow-up questions that belong to it. Capturing, classifying, searching, filtering and reminders never use your allowance.' },
-  { q: 'What happens when my 300 conversations run out?', a: 'You are told immediately and nothing else stops working — your logbook, search, timeline and reminders keep running. You either wait for your renewal date or renew straight away, which restarts your billing cycle from that day with a full allowance.' },
+  { q: 'What does it cost?', a: 'Two plans only. The logbook is free forever and unlimited, notes, documents, photos, receipts, reminders, timeline and search. Smarty Premium is €9.99 per month and adds Smarty Assistant with 300 AI Conversations, around 10 every day.' },
+  { q: 'What is an AI Conversation?', a: 'One complete interaction with Smarty Assistant on a single topic, comparing two blood tests, planning a workout, analysing spending, summarising a document, including the natural follow-up questions that belong to it. Capturing, classifying, searching, filtering and reminders never use your allowance.' },
+  { q: 'What happens when my 300 conversations run out?', a: 'You are told immediately and nothing else stops working, your logbook, search, timeline and reminders keep running. You either wait for your renewal date or renew straight away, which restarts your billing cycle from that day with a full allowance.' },
   { q: 'Do unused conversations roll over?', a: 'No. The allowance resets at the start of every billing cycle, so each month begins with a full 300 conversations.' },
   { q: 'Can I cancel any time?', a: 'Yes. Open your avatar, then Settings → My plan, and cancel in one tap. You keep Premium until the end of the cycle you already paid for, then you return to the free logbook. Nothing is deleted and everything stays exportable.' },
   { q: 'Do I pay for storage?', a: 'Never. Notes, photos, PDFs, receipts and reports are unlimited on the free plan. You only ever pay for intelligence, not for space.' },
-  { q: 'Can I use the free plan forever?', a: 'Yes. There is no trial countdown and no card required. The free logbook is a complete product on its own — you only upgrade if you want the Assistant to think for you.' },
-  { q: 'Do I need an account?', a: 'Yes — an email and password. Your logbook is private to you and every entry is gated behind your account.' },
+  { q: 'Can I use the free plan forever?', a: 'Yes. There is no trial countdown and no card required. The free logbook is a complete product on its own, you only upgrade if you want the Assistant to think for you.' },
+  { q: 'Do I need an account?', a: 'Yes, an email and password. Your logbook is private to you and every entry is gated behind your account.' },
   { q: 'How private is my data?', a: 'Privacy-first architecture with encrypted storage in transit and at rest. You can export everything or permanently delete your account and all of its data at any time.' },
   { q: 'Does it work on mobile?', a: 'It is built mobile-first. Everything is reachable with one thumb, and capture takes about three seconds.' },
   { q: 'Is it a medical or financial adviser?', a: 'No. It organises and explains your own information. It does not replace a doctor, accountant or any other professional.' },
@@ -254,7 +254,7 @@ export const MiniRow = ({
   </div>
 );
 
-/* Content shown only from lg upwards — keeps mobile pages short without touching desktop. */
+/* Content shown only from lg upwards, keeps mobile pages short without touching desktop. */
 export const DesktopOnly = ({ children }: { children: React.ReactNode }) => (
   <div className="hidden lg:contents">{children}</div>
 );

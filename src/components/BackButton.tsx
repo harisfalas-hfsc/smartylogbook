@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
  * Desktop-only back button. Depth is measured against the history index of the
  * first page of this app the user landed on (and re-baselined whenever they
  * reach a home route), so back never walks out of the site into the browser's
- * previous page. Hidden on home routes — there is no back past home.
+ * previous page. Hidden on home routes, there is no back past home.
  */
 const HOME_ROUTES = ['/', '/app'];
 

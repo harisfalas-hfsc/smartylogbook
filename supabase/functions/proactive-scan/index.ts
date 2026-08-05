@@ -62,7 +62,7 @@ Deno.serve(async (req) => {
       user_id: r.user_id as string,
       kind: r.type as string,
       title: overdue ? `Overdue: ${r.title}` : `Coming up: ${r.title}`,
-      detail: `${overdue ? "Was due" : "Due"} ${day(due)}${r.amount ? ` — ${r.amount}` : ""}.`,
+      detail: `${overdue ? "Was due" : "Due"} ${day(due)}${r.amount ? `, ${r.amount}` : ""}.`,
       severity: overdue ? "high" : "normal",
       due_at: due.toISOString(),
       dedupe_key: `reminder:${r.id}:${overdue ? "overdue" : "soon"}`,
@@ -116,7 +116,7 @@ Deno.serve(async (req) => {
         user_id: v.user_id,
         kind: "health",
         title: `Time to re-check ${v.label}`,
-        detail: `Your last reading was ${v.at.slice(0, 10)} — over a year ago.`,
+        detail: `Your last reading was ${v.at.slice(0, 10)}, over a year ago.`,
         severity: "normal",
         due_at: null,
         dedupe_key: `stale-fact:${key}:${v.at.slice(0, 7)}`,
@@ -212,7 +212,7 @@ Deno.serve(async (req) => {
       const mine = alerts.filter((a) => a.user_id === p.user_id);
       const headline = mine.length
         ? `${mine.length} thing${mine.length > 1 ? "s" : ""} need your attention today.`
-        : "Nothing urgent today — a good day to capture what is on your mind.";
+        : "Nothing urgent today, a good day to capture what is on your mind.";
       briefRows.push({
         user_id: p.user_id,
         kind: "brief",

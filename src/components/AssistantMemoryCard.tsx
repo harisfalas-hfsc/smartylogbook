@@ -49,7 +49,7 @@ const AssistantMemoryCard = () => {
         <p className="text-sm text-muted-foreground">
           {training
             ? 'Reading your logbook and building your personal profile…'
-            : 'Keep capturing — after a few entries your assistant builds a private profile of your habits, routines and patterns.'}
+            : 'Keep capturing, after a few entries your assistant builds a private profile of your habits, routines and patterns.'}
         </p>
       ) : (
         <div className="space-y-4">
