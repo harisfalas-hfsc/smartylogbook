@@ -367,6 +367,8 @@ const CapturePage = () => {
       attachmentUrl = path;
     }
 
+    // Only a calendar date was found (photo, receipt), so we anchor it at midday
+    // locally and flag it, the UI then shows the date without inventing a time.
     const occurredAt = classified?.date ? new Date(`${classified.date}T12:00:00`).toISOString() : undefined;
 
     const { error, id: newId } = await create({

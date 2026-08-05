@@ -301,7 +301,7 @@ const CalendarPage = () => {
                         </span>
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-sm font-semibold text-foreground">{m.title}</p>
-                          <p className="text-[11px] text-muted-foreground">{mod.label} · {timeOf(m.occurred_at)}</p>
+                          <p className="text-[11px] text-muted-foreground">{mod.label} · {whenLabel(m)}</p>
                         </div>
                       </Link>
                     );

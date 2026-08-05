@@ -179,7 +179,8 @@ const MemoryDetailSheet = ({
                 <span className="inline-flex items-center gap-1">
                   <CalendarIcon className="h-3.5 w-3.5" />
                   {new Date(memory.occurred_at).toLocaleString([], {
-                    weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
+                    weekday: 'short', day: 'numeric', month: 'short', year: 'numeric',
+                    ...(isDateOnly(memory) ? {} : { hour: '2-digit', minute: '2-digit' }),
                   })}
                 </span>
                 {memory.amount != null && (

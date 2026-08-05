@@ -4,7 +4,7 @@ import {
   AlertTriangle, ArrowRight, CalendarDays, Camera, ChevronRight, Loader2, Mic, Paperclip, Plus, RefreshCw, Sparkles,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useMemories, timeOf, Memory } from '@/lib/memories';
+import { useMemories, whenLabel, Memory } from '@/lib/memories';
 import { usePreferences } from '@/lib/preferences';
 import { useDailyBrief } from '@/lib/assistant';
 import { useProactiveAlerts } from '@/lib/alerts';
@@ -167,7 +167,7 @@ const Dashboard = () => {
                     <Icon className={`h-4 w-4 ${mod.color}`} />
                   </span>
                   <span className="min-w-0 flex-1 truncate text-xs font-semibold text-foreground">{m.title}</span>
-                  <span className="shrink-0 text-[10px] tabular-nums text-muted-foreground">{timeOf(m.occurred_at)}</span>
+                  <span className="shrink-0 text-[10px] tabular-nums text-muted-foreground">{whenLabel(m)}</span>
                 </button>
               );
             })}
