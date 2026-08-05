@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Calendar as CalendarIcon, Check, Link2, MapPin, Pencil, Save, Trash2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Calendar as CalendarIcon, Check, Link2, MapPin, Pencil, Save, Sparkles, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Input } from '@/components/ui/input';
@@ -30,6 +31,7 @@ const toLocalInput = (iso: string) => {
 const MemoryDetailSheet = ({
   memory, open, onOpenChange, allMemories = [], onOpenMemory, onSave, onMove, onDelete,
 }: Props) => {
+  const navigate = useNavigate();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState<Partial<Memory>>({});
   const [tagsText, setTagsText] = useState('');
@@ -203,6 +205,16 @@ const MemoryDetailSheet = ({
                   <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">{memory.content}</p>
                 </div>
               )}
+              <button
+                type="button"
+                onClick={() => {
+                  onOpenChange(false);
+                  navigate(`/app/assistant?ask=${encodeURIComponent(`About my entry "${memory.title}": `)}`);
+                }}
+                className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-3.5 py-2 text-xs font-semibold text-primary"
+              >
+                <Sparkles className="h-3.5 w-3.5" /> Ask Smarty Assistant about this
+              </button>
               {memory.attachment_url && attachment && (
                 isVideoMemory(memory) ? (
                   <video src={attachment} controls playsInline className="w-full overflow-hidden rounded-2xl border border-border" />

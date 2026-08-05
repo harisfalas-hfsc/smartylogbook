@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { CalendarClock, Camera, FileText, Loader2, Mic, Paperclip, Send, Square, Stethoscope, Wallet, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -46,6 +47,15 @@ const AssistantPage = () => {
   const cameraInput = useRef<HTMLInputElement>(null);
   const fileInput = useRef<HTMLInputElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
+
+  const [searchParams, setSearchParams] = useSearchParams();
+  useEffect(() => {
+    const ask = searchParams.get('ask');
+    if (!ask) return;
+    setInput(ask);
+    searchParams.delete('ask');
+    setSearchParams(searchParams, { replace: true });
+  }, [searchParams, setSearchParams]);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });

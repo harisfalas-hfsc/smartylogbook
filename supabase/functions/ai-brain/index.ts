@@ -146,7 +146,11 @@ Only include modules the user actually has data for. Max 5 summaries, 4 patterns
 If there is too little data, return fewer items and say so in the overview.`,
   extract: `You read photos, receipts, documents and PDFs for Smarty Logbook and classify them automatically, the user never chooses a category.
 Return STRICT JSON only, no markdown:
-{"title":"short title max 60 chars","summary":"one sentence of what this is","module":"health|fitness|nutrition|finance|business|documents|photos|videos|personal","kind":"photo|video|receipt|document|medical|meal|expense","ai_tags":["max 4 short lowercase tags"],"amount":number or null,"currency":"3-letter code or null","merchant":"string or null","date":"YYYY-MM-DD or null","due_date":"YYYY-MM-DD or null","paid":true|false|null,"category":"string or null","items":["max 6 line items"],"details":{"structured facts, e.g. biomarkers with values and ranges, laboratory name, policy number, expiry date"},"related_ids":[],"relation_note":null,"reminder":null,"facts":[],"money":[]}
+{"title":"short title max 60 chars","summary":"one short factual sentence, max 18 words","module":"health|fitness|nutrition|finance|business|documents|photos|videos|personal","kind":"photo|video|receipt|document|medical|meal|expense","ai_tags":["max 4 short lowercase tags"],"amount":number or null,"currency":"3-letter code or null","merchant":"string or null","date":"YYYY-MM-DD or null","due_date":"YYYY-MM-DD or null","paid":true|false|null,"category":"string or null","items":["max 6 line items"],"details":{"structured facts, e.g. biomarkers with values and ranges, laboratory name, policy number, expiry date"},"related_ids":[],"relation_note":null,"reminder":null,"facts":[],"money":[]}
+NEVER speculate. Describe ONLY what is clearly and unambiguously visible: people, objects, readable text, amounts, dates.
+Do not guess the place, the venue, the occasion, the mood, the relationship between people or the purpose of the image.
+Never label a scene as a shop, business, event or location unless a sign or text in the image says so.
+If the content is unclear, keep the summary minimal (for example "Personal photo") instead of inventing detail. A short accurate summary is always better than a rich wrong one.
 For receipts and bills always read the total, the company and the due date, and whether it is paid.
 For medical documents extract biomarkers with their values and reference ranges, the date and the laboratory.
 
