@@ -10,9 +10,15 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { formatBytes, STORAGE_QUOTA_BYTES, useStorageUsage } from '@/lib/media';
+import { useSubscription } from '@/lib/subscription';
 
 const ModulesPage = () => {
   const { memories } = useMemories();
+  const { used, files } = useStorageUsage();
+  const { active } = useSubscription();
+  const quota = active ? STORAGE_QUOTA_BYTES.premium : STORAGE_QUOTA_BYTES.free;
+  const pct = Math.min(100, Math.round((used / quota) * 100));
   const { categories, custom, addCategory, updateCategory, removeCategory } = useCategories();
   const [editing, setEditing] = useState<CustomCategory | 'new' | null>(null);
   const [name, setName] = useState('');
@@ -61,6 +67,22 @@ const ModulesPage = () => {
           <Plus className="h-4 w-4" /> New
         </button>
       </header>
+
+      <div className="smarty-card animate-fade-up p-4">
+        <div className="flex items-baseline justify-between gap-3">
+          <p className="text-sm font-bold text-foreground">Storage</p>
+          <p className="text-xs font-semibold text-muted-foreground">
+            {formatBytes(used)} of {formatBytes(quota)}
+          </p>
+        </div>
+        <div className="mt-2 h-2 overflow-hidden rounded-full bg-secondary">
+          <div className="h-full rounded-full bg-gradient-primary" style={{ width: `${Math.max(pct, used ? 2 : 0)}%` }} />
+        </div>
+        <p className="mt-2 text-[11px] text-muted-foreground">
+          {files} {files === 1 ? 'file' : 'files'} stored, photos, videos and documents.
+          {!active && ' Premium raises this to 20 GB.'}
+        </p>
+      </div>
 
       <div className="space-y-3">
         {categories.map((m) => {
