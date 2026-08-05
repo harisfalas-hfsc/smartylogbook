@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { CheckCheck, Inbox, Loader2, X } from 'lucide-react';
+import { Archive, ArchiveRestore, CheckCheck, Inbox, Loader2, Trash2 } from 'lucide-react';
 import { useMessages, messageStyle } from '@/lib/messages';
 import { useSubscription } from '@/lib/subscription';
 import { cn } from '@/lib/utils';
