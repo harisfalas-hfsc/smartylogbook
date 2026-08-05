@@ -74,14 +74,34 @@ export const useReminders = () => {
     return { error };
   };
 
+  const clearAlert = async (id: string) => {
+    await supabase
+      .from('proactive_alerts')
+      .update({ dismissed: true, seen: true })
+      .like('dedupe_key', `reminder:${id}:%`);
+  };
+
   const toggleDone = async (id: string, done: boolean) => {
     setReminders((prev) => prev.map((r) => (r.id === id ? { ...r, done } : r)));
-    await supabase.from('reminders').update({ done }).eq('id', id);
+    const { error } = await supabase.from('reminders').update({ done }).eq('id', id);
+    if (error) {
+      setReminders((prev) => prev.map((r) => (r.id === id ? { ...r, done: !done } : r)));
+      return { error };
+    }
+    if (done) await clearAlert(id);
+    return { error: null };
   };
 
   const remove = async (id: string) => {
+    const removed = reminders.find((r) => r.id === id);
     setReminders((prev) => prev.filter((r) => r.id !== id));
-    await supabase.from('reminders').delete().eq('id', id);
+    const { error } = await supabase.from('reminders').delete().eq('id', id);
+    if (error) {
+      if (removed) setReminders((prev) => [...prev, removed].sort((a, b) => a.due_at.localeCompare(b.due_at)));
+      return { error };
+    }
+    await clearAlert(id);
+    return { error: null };
   };
 
   return { reminders, loading, reload: load, create, toggleDone, remove };

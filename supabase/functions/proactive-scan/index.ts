@@ -69,6 +69,23 @@ Deno.serve(async (req) => {
     });
   }
 
+  // Alerts are snapshots. Clear reminder alerts whose source was completed or
+  // deleted so an old dashboard warning can never outlive the reminder itself.
+  const activeReminderKeys = new Set(
+    (reminders ?? []).map((r) => `reminder:${r.id}:${new Date(r.due_at as string) < today ? "overdue" : "soon"}`),
+  );
+  const { data: existingReminderAlerts } = await db
+    .from("proactive_alerts")
+    .select("id,dedupe_key")
+    .eq("dismissed", false)
+    .like("dedupe_key", "reminder:%");
+  const staleAlertIds = (existingReminderAlerts ?? [])
+    .filter((a) => !activeReminderKeys.has(String(a.dedupe_key)))
+    .map((a) => a.id);
+  if (staleAlertIds.length) {
+    await db.from("proactive_alerts").update({ dismissed: true, seen: true }).in("id", staleAlertIds);
+  }
+
   /* ---- recurring money items due in the next week ---- */
   const { data: money } = await db
     .from("money_items")

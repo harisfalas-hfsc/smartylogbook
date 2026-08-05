@@ -18,11 +18,12 @@ const RemindersPage = () => {
   const [amount, setAmount] = useState('');
   const [saving, setSaving] = useState(false);
 
-  const { upcoming, past } = useMemo(() => {
+  const { upcoming, overdue, completed } = useMemo(() => {
     const now = Date.now();
     return {
       upcoming: reminders.filter((r) => !r.done && new Date(r.due_at).getTime() >= now),
-      past: reminders.filter((r) => r.done || new Date(r.due_at).getTime() < now),
+      overdue: reminders.filter((r) => !r.done && new Date(r.due_at).getTime() < now),
+      completed: reminders.filter((r) => r.done),
     };
   }, [reminders]);
 
@@ -159,10 +160,17 @@ const RemindersPage = () => {
             )}
           </section>
 
-          {past.length > 0 && (
+          {overdue.length > 0 && (
             <section className="animate-fade-up">
-              <h2 className="mb-2.5 text-sm font-bold text-foreground">Past & done</h2>
-              <div className="smarty-card divide-y divide-border p-1">{past.slice(0, 20).map(row)}</div>
+              <h2 className="mb-2.5 text-sm font-bold text-destructive">Overdue</h2>
+              <div className="smarty-card divide-y divide-border border-destructive/30 p-1">{overdue.map(row)}</div>
+            </section>
+          )}
+
+          {completed.length > 0 && (
+            <section className="animate-fade-up">
+              <h2 className="mb-2.5 text-sm font-bold text-foreground">Completed</h2>
+              <div className="smarty-card divide-y divide-border p-1">{completed.slice(0, 20).map(row)}</div>
             </section>
           )}
         </>
