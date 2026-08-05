@@ -1,10 +1,15 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Bell, CalendarClock, HeartPulse, Receipt, CheckSquare } from 'lucide-react';
+import {
+  Bell, CalendarClock, HeartPulse, Receipt, CheckSquare, Dumbbell, Utensils,
+  FileText, Briefcase, Gift,
+} from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Preferences } from '@/lib/preferences';
 
-export type ReminderType = 'task' | 'bill' | 'health' | 'event';
+export type ReminderType =
+  | 'task' | 'bill' | 'health' | 'event' | 'fitness' | 'nutrition'
+  | 'document' | 'work' | 'personal';
 
 export interface Reminder {
   id: string;
@@ -21,9 +26,14 @@ export interface Reminder {
 
 export const REMINDER_TYPES: { id: ReminderType; label: string; icon: typeof Bell }[] = [
   { id: 'task', label: 'Task', icon: CheckSquare },
-  { id: 'bill', label: 'Bill', icon: Receipt },
-  { id: 'health', label: 'Health check-in', icon: HeartPulse },
   { id: 'event', label: 'Event', icon: CalendarClock },
+  { id: 'bill', label: 'Bill', icon: Receipt },
+  { id: 'health', label: 'Health', icon: HeartPulse },
+  { id: 'fitness', label: 'Fitness', icon: Dumbbell },
+  { id: 'nutrition', label: 'Nutrition', icon: Utensils },
+  { id: 'document', label: 'Document', icon: FileText },
+  { id: 'work', label: 'Work', icon: Briefcase },
+  { id: 'personal', label: 'Personal', icon: Gift },
 ];
 
 export const reminderIcon = (type: string) =>
@@ -109,7 +119,7 @@ export const useReminders = () => {
 
 const typeEnabled = (prefs: Preferences, type: string) => {
   if (type === 'bill') return prefs.notify_bills;
-  if (type === 'health') return prefs.notify_health;
+  if (type === 'health' || type === 'fitness' || type === 'nutrition') return prefs.notify_health;
   if (type === 'event') return prefs.notify_events;
   return prefs.notify_tasks;
 };

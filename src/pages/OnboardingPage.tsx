@@ -83,7 +83,7 @@ const OnboardingPage = () => {
     {
       icon: Sparkles,
       title: 'Which parts of life do you track?',
-      sub: 'These modules move to the top of your dashboard.',
+      sub: 'These categories move to the top of your dashboard.',
       body: (
         <div className="grid grid-cols-2 gap-2.5">
           {MODULES.map((m) => (

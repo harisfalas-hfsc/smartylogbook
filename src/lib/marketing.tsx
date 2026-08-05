@@ -31,7 +31,7 @@ export const features = [
   { icon: MessageCircle, emoji: '🤖', title: 'Smarty Assistant', text: 'A real assistant that answers, asks follow-ups and never guesses.' },
   { icon: Brain, emoji: '💡', title: 'Pattern insights', text: 'Plain-language observations written like a person would say them.' },
   { icon: Bell, emoji: '🔔', title: 'Proactive reminders', text: 'Bills, check-ups, birthdays and overdue tests surface on time.' },
-  { icon: Layers, emoji: '🗂️', title: 'Life modules', text: 'Health, fitness, nutrition, finance, business, documents, personal.' },
+  { icon: Layers, emoji: '🗂️', title: 'Life categories', text: 'Health, fitness, nutrition, finance, business, documents, personal.' },
   { icon: Shield, emoji: '🔒', title: 'Privacy first', text: 'Encrypted storage, your data, export or delete any time.' },
 ];
 
@@ -116,12 +116,12 @@ export const faqs = [
   { q: 'What is Smarty Logbook?', a: 'Smarty Logbook is a second brain for your life. You capture anything, a thought, a receipt, a lab report, a voice note, and the Smarty Assistant reads it, files it, connects it to what you already have and reminds you when it matters.' },
   { q: 'Is it just another note app?', a: 'No. Notes store text and forget it. Smarty Logbook understands what you capture, extracts the details, links related entries and can answer questions about your own life.' },
   { q: 'How do I add something?', a: 'Open Capture and type it, speak it, take a photo or attach a file. That is the whole flow, no title, no category, no tags.' },
-  { q: 'Do I have to choose a category?', a: 'Never. The Assistant classifies every entry into the right life module automatically, and you can always see and change where it landed.' },
+  { q: 'Do I have to choose a category?', a: 'Never. The Assistant classifies every entry into the right life category automatically, and you can always see and change where it landed.' },
   { q: 'Can it read receipts, invoices and medical reports?', a: 'Yes. Photograph or upload a document and the Assistant extracts the key details, dates, amounts, merchants, values, and stores them with the entry.' },
   { q: 'Does voice really work?', a: 'Yes. Speak naturally; your recording is transcribed, understood and saved as a normal entry. You can also talk to the Assistant by voice.' },
   { q: 'What is the Smarty Assistant?', a: 'Your personal assistant inside the logbook. It classifies what you capture, links related entries, writes your daily brief, reminds you proactively and answers any question about your own history in plain language.' },
   { q: 'How do I find something later?', a: 'Ask in plain language, "what did the doctor say in March?" or "how much did I spend on restaurants?" You can also scroll the timeline and filter by day, week, month or year.' },
-  { q: 'What are life modules?', a: 'Modules are the areas your entries are filed into, health, fitness, nutrition, finance, business, documents and personal. You never pick one; the Assistant does.' },
+  { q: 'What are life categories?', a: 'Categories are the areas your entries are filed into, health, fitness, nutrition, finance, business, documents and personal. You never pick one; the Assistant does.' },
   { q: 'How does it connect my entries?', a: 'The relationship engine looks for links: a new scan attaches to an old injury, a receipt to a recurring bill, a meeting to the person involved. Over time your logbook becomes a knowledge graph of your life.' },
   { q: 'Will it remind me about things?', a: 'Yes. Bills, renewals, appointments, follow-up tests and important dates are detected and scheduled automatically, and you control which notifications you receive.' },
   { q: 'Are there scores or ratings?', a: 'No. Scores were removed on purpose. The Assistant writes plain-language summaries and observations instead of numbers you have to interpret.' },

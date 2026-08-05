@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { CheckCheck, Inbox, Loader2, X } from 'lucide-react';
+import { Archive, ArchiveRestore, CheckCheck, Inbox, Loader2, Trash2 } from 'lucide-react';
 import { useMessages, messageStyle } from '@/lib/messages';
 import { useSubscription } from '@/lib/subscription';
 import { cn } from '@/lib/utils';
@@ -18,26 +18,31 @@ const when = (iso: string) => {
 
 const MessagesPage = () => {
   const { user } = useAuth();
-  const { messages, loading, unread, markRead, markAllRead, archive, reload } = useMessages();
+  const [showArchived, setShowArchived] = useState(false);
+  const { messages, loading, unread, markRead, markAllRead, archive, unarchive, remove, reload } =
+    useMessages(showArchived);
   const { canUseAssistant, plan, renewsAt, isAdmin, loading: planLoading } = useSubscription();
 
   /* First visit: greet the user so the inbox is never empty. */
   useEffect(() => {
-    if (loading || !user || messages.length) return;
+    if (loading || !user || messages.length || showArchived) return;
+    const key = `smarty-welcome-msg-${user.id}`;
+    if (localStorage.getItem(key)) return;
+    localStorage.setItem(key, '1');
     void (async () => {
       await supabase.from('messages').insert([{
         user_id: user.id,
         kind: 'welcome',
         title: 'Welcome to your Message Center',
         body:
-          'This is where Smarty Assistant talks to you: what is coming up in your calendar, bills to pay, health check-ins to book, plan and renewal notices, and your daily briefing. Everything you log feeds it.',
+          'This is where Smarty Assistant talks to you: what is coming up in your calendar, bills to pay, health check-ins to book, plan and renewal notices, and your daily briefing. Everything you log feeds it. You can archive a message to keep it, or delete it for good.',
         action_label: 'Open your calendar',
         action_url: '/app/calendar',
         dedupe_key: 'welcome',
       }]);
       await reload();
     })();
-  }, [loading, user?.id, messages.length]);
+  }, [loading, user?.id, messages.length, showArchived]);
 
   return (
     <div className="space-y-5 pb-4">
@@ -50,15 +55,27 @@ const MessagesPage = () => {
             Everything Smarty Assistant wants you to know, reminders, bills, health, calendar and your plan.
           </p>
         </div>
-        {unread > 0 && (
+        <div className="flex shrink-0 items-center gap-1.5">
+          {unread > 0 && !showArchived && (
+            <button
+              onClick={markAllRead}
+              className="flex items-center gap-1.5 rounded-2xl bg-secondary px-3 py-2 text-xs font-semibold text-secondary-foreground active:scale-95"
+            >
+              <CheckCheck className="h-4 w-4" /> Mark all
+            </button>
+          )}
           <button
-            onClick={markAllRead}
-            className="flex shrink-0 items-center gap-1.5 rounded-2xl bg-secondary px-3 py-2 text-xs font-semibold text-secondary-foreground active:scale-95"
+            onClick={() => setShowArchived((v) => !v)}
+            className={cn(
+              'flex items-center gap-1.5 rounded-2xl px-3 py-2 text-xs font-semibold active:scale-95',
+              showArchived ? 'bg-primary/10 text-primary' : 'bg-secondary text-secondary-foreground'
+            )}
           >
-            <CheckCheck className="h-4 w-4" /> Mark all
+            <Archive className="h-4 w-4" /> {showArchived ? 'Inbox' : 'Archive'}
           </button>
-        )}
+        </div>
       </header>
+
 
       {!planLoading && !canUseAssistant && (
         <div className="smarty-card p-4">
@@ -137,13 +154,22 @@ const MessagesPage = () => {
                     )}
                   </div>
                 </div>
-                <button
-                  onClick={() => archive(m.id)}
-                  aria-label="Dismiss message"
-                  className="h-7 w-7 shrink-0 rounded-full text-muted-foreground hover:bg-secondary"
-                >
-                  <X className="mx-auto h-4 w-4" />
-                </button>
+                <div className="flex shrink-0 flex-col gap-1">
+                  <button
+                    onClick={() => (showArchived ? unarchive(m.id) : archive(m.id))}
+                    aria-label={showArchived ? 'Restore message' : 'Archive message'}
+                    className="grid h-7 w-7 place-items-center rounded-full text-muted-foreground hover:bg-secondary"
+                  >
+                    {showArchived ? <ArchiveRestore className="h-4 w-4" /> : <Archive className="h-4 w-4" />}
+                  </button>
+                  <button
+                    onClick={() => remove(m.id)}
+                    aria-label="Delete message"
+                    className="grid h-7 w-7 place-items-center rounded-full text-destructive hover:bg-destructive/10"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
               </li>
             );
           })}
