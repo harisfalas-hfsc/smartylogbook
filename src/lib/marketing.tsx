@@ -141,22 +141,54 @@ export const securityPoints = [
 ];
 
 
+/** Inline keyword highlight used across marketing copy. */
+export const Hl = ({ children }: { children: React.ReactNode }) => (
+  <span className="font-bold text-primary">{children}</span>
+);
+
+/* A short, curated list of the words that carry the whole idea.
+   At most three are highlighted per sentence so pages never look busy. */
+const KEYWORDS = [
+  'Smarty Logbook',
+  'Smarty Assistant',
+  'free forever',
+  'Free to begin',
+  'Free to start',
+  'type, say, snap, upload',
+  'Put anything in',
+  'put anything in',
+  'understands',
+  'relates',
+  'remembers',
+  'finds it',
+  'Capture',
+  'automatically',
+  'plain language',
+  'plain words',
+];
+
+const KEYWORD_RE = new RegExp(`(${KEYWORDS.join('|')})`, 'g');
+const MAX_HIGHLIGHTS = 3;
+
 export const BrandText = ({ children }: { children: string }) => {
-  const parts = children.split(/(Smarty Logbook)/g);
+  const parts = children.split(KEYWORD_RE);
+  let used = 0;
   return (
     <>
-      {parts.map((part, i) =>
-        part === 'Smarty Logbook' ? (
-          <span key={i} className="gradient-text font-extrabold">
-            {part}
-          </span>
+      {parts.map((part, i) => {
+        const isKeyword = KEYWORDS.includes(part) && used < MAX_HIGHLIGHTS;
+        if (!isKeyword) return <span key={i}>{part}</span>;
+        used += 1;
+        return part === 'Smarty Logbook' ? (
+          <span key={i} className="gradient-text font-extrabold">{part}</span>
         ) : (
-          <span key={i}>{part}</span>
-        ),
-      )}
+          <span key={i} className="font-bold text-primary">{part}</span>
+        );
+      })}
     </>
   );
 };
+
 
 export const PageHeader = ({ eyebrow, title, subtitle }: { eyebrow: string; title: string; subtitle?: string }) => (
   <div className="mx-auto mb-8 max-w-2xl text-center">

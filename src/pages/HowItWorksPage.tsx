@@ -1,5 +1,5 @@
 import { Wand2, Brain, Inbox, Sparkles } from 'lucide-react';
-import { Panel, SubCard, PageHeader, givesIn, givesBack } from '@/lib/marketing';
+import { Panel, SubCard, PageHeader, givesIn, givesBack, Hl } from '@/lib/marketing';
 
 import PillarsCircle from '@/components/PillarsCircle';
 
@@ -40,10 +40,10 @@ const HowItWorksPage = () => (
     >
       <SubCard>
         <p className="mx-auto max-w-3xl text-center text-[14px] leading-relaxed text-foreground sm:text-base md:text-lg">
-          The moment you save it, your logbook takes over. Every note, photo, receipt, report and
+          The moment you <Hl>save it</Hl>, your logbook takes over. <Hl>Every</Hl> note, photo, receipt, report and
           number is read, given a date and a meaning, and filed into the right category, without you
-          choosing anything. The Smarty Assistant understands what it is, connects it to what you
-          already have, keeps everything in order, and brings it back to you the moment it matters.
+          choosing anything. The <Hl>Smarty Assistant</Hl> understands what it is, connects it to what you
+          already have, keeps <Hl>everything in order</Hl>, and brings it back to you the moment it matters.
         </p>
       </SubCard>
     </Panel>
