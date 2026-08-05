@@ -1,7 +1,7 @@
 import { steps } from '@/lib/marketing';
 
 /**
- * Mobile-only circular flow: the six stages arranged as a loop,
+ * Responsive circular flow: the six stages arranged as a loop,
  * connected by a dashed ring with arrowheads between each node.
  */
 const StepsCircle = () => {
@@ -9,7 +9,7 @@ const StepsCircle = () => {
   const R = 38; // node orbit radius in % of the square container
 
   return (
-    <div className="relative mx-auto aspect-square w-full max-w-[330px]">
+    <div className="relative mx-auto aspect-square w-full max-w-[330px] lg:max-w-[480px]">
       {/* connecting ring */}
       <svg viewBox="0 0 100 100" className="absolute inset-0 h-full w-full ">
         <circle
@@ -50,13 +50,13 @@ const StepsCircle = () => {
         return (
           <div
             key={s.title}
-            className="absolute flex w-[74px] -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1"
+            className="absolute flex w-[74px] lg:w-[120px] -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1"
             style={{ left: `${left}%`, top: `${top}%` }}
           >
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-primary shadow-glow ring-4 ring-background">
-              <s.icon className="h-[18px] w-[18px] text-primary-foreground" />
+            <span className="flex h-10 w-10 lg:h-14 lg:w-14 items-center justify-center rounded-full bg-gradient-primary shadow-glow ring-4 ring-background">
+              <s.icon className="h-[18px] w-[18px] lg:h-6 lg:w-6 text-primary-foreground" />
             </span>
-            <p className="text-center text-[11.5px] font-bold leading-tight text-foreground">
+            <p className="text-center text-[11.5px] lg:text-[14px] font-bold leading-tight text-foreground">
               <span className="text-primary">{i + 1}.</span> {s.title}
             </p>
           </div>
