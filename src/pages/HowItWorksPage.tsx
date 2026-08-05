@@ -1,6 +1,7 @@
-import { Wand2, Brain } from 'lucide-react';
-import { Panel, SubCard, MiniRow, PageHeader, givesIn, givesBack } from '@/lib/marketing';
+import { Wand2, Brain, Inbox, Sparkles } from 'lucide-react';
+import { Panel, SubCard, PageHeader, givesIn, givesBack } from '@/lib/marketing';
 import StepsCircle from '@/components/StepsCircle';
+import PillarsCircle from '@/components/PillarsCircle';
 
 
 const HowItWorksPage = () => (
@@ -22,21 +23,14 @@ const HowItWorksPage = () => (
     >
       <div className="grid gap-3 lg:grid-cols-2">
         <SubCard label="You put in" labelEmoji="📥">
-          <div className="grid grid-cols-2 gap-2">
-            {givesIn.map((c) => (
-              <MiniRow key={c.t} emoji={c.e} title={c.t} text={c.s} tint={c.tint} />
-            ))}
-          </div>
+          <PillarsCircle items={givesIn} size="sm" centerIcon={Inbox} centerLabel="You put in" />
         </SubCard>
         <SubCard label="It gives back" labelEmoji="✨">
-          <div className="grid grid-cols-2 gap-2">
-            {givesBack.map((c) => (
-              <MiniRow key={c.t} emoji={c.e} title={c.t} text={c.s} tint={c.tint} />
-            ))}
-          </div>
+          <PillarsCircle items={givesBack} size="sm" centerIcon={Sparkles} centerLabel="It gives back" />
         </SubCard>
       </div>
     </Panel>
+
 
     <Panel
       eyebrow="What happens next"
