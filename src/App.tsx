@@ -51,18 +51,32 @@ const StartupRouteGuard = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const initialPath = useRef(location.pathname);
+  const initialSearch = useRef(location.search);
 
   useEffect(() => {
     const navigatorWithStandalone = navigator as Navigator & { standalone?: boolean };
-    const isInstalled = window.matchMedia('(display-mode: standalone)').matches || navigatorWithStandalone.standalone === true;
+    const isInstalled =
+      window.matchMedia('(display-mode: standalone)').matches ||
+      window.matchMedia('(display-mode: fullscreen)').matches ||
+      window.matchMedia('(display-mode: minimal-ui)').matches ||
+      navigatorWithStandalone.standalone === true ||
+      new URLSearchParams(initialSearch.current).get('source') === 'pwa';
 
-    if (isInstalled && initialPath.current === '/auth') {
+    if (!isInstalled) return;
+
+    // Installed app must always cold-start on the public homepage, regardless of
+    // the start_url cached at install time (/auth, /app, ...).
+    const launchPath = initialPath.current;
+    const isColdStartElsewhere = launchPath === '/auth' || launchPath === '/app' || launchPath === '/app/';
+
+    if (isColdStartElsewhere) {
       navigate('/', { replace: true });
     }
   }, [navigate]);
 
   return null;
 };
+
 
 const App = () => (
   <HelmetProvider>
