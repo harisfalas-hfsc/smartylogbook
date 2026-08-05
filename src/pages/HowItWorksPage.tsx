@@ -9,7 +9,7 @@ const HowItWorksPage = () => (
     <PageHeader
       eyebrow="How it works"
       title="You put it in. Smarty Logbook does the thinking."
-      subtitle="Four ways in, type, say, snap, upload. Then it understands, relates, remembers and finds it for you."
+      subtitle="There are four ways in: type it, say it, snap it or upload it. From there it understands, relates, remembers and finds it for you."
     />
 
 
