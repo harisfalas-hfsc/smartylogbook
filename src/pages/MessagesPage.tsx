@@ -26,20 +26,23 @@ const MessagesPage = () => {
   /* First visit: greet the user so the inbox is never empty. */
   useEffect(() => {
     if (loading || !user || messages.length || showArchived) return;
+    const key = `smarty-welcome-msg-${user.id}`;
+    if (localStorage.getItem(key)) return;
+    localStorage.setItem(key, '1');
     void (async () => {
       await supabase.from('messages').insert([{
         user_id: user.id,
         kind: 'welcome',
         title: 'Welcome to your Message Center',
         body:
-          'This is where Smarty Assistant talks to you: what is coming up in your calendar, bills to pay, health check-ins to book, plan and renewal notices, and your daily briefing. Everything you log feeds it.',
+          'This is where Smarty Assistant talks to you: what is coming up in your calendar, bills to pay, health check-ins to book, plan and renewal notices, and your daily briefing. Everything you log feeds it. You can archive a message to keep it, or delete it for good.',
         action_label: 'Open your calendar',
         action_url: '/app/calendar',
         dedupe_key: 'welcome',
       }]);
       await reload();
     })();
-  }, [loading, user?.id, messages.length]);
+  }, [loading, user?.id, messages.length, showArchived]);
 
   return (
     <div className="space-y-5 pb-4">
