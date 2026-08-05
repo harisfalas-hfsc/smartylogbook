@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { CalendarRange, Loader2, Search, Sparkles, Trash2, X } from 'lucide-react';
 import { groupByDay, useMemories, Memory } from '@/lib/memories';
