@@ -148,7 +148,7 @@ const ModuleDetailPage = () => {
       </div>
 
       <Link
-        to="/app/capture"
+        to={`/app/capture?module=${module.id}`}
         className="flex items-center justify-center gap-2 rounded-3xl bg-gradient-primary p-3.5 text-sm font-semibold text-primary-foreground shadow-glow transition-smooth active:scale-[0.99]"
       >
         <Plus className="h-4 w-4" /> Capture to {module.label}
