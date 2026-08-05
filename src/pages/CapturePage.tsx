@@ -367,9 +367,10 @@ const CapturePage = () => {
       attachmentUrl = path;
     }
 
-    // Only a calendar date was found (photo, receipt), so we anchor it at midday
-    // locally and flag it, the UI then shows the date without inventing a time.
-    const occurredAt = classified?.date ? new Date(`${classified.date}T12:00:00`).toISOString() : undefined;
+    // A record is always stamped with the moment of capture, in the user's own
+    // timezone. Any date the Assistant reads from a photo or receipt is kept in
+    // metadata only, it never overrides the capture time.
+    const occurredAt = new Date().toISOString();
 
     const { error, id: newId } = await create({
       title: classified?.title ?? text.trim().slice(0, 60) ?? 'Capture',
@@ -388,8 +389,8 @@ const CapturePage = () => {
         : [],
       relation_note: classified?.relation_note ?? null,
       metadata: {
-        date_only: !!classified?.date,
-        ...(classified
+      metadata: {
+
           ? {
               merchant: classified.merchant ?? null,
               category: classified.category ?? null,
