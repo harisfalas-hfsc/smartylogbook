@@ -26,7 +26,7 @@ const Landing = () => {
           <p className="mx-auto mt-4 max-w-md animate-fade-up text-sm leading-relaxed text-muted-foreground md:mt-5 md:max-w-2xl md:text-lg">
             Put anything in. It understands it, connects it, keeps it and finds it when you need it.
           </p>
-          <div className="mt-7 flex animate-fade-up flex-col items-center gap-2.5">
+          <div className="mt-7 flex animate-fade-up flex-col items-center justify-center gap-2.5 md:flex-row">
             <Link
               to="/auth"
               className="flex w-full max-w-xs items-center justify-center gap-2 rounded-2xl bg-gradient-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground shadow-glow transition-smooth active:scale-95"
