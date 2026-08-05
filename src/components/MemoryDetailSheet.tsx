@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Calendar as CalendarIcon, Check, Link2, MapPin, Pencil, Save, Trash2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Calendar as CalendarIcon, Check, Link2, MapPin, Pencil, Save, Sparkles, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Input } from '@/components/ui/input';
