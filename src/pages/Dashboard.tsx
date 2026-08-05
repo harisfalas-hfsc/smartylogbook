@@ -114,6 +114,67 @@ const Dashboard = () => {
         </div>
       </section>
 
+      {/* One alert max, so the screen stays calm */}
+      {alerts.length > 0 && (
+        <Link
+          to="/app/reminders"
+          className="smarty-card flex animate-fade-up items-center gap-3 border-warning/40 p-3.5"
+        >
+          <AlertTriangle className="h-4 w-4 shrink-0 text-warning" />
+          <p className="min-w-0 flex-1 truncate text-xs font-semibold text-foreground">{alerts[0].title}</p>
+          {alerts.length > 1 && (
+            <span className="shrink-0 rounded-full bg-secondary px-2 py-0.5 text-[10px] font-bold text-muted-foreground">
+              +{alerts.length - 1}
+            </span>
+          )}
+          <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+        </Link>
+      )}
+
+      {/* Timeline, the first thing you see: your latest records */}
+      <section className="animate-fade-up">
+        <div className="mb-2 flex items-center justify-between px-0.5">
+          <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
+            Timeline {today.length ? '· today' : '· latest'}
+          </h2>
+          <Link to="/app/timeline" className="inline-flex items-center gap-1 text-xs font-semibold text-primary">
+            See all <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
+        {loading ? (
+          <div className="smarty-card grid h-24 place-items-center">
+            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+          </div>
+        ) : memories.length === 0 ? (
+          <div className="smarty-card p-6 text-center">
+            <Sparkles className="mx-auto h-5 w-5 text-primary" />
+            <p className="mt-2 text-sm font-semibold text-foreground">Your logbook is empty</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">A thought, a meal, a receipt, start anywhere.</p>
+          </div>
+        ) : (
+          <div className="smarty-card divide-y divide-border p-1.5">
+            {(today.length ? today : memories).slice(0, 4).map((m) => {
+              const Icon = kindIcon(m.kind);
+              const mod = categories.find((c) => c.id === m.module) ?? categories[categories.length - 1];
+              return (
+                <button
+                  key={m.id}
+                  type="button"
+                  onClick={() => setSelectedMemory(m)}
+                  className="flex w-full items-center gap-3 px-2 py-2.5 text-left"
+                >
+                  <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-xl ${mod.tint}`}>
+                    <Icon className={`h-4 w-4 ${mod.color}`} />
+                  </span>
+                  <span className="min-w-0 flex-1 truncate text-xs font-semibold text-foreground">{m.title}</span>
+                  <span className="shrink-0 text-[10px] tabular-nums text-muted-foreground">{timeOf(m.occurred_at)}</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
       {/* Smarty Assistant, one line, no chores */}
       <section className="animate-fade-up">
         <div className="smarty-card p-4">
@@ -149,42 +210,6 @@ const Dashboard = () => {
         </div>
       </section>
 
-      {/* One alert max, so the screen stays calm */}
-      {alerts.length > 0 && (
-        <Link
-          to="/app/reminders"
-          className="smarty-card flex animate-fade-up items-center gap-3 border-warning/40 p-3.5"
-        >
-          <AlertTriangle className="h-4 w-4 shrink-0 text-warning" />
-          <p className="min-w-0 flex-1 truncate text-xs font-semibold text-foreground">{alerts[0].title}</p>
-          {alerts.length > 1 && (
-            <span className="shrink-0 rounded-full bg-secondary px-2 py-0.5 text-[10px] font-bold text-muted-foreground">
-              +{alerts.length - 1}
-            </span>
-          )}
-          <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
-        </Link>
-      )}
-
-      {/* Calendar shortcut */}
-      <Link
-        to="/app/calendar"
-        className="smarty-card flex animate-fade-up items-center gap-3 p-3.5 transition-smooth active:scale-95"
-      >
-        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl bg-primary/10 text-primary">
-          <CalendarDays className="h-4.5 w-4.5" />
-        </span>
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-bold text-foreground">Calendar</p>
-          <p className="truncate text-[11px] text-muted-foreground">
-            Scheduled and logged days, month by month
-          </p>
-        </div>
-        <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
-      </Link>
-
-
-
       {/* Categories, always a clean 4-across grid */}
       <section className="animate-fade-up">
         <div className="mb-2 flex items-center justify-between px-0.5">
@@ -219,47 +244,23 @@ const Dashboard = () => {
         </div>
       </section>
 
-      {/* Recent, short, tappable */}
-      <section className="animate-fade-up">
-        <div className="mb-2 flex items-center justify-between px-0.5">
-          <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
-            {today.length ? 'Today' : 'Recent'}
-          </h2>
-          <Link to="/app/timeline" className="text-xs font-semibold text-primary">Timeline</Link>
+      {/* Calendar shortcut */}
+      <Link
+        to="/app/calendar"
+        className="smarty-card flex animate-fade-up items-center gap-3 p-3.5 transition-smooth active:scale-95"
+      >
+        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl bg-primary/10 text-primary">
+          <CalendarDays className="h-4.5 w-4.5" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-bold text-foreground">Calendar</p>
+          <p className="truncate text-[11px] text-muted-foreground">
+            Scheduled and logged days, month by month
+          </p>
         </div>
-        {loading ? (
-          <div className="smarty-card grid h-24 place-items-center">
-            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-          </div>
-        ) : memories.length === 0 ? (
-          <div className="smarty-card p-6 text-center">
-            <Sparkles className="mx-auto h-5 w-5 text-primary" />
-            <p className="mt-2 text-sm font-semibold text-foreground">Your logbook is empty</p>
-            <p className="mt-0.5 text-xs text-muted-foreground">A thought, a meal, a receipt, start anywhere.</p>
-          </div>
-        ) : (
-          <div className="smarty-card divide-y divide-border p-1.5">
-            {(today.length ? today : memories).slice(0, 4).map((m) => {
-              const Icon = kindIcon(m.kind);
-              const mod = categories.find((c) => c.id === m.module) ?? categories[categories.length - 1];
-              return (
-                <button
-                  key={m.id}
-                  type="button"
-                  onClick={() => setSelectedMemory(m)}
-                  className="flex w-full items-center gap-3 px-2 py-2.5 text-left"
-                >
-                  <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-xl ${mod.tint}`}>
-                    <Icon className={`h-4 w-4 ${mod.color}`} />
-                  </span>
-                  <span className="min-w-0 flex-1 truncate text-xs font-semibold text-foreground">{m.title}</span>
-                  <span className="shrink-0 text-[10px] tabular-nums text-muted-foreground">{timeOf(m.occurred_at)}</span>
-                </button>
-              );
-            })}
-          </div>
-        )}
-      </section>
+        <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+      </Link>
+
 
       <Dialog open={newOpen} onOpenChange={setNewOpen}>
         <DialogContent className="max-w-sm rounded-3xl">
