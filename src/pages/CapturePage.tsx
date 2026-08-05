@@ -657,19 +657,15 @@ const CapturePage = () => {
       )}
 
       <section className="animate-fade-up">
-        <p className="mb-2.5 text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">Try one</p>
-        <div className="space-y-2">
-          {suggestions.map((s) => (
-            <button
-              key={s.text}
-              onClick={() => setText(s.text)}
-              className="smarty-card flex w-full items-center gap-3 p-3 text-left transition-smooth hover:border-primary/40 active:scale-[0.99]"
-            >
-              <span className={cn('grid h-8 w-8 shrink-0 place-items-center rounded-xl', s.tint)}>
-                <s.icon className={cn('h-4 w-4', s.color)} />
-              </span>
-              <span className="min-w-0 flex-1 text-xs font-medium text-foreground">{s.text}</span>
-            </button>
+        <p className="mb-2.5 text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
+          {tipsFor ? `How to log ${tipsFor.toLowerCase()}` : 'How to capture'}
+        </p>
+        <div className="smarty-card space-y-2.5 p-4">
+          {tips.map((t) => (
+            <div key={t} className="flex items-start gap-2.5">
+              <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
+              <p className="text-xs leading-relaxed text-muted-foreground">{t}</p>
+            </div>
           ))}
         </div>
       </section>
