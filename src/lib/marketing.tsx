@@ -226,7 +226,7 @@ export const SubCard = ({
   children,
   className = '',
 }: { label?: string; labelEmoji?: string; children: React.ReactNode; className?: string }) => (
-  <div className={`rounded-3xl border border-primary/20 bg-secondary/40 p-3.5 sm:p-5 ${className}`}>
+  <div className={`smarty-sub rounded-3xl border-2 border-primary/30 bg-secondary/50 p-3.5 transition-smooth sm:p-5 ${className}`}>
     {label && (
       <div className="mb-3 flex items-center gap-1.5">
         {labelEmoji && <span className="text-sm leading-none">{labelEmoji}</span>}
