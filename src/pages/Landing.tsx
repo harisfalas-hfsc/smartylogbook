@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, Brain, Clock, Sparkles } from 'lucide-react';
 import InputsCircle from '@/components/InputsCircle';
+import { Hl } from '@/lib/marketing';
 
 
 const highlights = [
@@ -24,7 +25,7 @@ const Landing = () => {
             <span className="gradient-text">with a brain.</span>
           </h1>
           <p className="mx-auto mt-4 max-w-md animate-fade-up text-sm leading-relaxed text-muted-foreground md:mt-5 md:max-w-2xl md:text-lg">
-            Put anything in. It understands it, connects it, keeps it and finds it when you need it.
+            <Hl>Put anything in.</Hl> It <Hl>understands</Hl> it, connects it, keeps it and <Hl>finds it</Hl> when you need it.
           </p>
           <div className="mt-7 flex animate-fade-up flex-col items-center justify-center gap-2.5 md:flex-row">
             <Link

@@ -154,6 +154,7 @@ const KEYWORDS = [
   'free forever',
   'Free to begin',
   'Free to start',
+  'type, say, snap, upload',
   'Put anything in',
   'put anything in',
   'understands',
