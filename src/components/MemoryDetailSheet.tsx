@@ -5,6 +5,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { kindIcon } from '@/lib/constants';
+import { albumOf, formatBytes, formatDuration, durationOf, isVideoMemory, useSignedUrl } from '@/lib/media';
 import { useCategories } from '@/lib/categories';
 import { Memory } from '@/lib/memories';
 import { cn } from '@/lib/utils';
@@ -33,6 +34,8 @@ const MemoryDetailSheet = ({
   const [draft, setDraft] = useState<Partial<Memory>>({});
   const [tagsText, setTagsText] = useState('');
   const [saving, setSaving] = useState(false);
+  const [album, setAlbum] = useState('');
+  const attachment = useSignedUrl(memory?.attachment_url);
   const { categories, getCategory } = useCategories();
 
   useEffect(() => {
@@ -47,6 +50,7 @@ const MemoryDetailSheet = ({
       occurred_at: memory.occurred_at,
     });
     setTagsText((memory.ai_tags ?? []).join(', '));
+    setAlbum(albumOf(memory) ?? '');
   }, [memory]);
 
   if (!memory) return null;
@@ -60,6 +64,7 @@ const MemoryDetailSheet = ({
     const res = await onSave(memory.id, {
       ...draft,
       ai_tags: tagsText.split(',').map((t) => t.trim().toLowerCase()).filter(Boolean),
+      metadata: { ...(memory.metadata ?? {}), album: album.trim() || null },
     });
     setSaving(false);
     if (res && 'error' in res && res.error) {
@@ -155,6 +160,15 @@ const MemoryDetailSheet = ({
                 />
               </div>
               <div>
+                <label className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">Album (subcategory)</label>
+                <Input
+                  value={album}
+                  onChange={(e) => setAlbum(e.target.value)}
+                  placeholder="December 2025, Greece trip, Blood tests..."
+                  className="mt-1"
+                />
+              </div>
+              <div>
                 <label className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">Tags (comma separated)</label>
                 <Input value={tagsText} onChange={(e) => setTagsText(e.target.value)} className="mt-1" />
               </div>
@@ -178,16 +192,31 @@ const MemoryDetailSheet = ({
                 )}
               </div>
 
+              {albumOf(memory) && (
+                <span className="inline-flex rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-semibold text-primary">
+                  {albumOf(memory)}
+                </span>
+              )}
               {memory.summary && <p className="text-sm font-medium text-foreground">{memory.summary}</p>}
               {memory.content && (
                 <div className="smarty-card p-4">
                   <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">{memory.content}</p>
                 </div>
               )}
+              {memory.attachment_url && attachment && (
+                isVideoMemory(memory) ? (
+                  <video src={attachment} controls playsInline className="w-full overflow-hidden rounded-2xl border border-border" />
+                ) : (
+                  <a href={attachment} target="_blank" rel="noreferrer" className="block overflow-hidden rounded-2xl border border-border">
+                    <img src={attachment} alt={memory.title} className="w-full object-cover" loading="lazy" />
+                  </a>
+                )
+              )}
               {memory.attachment_url && (
-                <a href={memory.attachment_url} target="_blank" rel="noreferrer" className="block overflow-hidden rounded-2xl border border-border">
-                  <img src={memory.attachment_url} alt={memory.title} className="w-full object-cover" loading="lazy" />
-                </a>
+                <p className="text-[11px] text-muted-foreground">
+                  {typeof memory.metadata?.file_size === 'number' ? formatBytes(memory.metadata.file_size as number) : 'File'}
+                  {durationOf(memory) != null ? ` , ${formatDuration(durationOf(memory)!)}` : ''}
+                </p>
               )}
               {memory.ai_tags?.length ? (
                 <div className="flex flex-wrap gap-1.5">

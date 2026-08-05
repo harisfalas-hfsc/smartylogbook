@@ -86,7 +86,7 @@ export const useMemories = (options?: { module?: string; limit?: number }) => {
   /** Manual edit of a record by the user. */
   const update = async (id: string, patch: Partial<Memory>) => {
     const allowed: Record<string, unknown> = {};
-    for (const key of ['title', 'summary', 'content', 'module', 'kind', 'ai_tags', 'amount', 'currency', 'location', 'occurred_at'] as const) {
+    for (const key of ['title', 'summary', 'content', 'module', 'kind', 'ai_tags', 'amount', 'currency', 'location', 'occurred_at', 'metadata'] as const) {
       if (key in patch) allowed[key] = patch[key] ?? null;
     }
     if (!Object.keys(allowed).length) return { error: null };
