@@ -1,6 +1,8 @@
 import { Sparkles, Layers, ShieldCheck, Plus } from 'lucide-react';
 import { Panel, MiniRow, PageHeader, CtaCard, DesktopIntro } from '@/lib/marketing';
 import { MODULES } from '@/lib/constants';
+import PillarsCircle from '@/components/PillarsCircle';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const pillars = [
   { e: '📥', t: 'Put anything in', s: 'Type it, say it, snap it, upload it.' },
