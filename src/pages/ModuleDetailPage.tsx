@@ -240,7 +240,41 @@ const ModuleDetailPage = () => {
           ))}
         </div>
       )}
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="max-w-sm rounded-3xl">
+          <DialogHeader>
+            <DialogTitle>Edit category</DialogTitle>
+            <DialogDescription>
+              Rename it and pick an icon. Records inside stay exactly where they are.
+            </DialogDescription>
+          </DialogHeader>
+          <Input autoFocus value={name} maxLength={28} onChange={(e) => setName(e.target.value)} />
+          <div className="grid grid-cols-8 gap-1.5">
+            {CATEGORY_ICONS.map((i) => (
+              <button
+                key={i.id}
+                type="button"
+                onClick={() => setIcon(i.id)}
+                aria-label={`Icon ${i.id}`}
+                className={cn(
+                  'grid h-9 w-9 place-items-center rounded-xl border transition-smooth',
+                  icon === i.id ? 'border-primary bg-primary/10 text-primary' : 'border-border text-muted-foreground'
+                )}
+              >
+                <i.icon className="h-4 w-4" />
+              </button>
+            ))}
+          </div>
+          <DialogFooter>
+            <Button onClick={saveEdit} disabled={!name.trim() || saving} className="w-full rounded-2xl">
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save changes'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <MemoryDetailSheet
+
         memory={selected}
         open={!!selected}
         onOpenChange={(o) => !o && setSelected(null)}
