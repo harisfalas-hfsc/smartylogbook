@@ -1,0 +1,1 @@
+UPDATE public.memories SET occurred_at = created_at WHERE date_trunc('day', occurred_at) <> date_trunc('day', created_at);
