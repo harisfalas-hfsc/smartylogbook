@@ -20,18 +20,18 @@ type Tab = (typeof TABS)[number];
 
 const TAB_META: Record<Tab, { icon: typeof Users; blurb: string; tint: string }> = {
   Revenue: { icon: TrendingUp, blurb: 'MRR, total revenue and monthly trend', tint: 'from-emerald-500/15 to-emerald-500/5 text-emerald-600' },
-  Customers: { icon: Users, blurb: 'Every account — create, grant, revoke', tint: 'from-primary/15 to-primary/5 text-primary' },
+  Customers: { icon: Users, blurb: 'Every account, create, grant, revoke', tint: 'from-primary/15 to-primary/5 text-primary' },
   Subscriptions: { icon: Crown, blurb: 'Active, granted and canceled plans', tint: 'from-amber-500/15 to-amber-500/5 text-amber-600' },
   Payments: { icon: CreditCard, blurb: 'Recent transactions and their status', tint: 'from-sky-500/15 to-sky-500/5 text-sky-600' },
   Pricing: { icon: SlidersHorizontal, blurb: 'Price, allowance and cost model', tint: 'from-violet-500/15 to-violet-500/5 text-violet-600' },
   Jobs: { icon: Timer, blurb: 'Scheduled automations and their runs', tint: 'from-rose-500/15 to-rose-500/5 text-rose-600' },
-  Messages: { icon: Megaphone, blurb: 'Everything sent — edit or broadcast', tint: 'from-cyan-500/15 to-cyan-500/5 text-cyan-600' },
+  Messages: { icon: Megaphone, blurb: 'Everything sent, edit or broadcast', tint: 'from-cyan-500/15 to-cyan-500/5 text-cyan-600' },
 };
 
 
 
 const fmtDate = (d?: string | null) =>
-  d ? new Date(d).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+  d ? new Date(d).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' }) : '-';
 
 const StatCard = ({ icon: Icon, label, value, sub }: {
   icon: typeof Users; label: string; value: string; sub?: string;
@@ -151,7 +151,7 @@ const AdminPage = () => {
         <span>{u.memories} entries · {euro(u.total_spend)}</span>
       </div>
       <p className="mt-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-        Grant access — pick a plan, then how many months
+        Grant access, pick a plan, then how many months
       </p>
       <div className="mt-2 flex flex-wrap items-center gap-2">
         <select
@@ -193,7 +193,7 @@ const AdminPage = () => {
   );
 
   const hubValue = (t: Tab): string => {
-    if (!stats) return '—';
+    if (!stats) return '-';
     switch (t) {
       case 'Revenue': return euro(stats.totalRevenue);
       case 'Customers': return String(stats.totalUsers);
@@ -321,7 +321,7 @@ const AdminPage = () => {
                   <UserPlus className="h-4 w-4 text-primary" /> Create a customer
                 </p>
                 <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
-                  Creates the account immediately with the password you choose — already verified, so the
+                  Creates the account immediately with the password you choose, already verified, so the
                   person can sign in straight away without any confirmation email.
                 </p>
                 <div className="mt-3 grid gap-2 sm:grid-cols-2">
@@ -429,17 +429,17 @@ const AdminPage = () => {
                 <p className="text-sm font-bold text-foreground">What this tab does</p>
                 <ul className="mt-2 space-y-1.5 text-[12px] leading-relaxed text-muted-foreground">
                   <li>
-                    <strong className="text-foreground">Cost model</strong> — what one Smarty Assistant conversation
+                    <strong className="text-foreground">Cost model</strong>, what one Smarty Assistant conversation
                     actually costs you in AI usage. Change these numbers only if model prices change.
                   </li>
                   <li>
-                    <strong className="text-foreground">Plans</strong> — the price customers pay and how many
+                    <strong className="text-foreground">Plans</strong>, the price customers pay and how many
                     conversations they get each month. Leave “allowance override” empty to let the target margin decide
                     it automatically, or type a fixed number (currently 300).
                   </li>
                   <li>
                     Whatever you save here is what the public pricing page, the plan page and the conversation meter
-                    show — nothing is hardcoded.
+                    show, nothing is hardcoded.
                   </li>
                 </ul>
               </div>

@@ -41,7 +41,7 @@ const OutOfConversations = ({ pricing, allowance, renewsAt, onRenew }: Props) =>
     const { error } = await onRenew();
     setBusy(false);
     if (error) toast.error(error);
-    else toast.success('Renewed — your conversations are available again.');
+    else toast.success('Renewed, your conversations are available again.');
   };
 
   return (
@@ -55,7 +55,7 @@ const OutOfConversations = ({ pricing, allowance, renewsAt, onRenew }: Props) =>
         </h2>
         <p className="mt-1.5 max-w-md text-[13px] leading-relaxed opacity-90">
           You have used all {allowance ?? planAllowance(pricing, plan)} conversations included in{' '}
-          {plan?.name ?? 'your plan'}. Your logbook keeps working exactly as before — capture, search, filter and
+          {plan?.name ?? 'your plan'}. Your logbook keeps working exactly as before, capture, search, filter and
           organise stay free and unlimited.
         </p>
       </div>
@@ -66,7 +66,7 @@ const OutOfConversations = ({ pricing, allowance, renewsAt, onRenew }: Props) =>
           </span>
           <p className="text-[12px] leading-relaxed text-muted-foreground">
             {resets
-              ? <>Wait for your renewal on <span className="font-bold text-foreground">{resets}</span> — your conversations reset automatically.</>
+              ? <>Wait for your renewal on <span className="font-bold text-foreground">{resets}</span>, your conversations reset automatically.</>
               : <>Your conversations reset automatically at your next renewal.</>}
           </p>
         </div>
@@ -75,7 +75,7 @@ const OutOfConversations = ({ pricing, allowance, renewsAt, onRenew }: Props) =>
             <RotateCw className="h-4 w-4" />
           </span>
           <p className="text-[12px] leading-relaxed text-muted-foreground">
-            Need them now? Renew immediately for €{(plan?.price ?? 9.99).toFixed(2)} — your billing cycle restarts
+            Need them now? Renew immediately for €{(plan?.price ?? 9.99).toFixed(2)}, your billing cycle restarts
             today and you get a full new month of conversations from today.
           </p>
         </div>
@@ -131,7 +131,7 @@ export const PlanCard = ({ pricing, plan }: { pricing: PricingConfig; plan: Plan
             : 'border border-border bg-card text-foreground',
         )}
       >
-        Get {plan.name.replace("Smarty ", "")} — €{plan.price.toFixed(2)}
+        Get {plan.name.replace("Smarty ", "")}, €{plan.price.toFixed(2)}
       </Link>
     </div>
   );
@@ -179,7 +179,7 @@ const AssistantUpgrade = (props: Props) => {
         to="/app/checkout"
         className="flex items-center justify-center rounded-2xl bg-gradient-primary px-4 py-3 text-sm font-semibold text-primary-foreground shadow-glow transition-smooth active:scale-95"
       >
-        Get Premium — €9.99 / month
+        Get Premium, €9.99 / month
       </Link>
     )}
   </div>

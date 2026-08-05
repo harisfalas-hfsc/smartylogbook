@@ -14,7 +14,7 @@ const GOOD_TO_KNOW = [
   {
     emoji: '⏳',
     q: 'When the 300 run out?',
-    a: 'Nothing breaks — your logbook keeps working. Wait for renewal, or renew instantly for a full allowance.',
+    a: 'Nothing breaks, your logbook keeps working. Wait for renewal, or renew instantly for a full allowance.',
   },
   {
     emoji: '🚪',
@@ -51,7 +51,7 @@ const PricingPage = () => {
             <span className="text-xs font-medium text-muted-foreground">forever</span>
           </p>
           <p className="relative mt-2 text-[13px] leading-relaxed text-muted-foreground">
-            Your complete logbook — unlimited, no card needed. Without the Assistant.
+            Your complete logbook, unlimited, no card needed. Without the Assistant.
           </p>
 
           <ul className="relative mt-5 flex-1 space-y-2">
@@ -86,7 +86,7 @@ const PricingPage = () => {
             <span className="text-xs font-medium text-muted-foreground">per month</span>
           </p>
           <p className="relative mt-2 text-[13px] leading-relaxed text-muted-foreground">
-            Everything in Free — and your logbook starts thinking.
+            Everything in Free, and your logbook starts thinking.
           </p>
 
           <div className="relative mt-4 flex items-center gap-3 rounded-2xl bg-primary/8 p-3.5">
@@ -95,7 +95,7 @@ const PricingPage = () => {
             </span>
             <div>
               <p className="text-xl font-extrabold leading-none text-primary">{allowance} conversations</p>
-              <p className="mt-1 text-[11px] font-semibold text-muted-foreground">every month — around 10 a day</p>
+              <p className="mt-1 text-[11px] font-semibold text-muted-foreground">every month, around 10 a day</p>
             </div>
           </div>
 

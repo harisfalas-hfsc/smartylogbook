@@ -23,7 +23,7 @@ const TrashPage = () => {
         <Info className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
         <p className="text-[11px] leading-relaxed text-muted-foreground">
           While a record is in Trash it is hidden from your timeline, categories and from Smarty
-          Assistant — it cannot be used in answers or insights. Restore it and the assistant
+          Assistant, it cannot be used in answers or insights. Restore it and the assistant
           remembers it again instantly.
         </p>
       </div>

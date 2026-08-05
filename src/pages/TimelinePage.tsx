@@ -249,7 +249,7 @@ const TimelinePage = () => {
       )}
 
       <p className="pb-2 text-center text-[11px] text-muted-foreground">
-        {filtered.length} {filtered.length === 1 ? 'record' : 'records'} — tap any record to open, edit or move it.
+        {filtered.length} {filtered.length === 1 ? 'record' : 'records'}, tap any record to open, edit or move it.
       </p>
 
       <MemoryDetailSheet

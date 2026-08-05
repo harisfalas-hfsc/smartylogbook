@@ -1,5 +1,5 @@
 /**
- * Google Analytics (GA4) — frontend only.
+ * Google Analytics (GA4), frontend only.
  * The base gtag.js snippet lives in index.html so the very first page view is
  * recorded before React boots. These helpers only add SPA route changes and
  * custom events on top of it.

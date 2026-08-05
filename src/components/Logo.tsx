@@ -1,7 +1,7 @@
 import { cn } from '@/lib/utils';
 
 /**
- * Wordmark only — matches the Smarty Wellness family header style.
+ * Wordmark only, matches the Smarty Wellness family header style.
  */
 const Logo = ({
   compact = false,

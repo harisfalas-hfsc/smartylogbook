@@ -57,7 +57,7 @@ Deno.serve(async (req) => {
     if (!priceId || !/^[a-zA-Z0-9_-]+$/.test(priceId)) throw new Error("Invalid priceId");
     if (!returnUrl) throw new Error("Missing returnUrl");
 
-    // Identify the signed-in user — subscriptions must always be linked to an account.
+    // Identify the signed-in user, subscriptions must always be linked to an account.
     const token = req.headers.get("Authorization")?.replace("Bearer ", "");
     const { data: { user } } = token
       ? await supabase.auth.getUser(token)

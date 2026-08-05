@@ -113,7 +113,7 @@ Deno.serve(async (req) => {
           const e = effective(subMap.get(u.id));
           return {
             id: u.id,
-            email: u.email ?? "—",
+            email: u.email ?? "-",
             created_at: u.created_at,
             last_sign_in_at: u.last_sign_in_at,
             is_admin: adminSet.has(u.id),
@@ -384,9 +384,9 @@ Deno.serve(async (req) => {
         .limit(200);
       if (error) return json({ error: error.message }, 400);
       const users = await listAllAuthUsers();
-      const emailById = new Map(users.map((u) => [u.id, u.email ?? "—"]));
+      const emailById = new Map(users.map((u) => [u.id, u.email ?? "-"]));
       const rows = (data ?? [])
-        .map((m) => ({ ...m, email: emailById.get(m.user_id) ?? "—" }))
+        .map((m) => ({ ...m, email: emailById.get(m.user_id) ?? "-" }))
         .filter(
           (m) =>
             !search ||

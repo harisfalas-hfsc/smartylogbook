@@ -12,7 +12,7 @@ const pillars = [
 ];
 
 const promises = [
-  { e: '📂', t: 'No filing', s: 'It lands in the right place on its own — move it if you disagree.' },
+  { e: '📂', t: 'No filing', s: 'It lands in the right place on its own, move it if you disagree.' },
   { e: '🏷️', t: 'No busywork', s: 'Tags, dates and amounts are written for you.' },
   { e: '🔒', t: 'Private by default', s: 'Encrypted, yours only, export or delete any time.' },
 ];
@@ -33,7 +33,7 @@ const AboutPage = () => {
       eyebrowEmoji="✨"
       badge={Sparkles}
       title={<>A logbook <span className="gradient-text">with a brain.</span></>}
-      lead="You put things in; the Smarty Assistant makes sense of them. Six seconds of effort from you — everything after that is Smarty Logbook."
+      lead="You put things in; the Smarty Assistant makes sense of them. Six seconds of effort from you, everything after that is Smarty Logbook."
     >
       <PillarsCircle items={pillars} />
     </Panel>
@@ -43,8 +43,8 @@ const AboutPage = () => {
       eyebrow="Life modules"
       eyebrowEmoji="🗂️"
       badge={Layers}
-      title={<>It files it — <span className="gradient-text">you stay in control.</span></>}
-      lead="Every entry lands in the right area on its own. Move it whenever you disagree — or create a module of your own."
+      title={<>It files it, <span className="gradient-text">you stay in control.</span></>}
+      lead="Every entry lands in the right area on its own. Move it whenever you disagree, or create a module of your own."
     >
       <div className="sm:hidden">
         <LifeModulesOrbit />
@@ -81,7 +81,7 @@ const AboutPage = () => {
       </div>
     </Panel>
 
-    <CtaCard text="Free to begin. Capture your first memory in under ten seconds — the Smarty Assistant handles the rest." />
+    <CtaCard text="Free to begin. Capture your first memory in under ten seconds, the Smarty Assistant handles the rest." />
   </div>
   );
 };

@@ -7,7 +7,7 @@ import { PREMIUM_PRICE_ID, paymentsConfigured } from '@/lib/stripe';
 import { useSubscription } from '@/lib/subscription';
 import { ASSISTANT_BENEFITS } from '@/lib/pricing';
 
-/** Buy Smarty Premium — embedded card form, and the post-payment confirmation. */
+/** Buy Smarty Premium, embedded card form, and the post-payment confirmation. */
 const CheckoutPage = () => {
   const navigate = useNavigate();
   const [params] = useSearchParams();
@@ -17,7 +17,7 @@ const CheckoutPage = () => {
 
   useEffect(() => {
     if (!complete) return;
-    // The subscription lands via webhook — poll briefly so the UI catches up.
+    // The subscription lands via webhook, poll briefly so the UI catches up.
     const timers = [1500, 4000, 8000].map((ms) => window.setTimeout(() => void reload(), ms));
     const done = window.setTimeout(() => setWaited(true), 9000);
     return () => { timers.forEach(window.clearTimeout); window.clearTimeout(done); };
@@ -35,7 +35,7 @@ const CheckoutPage = () => {
             {active
               ? 'Smarty Premium is active. Your Assistant is unlocked with 300 conversations this cycle.'
               : waited
-                ? 'Your payment went through. Premium usually activates within a few seconds — refresh your plan page if it is still catching up.'
+                ? 'Your payment went through. Premium usually activates within a few seconds, refresh your plan page if it is still catching up.'
                 : 'Activating your Smarty Premium access…'}
           </p>
           {!active && !waited && <Loader2 className="mx-auto mt-4 h-5 w-5 animate-spin text-primary" />}

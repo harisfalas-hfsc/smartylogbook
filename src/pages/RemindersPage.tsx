@@ -47,7 +47,7 @@ const RemindersPage = () => {
     setTitle('');
     setAmount('');
     toast.success(
-      permission === 'granted' ? 'Reminder scheduled' : 'Reminder saved — allow notifications to be nudged'
+      permission === 'granted' ? 'Reminder scheduled' : 'Reminder saved, allow notifications to be nudged'
     );
   };
 
@@ -89,7 +89,7 @@ const RemindersPage = () => {
     <div className="space-y-5">
       <header className="animate-fade-up">
         <h1 className="text-2xl font-extrabold tracking-tight text-foreground">Reminders</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Bills, health check-ins and events — nudged at the right time.</p>
+        <p className="mt-1 text-sm text-muted-foreground">Bills, health check-ins and events, nudged at the right time.</p>
       </header>
 
       <section className="smarty-card animate-fade-up space-y-3 p-4">

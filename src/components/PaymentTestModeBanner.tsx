@@ -12,7 +12,7 @@ export function PaymentTestModeBanner() {
   if (clientToken.startsWith('pk_test_')) {
     return (
       <div className="w-full rounded-2xl border border-warning/40 bg-warning/10 px-4 py-2 text-center text-xs font-semibold text-warning-foreground">
-        Test mode — payments made here are not real.{' '}
+        Test mode, payments made here are not real.{' '}
         <a
           href="https://docs.lovable.dev/features/payments#test-and-live-environments"
           target="_blank"

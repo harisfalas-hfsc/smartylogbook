@@ -1,6 +1,6 @@
 /**
  * Centralised SEO / GEO / AEO metadata for Smarty Logbook.
- * Nothing here renders visible UI — it only feeds <head> tags and JSON-LD.
+ * Nothing here renders visible UI, it only feeds <head> tags and JSON-LD.
  */
 
 export const SITE_URL = "https://smartylogbook.com";
@@ -102,16 +102,16 @@ const K = {
 
 export const SEO_BY_PATH: Record<string, PageSeo> = {
   "/": {
-    title: "Smarty Logbook — AI Digital Logbook & Life Operating System",
+    title: "Smarty Logbook: AI Digital Logbook & Life Operating System",
     description:
-      "Smarty Logbook is the AI-powered universal digital logbook. Record anything — health, finance, business, habits, goals, travel — and let AI organise, connect and explain your life.",
+      "Smarty Logbook is the AI-powered universal digital logbook. Record anything, health, finance, business, habits, goals, travel, and let AI organise, connect and explain your life.",
     keywords: K.core,
     schema: [
       {
         "@type": "WebPage",
         "@id": `${SITE_URL}/#webpage`,
         url: `${SITE_URL}/`,
-        name: "Smarty Logbook — AI Digital Logbook & Life Operating System",
+        name: "Smarty Logbook: AI Digital Logbook & Life Operating System",
         description: BRAND_DESCRIPTION,
         isPartOf: { "@id": `${SITE_URL}/#website` },
         about: { "@id": `${SITE_URL}/#software` },
@@ -120,7 +120,7 @@ export const SEO_BY_PATH: Record<string, PageSeo> = {
     ],
   },
   "/about": {
-    title: "About Smarty Logbook — The Universal AI Logbook Explained",
+    title: "About Smarty Logbook: The Universal AI Logbook Explained",
     description:
       "What Smarty Logbook is, who it is for and why it exists: an AI second brain that captures, classifies and connects unlimited logbooks across every area of your life.",
     keywords:
@@ -128,7 +128,7 @@ export const SEO_BY_PATH: Record<string, PageSeo> = {
     breadcrumb: [{ name: "About", path: "/about" }],
   },
   "/how-it-works": {
-    title: "How Smarty Logbook Works — Capture, Classify, Connect, Ask",
+    title: "How Smarty Logbook Works, Capture, Classify, Connect, Ask",
     description:
       "Learn how Smarty Logbook works: capture by text, voice, photo or document, let AI classify and link it automatically, then ask questions in plain language.",
     keywords:
@@ -145,7 +145,7 @@ export const SEO_BY_PATH: Record<string, PageSeo> = {
             "@type": "HowToStep",
             position: 1,
             name: "Capture",
-            text: "Add anything by text, voice, photo or document — no forms, no categories.",
+            text: "Add anything by text, voice, photo or document, no forms, no categories.",
           },
           {
             "@type": "HowToStep",
@@ -170,7 +170,7 @@ export const SEO_BY_PATH: Record<string, PageSeo> = {
     ],
   },
   "/pricing": {
-    title: "Pricing — Smarty Logbook Free & Premium (€9.99/month)",
+    title: "Pricing, Smarty Logbook Free & Premium (€9.99/month)",
     description:
       "Simple pricing: Free for capturing and organising your logbooks, Premium at €9.99 per month for the full Smarty Assistant, insights and proactive reminders.",
     keywords:
@@ -178,14 +178,14 @@ export const SEO_BY_PATH: Record<string, PageSeo> = {
     breadcrumb: [{ name: "Pricing", path: "/pricing" }],
   },
   "/testimonials": {
-    title: "Testimonials — What People Use Smarty Logbook For",
+    title: "Testimonials, What People Use Smarty Logbook For",
     description:
       "Real-world stories from people using Smarty Logbook as a second brain for health records, finances, business tracking, habits and daily journaling.",
     keywords: "smarty logbook reviews, digital logbook testimonials, second brain reviews",
     breadcrumb: [{ name: "Testimonials", path: "/testimonials" }],
   },
   "/faq": {
-    title: "Smarty Logbook FAQ — Questions About the AI Logbook",
+    title: "Smarty Logbook FAQ, Questions About the AI Logbook",
     description:
       "Answers about how Smarty Logbook classifies entries, what you can track, how the Smarty Assistant works, plans and pricing, privacy, and data ownership.",
     keywords:
@@ -193,26 +193,26 @@ export const SEO_BY_PATH: Record<string, PageSeo> = {
     breadcrumb: [{ name: "FAQ", path: "/faq" }],
   },
   "/security": {
-    title: "Security & Privacy — How Smarty Logbook Protects Your Data",
+    title: "Security & Privacy, How Smarty Logbook Protects Your Data",
     description:
       "Encryption, row-level access control, GDPR rights and full data deletion: how Smarty Logbook keeps your personal logbooks private and under your control.",
     keywords: "logbook data security, GDPR journal app, encrypted personal database",
     breadcrumb: [{ name: "Security", path: "/security" }],
   },
   "/privacy-policy": {
-    title: "Privacy Policy — Smarty Logbook",
+    title: "Privacy Policy, Smarty Logbook",
     description:
       "How Smarty Logbook collects, processes, stores and deletes personal data, and the rights you have over your logbooks.",
     breadcrumb: [{ name: "Privacy Policy", path: "/privacy-policy" }],
   },
   "/terms-and-conditions": {
-    title: "Terms & Conditions — Smarty Logbook",
+    title: "Terms & Conditions, Smarty Logbook",
     description:
       "The terms governing the use of Smarty Logbook, including accounts, subscriptions, acceptable use and liability.",
     breadcrumb: [{ name: "Terms & Conditions", path: "/terms-and-conditions" }],
   },
   "/disclaimer": {
-    title: "Disclaimer — Smarty Logbook",
+    title: "Disclaimer, Smarty Logbook",
     description:
       "Smarty Logbook provides organisational and informational support only and does not provide medical, legal or financial advice.",
     breadcrumb: [{ name: "Disclaimer", path: "/disclaimer" }],
@@ -226,7 +226,7 @@ export const SEO_BY_PATH: Record<string, PageSeo> = {
 };
 
 export const FALLBACK_SEO: PageSeo = {
-  title: "Smarty Logbook — AI Digital Logbook & Life Operating System",
+  title: "Smarty Logbook: AI Digital Logbook & Life Operating System",
   description: BRAND_DESCRIPTION,
   noindex: true,
 };

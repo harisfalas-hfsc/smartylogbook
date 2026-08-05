@@ -7,7 +7,7 @@ interface Props {
   returnUrl?: string;
 }
 
-/** Stripe embedded checkout — the payment form renders inline, no redirect. */
+/** Stripe embedded checkout, the payment form renders inline, no redirect. */
 const StripeEmbeddedCheckout = ({ priceId, returnUrl }: Props) => {
   const fetchClientSecret = async (): Promise<string> => {
     const { data, error } = await supabase.functions.invoke('create-checkout', {

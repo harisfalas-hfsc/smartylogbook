@@ -52,7 +52,7 @@ export const DEFAULT_PRICING: PricingConfig = {
       key: 'premium',
       name: 'Smarty Premium',
       price: 9.99,
-      tagline: 'Your everyday thinking partner — about 10 conversations a day.',
+      tagline: 'Your everyday thinking partner, about 10 conversations a day.',
       featured: true,
       allowanceOverride: 300,
     },

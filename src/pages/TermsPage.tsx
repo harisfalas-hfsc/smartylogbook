@@ -33,7 +33,7 @@ const TermsPage = () => (
     <LegalSection title="4. Your content">
       <p>
         You keep all rights to the content you upload. You grant us a limited licence to store, process and
-        display that content solely to operate the service for you — including sending it to our AI provider
+        display that content solely to operate the service for you, including sending it to our AI provider
         to generate a response. We do not sell your content and do not use it to train third-party models.
       </p>
       <p>You confirm that you have the right to upload each file, including documents that relate to others.</p>

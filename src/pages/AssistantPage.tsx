@@ -68,7 +68,7 @@ const AssistantPage = () => {
       if (error) throw error;
       const transcript = String(data?.text ?? '').trim();
       if (!transcript) {
-        toast.error('No speech detected — try again closer to the mic');
+        toast.error('No speech detected, try again closer to the mic');
         return;
       }
       setInput((prev) => (prev ? `${prev} ${transcript}` : transcript));
@@ -106,7 +106,7 @@ const AssistantPage = () => {
       recorderRef.current = recorder;
       recorder.start();
       setRecording(true);
-      toast.info('Recording — tap the square to stop');
+      toast.info('Recording, tap the square to stop');
     } catch {
       toast.error('Microphone access was blocked. Allow it in your browser settings.');
     }
@@ -225,7 +225,7 @@ const AssistantPage = () => {
           changed ? `${changed} rescheduled` : '',
           removed ? `${removed} cleared` : '',
         ].filter(Boolean);
-        toast.success(`Calendar updated — ${parts.join(', ')}`);
+        toast.success(`Calendar updated, ${parts.join(', ')}`);
       }
 
       const question2 = typeof data?.question === 'string' ? data.question.trim() : '';
@@ -233,7 +233,7 @@ const AssistantPage = () => {
       const content = question2 && !answer.includes(question2)
         ? `${answer}\n\n${question2}`.trim()
         : answer;
-      setMessages((prev) => [...prev, { role: 'assistant', content: content || 'I could not read that — try again.' }]);
+      setMessages((prev) => [...prev, { role: 'assistant', content: content || 'I could not read that, try again.' }]);
     } catch (err) {
       toast.error((err as Error).message || 'Smarty Assistant is unavailable right now');
       setMessages((prev) => [...prev, { role: 'assistant', content: 'Something went wrong reaching me just now. Please try again.' }]);

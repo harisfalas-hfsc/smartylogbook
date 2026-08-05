@@ -93,7 +93,7 @@ const CapturePage = () => {
       if (error) throw error;
       const transcript = String(data?.text ?? '').trim();
       if (!transcript) {
-        toast.error('No speech detected — try again a bit closer to the mic');
+        toast.error('No speech detected, try again a bit closer to the mic');
         return;
       }
       setText((prev) => (prev ? `${prev} ${transcript}` : transcript));
@@ -133,7 +133,7 @@ const CapturePage = () => {
       recorderRef.current = recorder;
       recorder.start();
       setRecording(true);
-      toast.info('Recording — tap the square to stop');
+      toast.info('Recording, tap the square to stop');
     } catch {
       toast.error('Microphone access was blocked. Allow it in your browser settings.');
     }
@@ -231,7 +231,7 @@ const CapturePage = () => {
         if (data.kind === 'receipt' || data.kind === 'expense') setKind('receipt');
         if (!text.trim() && data.summary) setText(String(data.summary));
       } else if (data?.upgrade) {
-        toast.info('Reading documents is part of Smarty Assistant — your file is still saved.');
+        toast.info('Reading documents is part of Smarty Assistant, your file is still saved.');
       } else if (data?.error) {
         toast.error(String(data.error));
       }
@@ -350,7 +350,7 @@ const CapturePage = () => {
       <header className="animate-fade-up">
         <h1 className="text-2xl font-extrabold tracking-tight text-foreground">Quick Capture</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Type, speak or snap it. The AI reads it, files it and connects it to what you already have — you never pick a category.
+          Type, speak or snap it. The AI reads it, files it and connects it to what you already have, you never pick a category.
         </p>
       </header>
 
@@ -405,7 +405,7 @@ const CapturePage = () => {
               <p className="mt-2 text-[11px] font-semibold text-primary">
                 Connected to {extracted.related_ids.length} existing{' '}
                 {extracted.related_ids.length === 1 ? 'entry' : 'entries'}
-                {extracted.relation_note ? ` — ${extracted.relation_note}` : ''}
+                {extracted.relation_note ? `, ${extracted.relation_note}` : ''}
               </p>
             ) : null}
             {extracted.items?.length ? (
@@ -487,7 +487,7 @@ const CapturePage = () => {
         </button>
       </div>
 
-      {/* What happens next — colourful, not a wall of text */}
+      {/* What happens next, colourful, not a wall of text */}
       <section className="animate-fade-up grid grid-cols-3 gap-2">
         {[
           { icon: Brain, label: 'It reads it', tint: 'bg-mod-health/10', color: 'text-mod-health' },
