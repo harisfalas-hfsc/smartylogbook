@@ -268,11 +268,39 @@ const AdminJobsTab = () => {
           <Plus className="h-4 w-4 text-primary" /> Add a new scheduled job
         </button>
         {creating && (
-          <div className="mt-3 space-y-2">
+          <div className="mt-3 space-y-3">
+            <label className="block">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                What should this job do?
+              </span>
+              <select
+                value={newJob.template}
+                onChange={(e) => {
+                  const t = JOB_TEMPLATES.find((x) => x.id === e.target.value);
+                  setNewJob((p) => ({
+                    ...p,
+                    template: e.target.value,
+                    jobname: t ? t.suggestedName : p.jobname,
+                    schedule: t ? t.suggestedSchedule : p.schedule,
+                  }));
+                }}
+                className="mt-1 w-full rounded-2xl border border-border bg-card px-3 py-2.5 text-sm font-semibold text-foreground outline-none"
+              >
+                <option value="">Pick a task…</option>
+                {JOB_TEMPLATES.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.label}
+                  </option>
+                ))}
+                <option value="custom">Advanced, write my own SQL</option>
+              </select>
+              {picked && <p className="mt-1.5 text-[12px] leading-relaxed text-muted-foreground">{picked.description}</p>}
+            </label>
+
             <input
               value={newJob.jobname}
               onChange={(e) => setNewJob((p) => ({ ...p, jobname: e.target.value }))}
-              placeholder="Job name (e.g. smarty-nightly-cleanup)"
+              placeholder="Job name (e.g. smarty-daily-insights)"
               className="w-full rounded-2xl border border-border bg-card px-3 py-2.5 text-sm text-foreground outline-none"
             />
             <div className="grid gap-2 sm:grid-cols-2">
@@ -296,21 +324,33 @@ const AdminJobsTab = () => {
                 ))}
               </select>
             </div>
-            <textarea
-              value={newJob.command}
-              onChange={(e) => setNewJob((p) => ({ ...p, command: e.target.value }))}
-              rows={4}
-              spellCheck={false}
-              placeholder="SQL to run, e.g. SELECT public.purge_expired_trash();"
-              className="w-full rounded-2xl border border-border bg-card px-3 py-2.5 font-mono text-[11px] text-foreground outline-none"
-            />
+            <p className="text-[11px] text-muted-foreground">Runs {describeSchedule(newJob.schedule)}.</p>
+
+            {newJob.template === 'custom' && (
+              <textarea
+                value={newJob.command}
+                onChange={(e) => setNewJob((p) => ({ ...p, command: e.target.value }))}
+                rows={4}
+                spellCheck={false}
+                placeholder="SQL to run, e.g. SELECT public.purge_expired_trash();"
+                className="w-full rounded-2xl border border-border bg-card px-3 py-2.5 font-mono text-[11px] text-foreground outline-none"
+              />
+            )}
+
             <button
-              disabled={busy !== null}
+              disabled={busy !== null || !newJob.template || !newJob.jobname.trim()}
               onClick={() =>
                 act(
                   'create-job',
                   async () => {
-                    await adminApi('cron_save', { ...newJob, active: true });
+                    await adminApi('cron_save', {
+                      jobname: newJob.jobname,
+                      schedule: newJob.schedule,
+                      active: true,
+                      ...(newJob.template === 'custom'
+                        ? { command: newJob.command }
+                        : { template: newJob.template }),
+                    });
                     setNewJob(EMPTY);
                     setCreating(false);
                   },
@@ -324,6 +364,7 @@ const AdminJobsTab = () => {
           </div>
         )}
       </div>
+
 
       <button
         onClick={load}
