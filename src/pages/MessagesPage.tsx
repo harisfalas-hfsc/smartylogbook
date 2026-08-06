@@ -136,6 +136,15 @@ const MessagesPage = () => {
     exitSelect();
   };
 
+  const openMessage = (m: MessageRow) => {
+    setOpenId(m.id);
+    if (!m.read_at) void markRead(m.id);
+  };
+
+  const opened = useMemo(() => messages.find((m) => m.id === openId) ?? null, [messages, openId]);
+
+
+
   const renderMessage = (m: MessageRow) => {
     const style = messageStyle(m.kind);
     const Icon = style.icon;
