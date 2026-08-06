@@ -18,6 +18,25 @@ interface AlertRow {
 const day = (d: Date) => d.toISOString().slice(0, 10);
 const addDays = (n: number) => new Date(Date.now() + n * 86400000);
 
+/** Days between two calendar days (positive = due in the future). */
+const daysUntil = (dueDay: string, todayDay: string) =>
+  Math.round((Date.parse(`${dueDay}T00:00:00Z`) - Date.parse(`${todayDay}T00:00:00Z`)) / 86400000);
+
+type Stage = { id: string; when: string; severity: string };
+
+/**
+ * The reminder cadence: two days before, the day before, the day itself,
+ * then two follow ups if it was missed. Anything else stays silent.
+ */
+const stageFor = (delta: number): Stage | null => {
+  if (delta === 2) return { id: "t-2", when: "in 2 days", severity: "normal" };
+  if (delta === 1) return { id: "t-1", when: "tomorrow", severity: "normal" };
+  if (delta === 0) return { id: "t-0", when: "today", severity: "high" };
+  if (delta === -1) return { id: "t+1", when: "yesterday", severity: "high" };
+  if (delta === -2) return { id: "t+2", when: "2 days ago", severity: "high" };
+  return null;
+};
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -46,34 +65,42 @@ Deno.serve(async (req) => {
 
   const alerts: AlertRow[] = [];
   const today = new Date();
+  const todayDay = day(today);
   const soon = addDays(7);
 
-  /* ---- bills & reminders coming up or overdue ---- */
+  /* ---- reminders: staged cadence around the due date ---- */
   const { data: reminders } = await db
     .from("reminders")
     .select("id,user_id,title,type,amount,due_at,done")
     .eq("done", false)
+    .gte("due_at", addDays(-3).toISOString())
     .lte("due_at", soon.toISOString());
 
+  const activeReminderKeys = new Set<string>();
   for (const r of reminders ?? []) {
     const due = new Date(r.due_at as string);
-    const overdue = due < today;
+    const stage = stageFor(daysUntil(day(due), todayDay));
+    if (!stage) continue;
+    const missed = stage.id.startsWith("t+");
+    const key = `reminder:${r.id}:${stage.id}`;
+    activeReminderKeys.add(key);
     alerts.push({
       user_id: r.user_id as string,
       kind: r.type as string,
-      title: overdue ? `Overdue: ${r.title}` : `Coming up: ${r.title}`,
-      detail: `${overdue ? "Was due" : "Due"} ${day(due)}${r.amount ? `, ${r.amount}` : ""}.`,
-      severity: overdue ? "high" : "normal",
+      title: missed
+        ? `Missed: ${r.title}`
+        : stage.id === "t-0"
+          ? `Today: ${r.title}`
+          : `Coming up: ${r.title}`,
+      detail: `${missed ? "Was due" : "Due"} ${stage.when} (${day(due)})${r.amount ? `, ${r.amount}` : ""}.`,
+      severity: stage.severity,
       due_at: due.toISOString(),
-      dedupe_key: `reminder:${r.id}:${overdue ? "overdue" : "soon"}`,
+      dedupe_key: key,
     });
   }
 
   // Alerts are snapshots. Clear reminder alerts whose source was completed or
   // deleted so an old dashboard warning can never outlive the reminder itself.
-  const activeReminderKeys = new Set(
-    (reminders ?? []).map((r) => `reminder:${r.id}:${new Date(r.due_at as string) < today ? "overdue" : "soon"}`),
-  );
   const { data: existingReminderAlerts } = await db
     .from("proactive_alerts")
     .select("id,dedupe_key")
@@ -86,24 +113,32 @@ Deno.serve(async (req) => {
     await db.from("proactive_alerts").update({ dismissed: true, seen: true }).in("id", staleAlertIds);
   }
 
-  /* ---- recurring money items due in the next week ---- */
+  /* ---- recurring money items, same cadence ---- */
   const { data: money } = await db
     .from("money_items")
     .select("id,user_id,label,type,amount,currency,next_due,active")
     .eq("active", true)
     .not("next_due", "is", null)
+    .gte("next_due", day(addDays(-3)))
     .lte("next_due", day(soon));
 
   for (const m of money ?? []) {
-    const overdue = String(m.next_due) < day(today);
+    const dueDay = String(m.next_due);
+    const stage = stageFor(daysUntil(dueDay, todayDay));
+    if (!stage) continue;
+    const missed = stage.id.startsWith("t+");
     alerts.push({
       user_id: m.user_id as string,
       kind: "bill",
-      title: `${overdue ? "Overdue payment" : "Payment due"}: ${m.label}`,
-      detail: `${m.amount} ${m.currency} ${overdue ? "was due" : "due"} ${m.next_due}.`,
-      severity: overdue ? "high" : "normal",
-      due_at: new Date(`${m.next_due}T09:00:00Z`).toISOString(),
-      dedupe_key: `money:${m.id}:${m.next_due}`,
+      title: missed
+        ? `Missed payment: ${m.label}`
+        : stage.id === "t-0"
+          ? `Due today: ${m.label}`
+          : `Payment coming up: ${m.label}`,
+      detail: `${m.amount} ${m.currency} ${missed ? "was due" : "due"} ${stage.when} (${dueDay}).`,
+      severity: stage.severity,
+      due_at: new Date(`${dueDay}T09:00:00Z`).toISOString(),
+      dedupe_key: `money:${m.id}:${dueDay}:${stage.id}`,
     });
   }
 
@@ -170,22 +205,6 @@ Deno.serve(async (req) => {
     });
   }
 
-  let inserted = 0;
-  if (alerts.length) {
-    const { data, error } = await db
-      .from("proactive_alerts")
-      .upsert(alerts, { onConflict: "user_id,dedupe_key", ignoreDuplicates: true })
-      .select("id");
-    if (error) {
-      console.error("insert alerts failed", error);
-      return new Response(JSON.stringify({ error: error.message }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-    inserted = data?.length ?? 0;
-  }
-
   /* ---- subscription renewals and cancellations ---- */
   try {
     const { data: subs } = await db
@@ -212,46 +231,20 @@ Deno.serve(async (req) => {
     console.error("subscription alerts failed", e);
   }
 
-  /* ---- daily assistant brief: one message per user at their chosen morning hour ---- */
-  let briefs = 0;
-  try {
-    const nowUtcHour = today.getUTCHours();
-    const { data: prefRows } = await db
-      .from("user_preferences")
-      .select("user_id,coach_time,notify_coach,quiet_hours_start,quiet_hours_end")
-      .eq("notify_coach", true);
-
-    const todayKey = day(today);
-    const briefRows: Record<string, unknown>[] = [];
-    for (const p of prefRows ?? []) {
-      const hour = Number(String(p.coach_time ?? "07:30").slice(0, 2));
-      if (Number.isNaN(hour) || hour !== nowUtcHour) continue;
-      const mine = alerts.filter((a) => a.user_id === p.user_id);
-      const headline = mine.length
-        ? `${mine.length} thing${mine.length > 1 ? "s" : ""} need your attention today.`
-        : "Nothing urgent today, a good day to capture what is on your mind.";
-      briefRows.push({
-        user_id: p.user_id,
-        kind: "brief",
-        title: "Your daily brief is ready",
-        body: headline,
-        level: "normal",
-        related_at: today.toISOString(),
-        action_label: "Open Smarty Assistant",
-        action_url: "/app/assistant",
-        dedupe_key: `brief:${todayKey}`,
+  let inserted = 0;
+  if (alerts.length) {
+    const { data, error } = await db
+      .from("proactive_alerts")
+      .upsert(alerts, { onConflict: "user_id,dedupe_key", ignoreDuplicates: true })
+      .select("id");
+    if (error) {
+      console.error("insert alerts failed", error);
+      return new Response(JSON.stringify({ error: error.message }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    if (briefRows.length) {
-      const { data, error } = await db
-        .from("messages")
-        .upsert(briefRows, { onConflict: "user_id,dedupe_key", ignoreDuplicates: true })
-        .select("id");
-      if (error) console.error("insert briefs failed", error);
-      briefs = data?.length ?? 0;
-    }
-  } catch (e) {
-    console.error("daily brief failed", e);
+    inserted = data?.length ?? 0;
   }
 
   /* ---- mirror everything into each user's Message Center ---- */
@@ -276,8 +269,8 @@ Deno.serve(async (req) => {
     messaged = data?.length ?? 0;
   }
 
-  console.log(`proactive-scan: ${alerts.length} candidates, ${inserted} new alerts, ${messaged} messages, ${briefs} briefs`);
-  return new Response(JSON.stringify({ candidates: alerts.length, inserted, messaged, briefs }), {
+  console.log(`proactive-scan: ${alerts.length} candidates, ${inserted} new alerts, ${messaged} messages`);
+  return new Response(JSON.stringify({ candidates: alerts.length, inserted, messaged }), {
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 });
