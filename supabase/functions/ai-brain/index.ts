@@ -931,6 +931,7 @@ Deno.serve(async (req) => {
       let answer = text;
       let save: unknown = null;
       let question: unknown = null;
+      let scope = "in";
       let calendarOps: Array<Record<string, unknown>> = [];
       try {
         const match = text.match(/\{[\s\S]*\}/);
@@ -939,24 +940,42 @@ Deno.serve(async (req) => {
           answer = String((obj as Record<string, unknown>).answer ?? "").trim();
           save = (obj as Record<string, unknown>).save ?? null;
           question = (obj as Record<string, unknown>).question ?? null;
+          if (String((obj as Record<string, unknown>).scope ?? "in") === "out") scope = "out";
           const c = (obj as Record<string, unknown>).calendar;
           if (Array.isArray(c)) calendarOps = c.slice(0, 8) as Array<Record<string, unknown>>;
         }
       } catch { /* fall back to plain text */ }
 
+      if (scope === "out") {
+        await refundConversation(quota?.conversationId ?? null, quota?.created);
+        return new Response(
+          JSON.stringify({ answer, scope: "out", save: null, question: null, calendar: [], quota: null }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
       /* ---- the assistant actually writes to the calendar ---- */
       const calendarResult = await applyCalendarOps(authHeader, calendarOps);
 
-      return new Response(JSON.stringify({ answer, save, question, calendar: calendarResult, quota }), {
+      return new Response(JSON.stringify({ answer, scope, save, question, calendar: calendarResult, quota }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
     if (mode === "search") {
-      return new Response(JSON.stringify({ answer: raw.trim(), quota }), {
+      const answer = raw.trim();
+      if (/^OUT_OF_SCOPE:/i.test(answer)) {
+        await refundConversation(quota?.conversationId ?? null, quota?.created);
+        return new Response(
+          JSON.stringify({ answer: answer.replace(/^OUT_OF_SCOPE:\s*/i, ""), scope: "out", quota: null }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      return new Response(JSON.stringify({ answer, scope: "in", quota }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
 
     if (mode === "transcribe") {
       return new Response(JSON.stringify({ text: raw.trim() }), {
