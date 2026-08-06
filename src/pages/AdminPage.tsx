@@ -423,6 +423,7 @@ const AdminPage = () => {
           {tab === 'Jobs' && <AdminJobsTab />}
 
           {tab === 'Messages' && <AdminMessagesTab />}
+          {tab === 'Support' && <AdminSupportTab />}
 
 
           {tab === 'Pricing' && (
