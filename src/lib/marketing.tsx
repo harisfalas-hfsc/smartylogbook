@@ -1,8 +1,12 @@
 import { Link } from 'react-router-dom';
 import {
   Brain, Camera, Clock, Database, Layers, Bell, Lock, Search, Shield,
-  Sparkles, Wand2, Link2, MessageCircle, FileText, Mic,
+  Sparkles, Wand2, Link2, MessageCircle, FileText, Mic, ChevronRight,
 } from 'lucide-react';
+import {
+  Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger,
+} from '@/components/ui/dialog';
+
 
 export const problems = [
   'Your life is scattered across ten apps.',
@@ -138,6 +142,11 @@ export const faqs = [
   { q: 'Is it a medical or financial adviser?', a: 'No. It organises and explains your own information. It does not replace a doctor, accountant or any other professional.' },
   { q: 'What can I ask Smarty Assistant?', a: 'Anything about your own logbook: your entries, notes, photos and documents, your health, fitness, finance and business records, your reminders and calendar, your spending, your patterns over time and your plan. For example, "when was my last blood test?", "how much did I spend on groceries last month?", "explain this report", "what is coming up next week?"' },
   { q: 'What happens if I ask something unrelated?', a: 'Smarty Assistant is the brain of your logbook, not a general chatbot. Questions like the weather, the news, a generic workout programme or writing an essay are politely declined with a suggestion of what it can look up in your records instead, and that question is not counted against your conversations.' },
+  { q: 'Who can see what I put in my logbook?', a: 'Only you. Every entry, photo and document is locked to your account by row-level security in the database, so no other user can read it. We do not browse your content and we never sell it or share it with advertisers.' },
+  { q: 'Is my data encrypted?', a: 'Yes. Everything is encrypted in transit with TLS and encrypted at rest in the database and in storage. Files live in a private bucket and are only reachable through short-lived signed links generated for your session.' },
+  { q: 'Do you train AI models on my data?', a: 'No. Your content is sent to our AI provider only to produce your own answer, classification or summary, and it is not used to train third-party models. Nothing you capture is shared with other users.' },
+  { q: 'Can I delete everything?', a: 'Yes. Deleted records go to Trash for 30 days and can be restored, then they are purged permanently. You can export your whole logbook or delete your account and all of its data at any time from Settings, which is your GDPR right to erasure.' },
+  { q: 'What about sensitive health data?', a: 'Health information is special-category data under Article 9 GDPR and is processed only on your explicit consent, which you give by choosing to log it and can withdraw at any time by deleting that content or your account.' },
 ];
 
 export const securityPoints = [
@@ -145,6 +154,92 @@ export const securityPoints = [
   { icon: Database, t: 'Row-level security', s: 'Only your account can read your entries.' },
   { icon: Shield, t: 'You own it', s: 'Export or delete everything, any time.' },
 ];
+
+/* Short explainers opened from clickable cards on About / How it works. */
+export const explainers: Record<string, { emoji: string; title: string; summary: string; points: string[]; link?: { to: string; label: string } }> = {
+  'no-filing': {
+    emoji: '📂',
+    title: 'No filing',
+    summary: 'You never choose a folder, a category or a tag. You capture, and it lands where it belongs.',
+    points: [
+      'The Assistant reads what you saved and files it into the right life category on its own.',
+      'If you disagree, move it once. That correction becomes a rule and it will not repeat the mistake.',
+      'You can create your own categories, but you are never asked to pick one at capture time.',
+    ],
+  },
+  'no-busywork': {
+    emoji: '🏷️',
+    title: 'No busywork',
+    summary: 'Titles, dates, amounts and tags are written for you, so capture stays a three second action.',
+    points: [
+      'Dates, amounts, merchants and values are extracted from receipts, invoices and reports automatically.',
+      'Related entries are linked for you: a scan to an old injury, a receipt to a recurring bill.',
+      'Follow-ups, renewals and appointments are scheduled without you setting a single reminder by hand.',
+    ],
+  },
+  'private-by-default': {
+    emoji: '🔒',
+    title: 'Private by default',
+    summary: 'Your logbook is yours alone. Privacy is the architecture, not a setting you have to switch on.',
+    points: [
+      'Encrypted in transit (TLS) and at rest, with documents kept in a private bucket behind short-lived signed links.',
+      'Row-level security in the database means only your account can ever read your entries.',
+      'Your content is never sold, never used to train third-party models and never shown to other users.',
+      'Export everything or permanently delete your account and all of its data at any time.',
+      'Health records are special-category data under Article 9 GDPR and are processed only on your explicit consent.',
+    ],
+    link: { to: '/privacy-policy', label: 'Read the full Privacy Policy' },
+  },
+};
+
+/** Card that opens a short explainer dialog. Same footprint as MiniRow. */
+export const ExplainerRow = ({ id, tint }: { id: keyof typeof explainers | string; tint?: string }) => {
+  const x = explainers[id];
+  if (!x) return null;
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <button
+          type="button"
+          className="smarty-mini flex w-full items-center gap-2.5 rounded-2xl border-2 border-primary/25 bg-card p-2.5 text-left transition-smooth hover:border-primary/50 hover:shadow-soft active:scale-[0.99] sm:items-start sm:p-3"
+        >
+          <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-sm ${tint ?? 'bg-secondary'}`}>
+            {x.emoji}
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="text-[13px] font-bold leading-snug text-foreground">{x.title}</p>
+            <p className="mt-0.5 hidden text-[11.5px] leading-relaxed text-muted-foreground sm:block">{x.summary}</p>
+          </div>
+          <ChevronRight className="h-4 w-4 shrink-0 text-primary" />
+        </button>
+      </DialogTrigger>
+      <DialogContent className="max-h-[85vh] overflow-y-auto rounded-3xl sm:max-w-lg">
+        <DialogHeader className="text-left">
+          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-secondary text-lg">{x.emoji}</span>
+          <DialogTitle className="pt-2 text-lg font-extrabold tracking-tight">{x.title}</DialogTitle>
+          <DialogDescription className="text-[13px] leading-relaxed">{x.summary}</DialogDescription>
+        </DialogHeader>
+        <ul className="space-y-2.5">
+          {x.points.map((p) => (
+            <li key={p} className="flex gap-2.5 rounded-2xl border border-primary/20 bg-secondary/40 p-3 text-[12.5px] leading-relaxed text-muted-foreground">
+              <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+              <span>{p}</span>
+            </li>
+          ))}
+        </ul>
+        {x.link && (
+          <Link
+            to={x.link.to}
+            className="inline-flex items-center justify-center gap-1.5 rounded-full bg-primary px-5 py-2.5 text-[13px] font-bold text-primary-foreground transition hover:opacity-90"
+          >
+            {x.link.label} <ChevronRight className="h-4 w-4" />
+          </Link>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 
 
 /** Inline keyword highlight used across marketing copy. */

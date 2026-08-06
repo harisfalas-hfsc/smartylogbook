@@ -1,5 +1,5 @@
 import { Sparkles, Layers, ShieldCheck, Plus } from 'lucide-react';
-import { Panel, MiniRow, PageHeader, CtaCard } from '@/lib/marketing';
+import { Panel, PageHeader, CtaCard, ExplainerRow } from '@/lib/marketing';
 import { MODULES } from '@/lib/constants';
 import PillarsCircle from '@/components/PillarsCircle';
 import LifeModulesOrbit from '@/components/LifeModulesOrbit';
@@ -11,11 +11,8 @@ const pillars = [
   { e: '💬', t: 'Ask in plain words', s: '"What did the doctor say in March?" It answers.' },
 ];
 
-const promises = [
-  { e: '📂', t: 'No filing', s: 'It lands in the right place on its own, move it if you disagree.' },
-  { e: '🏷️', t: 'No busywork', s: 'Tags, dates and amounts are written for you.' },
-  { e: '🔒', t: 'Private by default', s: 'Encrypted, yours only, export or delete any time.' },
-];
+const promises = ['no-filing', 'no-busywork', 'private-by-default'];
+
 
 const AboutPage = () => {
   return (
@@ -77,13 +74,14 @@ const AboutPage = () => {
       eyebrowEmoji="🤝"
       badge={ShieldCheck}
       title={<>Effortless, and <span className="gradient-text">private.</span></>}
-      lead="Free to start. Premium unlocks the Smarty Assistant for €9.99 per month."
+      lead="Free to start, always private. Tap any card to see exactly what it means."
     >
       <div className="grid gap-2 sm:grid-cols-3">
-        {promises.map((p) => (
-          <MiniRow key={p.t} emoji={p.e} title={p.t} text={p.s} />
+        {promises.map((id) => (
+          <ExplainerRow key={id} id={id} />
         ))}
       </div>
+
     </Panel>
 
     <CtaCard text="Free to begin. Capture your first memory in under ten seconds, the Smarty Assistant handles the rest." />
