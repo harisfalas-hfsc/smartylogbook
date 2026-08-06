@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, Brain, Clock, Sparkles, Lock } from 'lucide-react';
-import InputsCircle from '@/components/InputsCircle';
+
 import { Hl } from '@/lib/marketing';
 
 
@@ -48,15 +48,9 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* One line, four ways in */}
-      <section className="mx-auto w-full max-w-5xl px-5 pb-6 md:px-8">
-        <div className="smarty-card p-4 md:p-8">
-          <InputsCircle />
-        </div>
-      </section>
 
       {/* Highlights */}
-      <section className="mx-auto w-full max-w-5xl px-5 pb-14 md:px-8">
+      <section className="mx-auto w-full max-w-5xl px-5 pb-14 pt-2 md:px-8">
         <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
           {highlights.map((h) => (
             <div key={h.t} className="smarty-card flex h-full items-center gap-3 p-4">
