@@ -55,6 +55,8 @@ const MessagesPage = () => {
   const [selecting, setSelecting] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [confirm, setConfirm] = useState<{ ids: string[]; all?: boolean } | null>(null);
+  const [openId, setOpenId] = useState<string | null>(null);
+
   const {
     messages, loading, unread, markRead, markAllRead, setRead, archive, unarchive, setArchived,
     remove, removeMany, reload,
