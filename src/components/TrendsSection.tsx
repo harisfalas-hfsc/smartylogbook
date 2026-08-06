@@ -14,7 +14,7 @@ const TrendsSection = () => {
   if (loading || trends.length === 0) return null;
 
   return (
-    <div className="grid gap-x-6 gap-y-0 sm:grid-cols-2 xl:grid-cols-3">
+    <div>
       {trends.slice(0, 6).map((t) => {
         const Icon = t.direction === 'up' ? ArrowUpRight : t.direction === 'down' ? ArrowDownRight : ArrowRight;
         return (
