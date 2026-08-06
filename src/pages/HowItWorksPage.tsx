@@ -1,4 +1,5 @@
-import { Brain, Sparkles, ShieldCheck } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Brain, Sparkles, ShieldCheck, HelpCircle, ArrowRight } from 'lucide-react';
 import { Panel, SubCard, PageHeader, Hl, ExplainerRow } from '@/lib/marketing';
 
 
@@ -74,9 +75,25 @@ const HowItWorksPage = () => (
 
 
 
-
-
+    <Panel
+      eyebrow="Still wondering?"
+      eyebrowEmoji="❓"
+      badge={HelpCircle}
+      title={<>Everything else is in the <span className="gradient-text">FAQ.</span></>}
+      lead="The Assistant, privacy, plans and the small print, answered in plain words."
+    >
+      <SubCard>
+        <Link
+          to="/faq"
+          className="flex items-center justify-between gap-3 rounded-2xl bg-gradient-primary px-4 py-3.5 text-sm font-semibold text-primary-foreground shadow-glow transition-smooth active:scale-95"
+        >
+          Read the frequently asked questions
+          <ArrowRight className="h-4 w-4 shrink-0" />
+        </Link>
+      </SubCard>
+    </Panel>
   </div>
 );
+
 
 export default HowItWorksPage;
