@@ -10,6 +10,9 @@ import { useMemories } from '@/lib/memories';
 import { CAPTURE_KINDS, MODULES, CaptureKind, getModule } from '@/lib/constants';
 import { useReminders } from '@/lib/reminders';
 import { cn } from '@/lib/utils';
+import { hasPremium } from '@/lib/subscription';
+import { FREE_CAPTURES_PER_CATEGORY } from '@/lib/pricing';
+
 
 /** Short, practical instructions shown per category (no fake sample entries). */
 const GENERIC_TIPS = [
