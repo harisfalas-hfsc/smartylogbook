@@ -18,6 +18,8 @@ import ContactPage from "./pages/ContactPage";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 import TermsPage from "./pages/TermsPage";
 import DisclaimerPage from "./pages/DisclaimerPage";
+import UnsubscribePage from "./pages/UnsubscribePage";
+
 import AuthPage from "./pages/AuthPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import Dashboard from "./pages/Dashboard";
@@ -87,6 +89,8 @@ const App = () => (
               <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
               <Route path="/terms-and-conditions" element={<TermsPage />} />
               <Route path="/disclaimer" element={<DisclaimerPage />} />
+              <Route path="/unsubscribe" element={<UnsubscribePage />} />
+
             </Route>
             <Route path="/auth" element={<AuthEntry />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
