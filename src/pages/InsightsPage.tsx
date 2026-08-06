@@ -1,8 +1,22 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { AlertTriangle, Brain, ChevronRight, Loader2, RefreshCw, Sparkles, TrendingUp } from 'lucide-react';
+import {
+  AlertTriangle,
+  BarChart3,
+  Brain,
+  ChevronRight,
+  LayoutGrid,
+  Loader2,
+  RefreshCw,
+  Sparkles,
+  TrendingUp,
+  Wallet,
+  type LucideIcon,
+} from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useMemories } from '@/lib/memories';
+import { useFacts } from '@/lib/facts';
+import { useMoney } from '@/lib/money';
 import { MODULES, getModule } from '@/lib/constants';
 import TrendsSection from '@/components/TrendsSection';
 import MoneySection from '@/components/MoneySection';
@@ -14,8 +28,40 @@ interface Insights {
   overview: string;
 }
 
+/** Big card shell — every block on this page lives inside one, for consistency. */
+const Card = ({
+  title,
+  icon: Icon,
+  lead,
+  children,
+}: {
+  title: string;
+  icon: LucideIcon;
+  lead?: string;
+  children: React.ReactNode;
+}) => (
+  <section className="smarty-card animate-fade-up p-4 sm:p-5">
+    <div className="mb-3 flex items-center gap-2.5">
+      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl bg-primary/10">
+        <Icon className="h-4 w-4 text-primary" />
+      </span>
+      <div className="min-w-0">
+        <h2 className="text-sm font-bold text-foreground">{title}</h2>
+        {lead && <p className="text-[11px] leading-snug text-muted-foreground">{lead}</p>}
+      </div>
+    </div>
+    {children}
+  </section>
+);
+
+const subCard = 'smarty-sub rounded-2xl border-2 border-primary/25 bg-secondary/40 p-3.5';
+
 const InsightsPage = () => {
   const { memories, loading: memLoading } = useMemories({ limit: 200 });
+  const { trends } = useFacts({ limit: 300 });
+  const { items: moneyItems } = useMoney();
+  const hasNumbers = trends.length > 0;
+  const hasMoney = moneyItems.length > 0;
   const [insights, setInsights] = useState<Insights | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,14 +92,10 @@ const InsightsPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [memLoading, memories.length]);
 
-  const perModule = MODULES.map((m) => ({
-    ...m,
-    count: memories.filter((x) => x.module === m.id).length,
-  }));
-  const max = Math.max(1, ...perModule.map((m) => m.count));
+  const total = MODULES.reduce((n, m) => n + memories.filter((x) => x.module === m.id).length, 0);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-3">
       <header className="flex items-start justify-between gap-3 animate-fade-up">
         <div>
           <h1 className="text-2xl font-extrabold tracking-tight text-foreground">Insights</h1>
@@ -83,52 +125,60 @@ const InsightsPage = () => {
         <div className="smarty-card p-6 text-center text-sm text-muted-foreground">{error}</div>
       ) : insights ? (
         <>
-          <TrendsSection />
-          <MoneySection />
           {insights.overview && (
-            <section className="smarty-card animate-fade-up p-5">
+            <section className="smarty-card animate-fade-up p-4 sm:p-5">
               <p className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">Right now</p>
               <p className="mt-2 text-sm leading-relaxed text-foreground">{insights.overview}</p>
             </section>
           )}
 
+          {hasNumbers && (
+            <Card title="Your numbers" icon={BarChart3} lead="Values the Assistant pulled out of your entries.">
+              <TrendsSection />
+            </Card>
+          )}
+
+          {hasMoney && (
+            <Card title="Your money" icon={Wallet} lead="Built from the bills, receipts and notes you captured.">
+              <MoneySection />
+            </Card>
+          )}
+
           {insights.summaries?.length > 0 && (
-            <section className="animate-fade-up space-y-2.5">
-              <h2 className="mb-1 text-sm font-bold text-foreground">Summaries</h2>
-              {insights.summaries.map((s) => {
-                const mod = getModule(s.module);
-                return (
-                  <div key={s.title} className="smarty-card p-4">
-                    <div className="flex items-center gap-2.5">
-                      <div className={`flex h-8 w-8 items-center justify-center rounded-xl ${mod.tint}`}>
-                        <mod.icon className={`h-4 w-4 ${mod.color}`} />
+            <Card title="Summaries" icon={Sparkles}>
+              <div className="grid gap-2.5 sm:grid-cols-2">
+                {insights.summaries.map((s) => {
+                  const mod = getModule(s.module);
+                  return (
+                    <div key={s.title} className={subCard}>
+                      <div className="flex items-center gap-2.5">
+                        <div className={`flex h-8 w-8 items-center justify-center rounded-xl ${mod.tint}`}>
+                          <mod.icon className={`h-4 w-4 ${mod.color}`} />
+                        </div>
+                        <p className="text-sm font-bold text-foreground">{s.title}</p>
                       </div>
-                      <p className="text-sm font-bold text-foreground">{s.title}</p>
+                      <ul className="mt-2.5 space-y-1.5">
+                        {s.lines?.map((l) => (
+                          <li key={l} className="flex gap-2 text-xs leading-relaxed text-muted-foreground">
+                            <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-primary" />
+                            {l}
+                          </li>
+                        ))}
+                      </ul>
                     </div>
-                    <ul className="mt-2.5 space-y-1.5">
-                      {s.lines?.map((l) => (
-                        <li key={l} className="flex gap-2 text-xs leading-relaxed text-muted-foreground">
-                          <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-primary" />
-                          {l}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                );
-              })}
-            </section>
+                  );
+                })}
+              </div>
+            </Card>
           )}
 
           {insights.attention?.length > 0 && (
-            <section className="animate-fade-up">
-              <h2 className="mb-3 flex items-center gap-2 text-sm font-bold text-foreground">
-                <AlertTriangle className="h-4 w-4 text-warning" /> Needs your attention
-              </h2>
+            <Card title="Needs your attention" icon={AlertTriangle}>
               <div className="space-y-2.5">
                 {insights.attention.map((p) => (
-                  <div key={p.title} className="flex gap-3 rounded-3xl border border-warning/30 bg-warning/10 p-4 shadow-soft">
+                  <div key={p.title} className="flex gap-3 rounded-2xl border-2 border-warning/30 bg-warning/10 p-3.5">
                     <span className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl bg-warning/20">
-                      <AlertTriangle className="h-4.5 w-4.5 text-warning" />
+                      <AlertTriangle className="h-4 w-4 text-warning" />
                     </span>
                     <div className="min-w-0">
                       <p className="text-sm font-bold text-foreground">{p.title}</p>
@@ -137,19 +187,16 @@ const InsightsPage = () => {
                   </div>
                 ))}
               </div>
-            </section>
+            </Card>
           )}
 
           {insights.patterns?.length > 0 && (
-            <section className="animate-fade-up">
-              <h2 className="mb-3 flex items-center gap-2 text-sm font-bold text-foreground">
-                <Brain className="h-4 w-4 text-primary" /> Patterns
-              </h2>
+            <Card title="Patterns" icon={Brain}>
               <div className="space-y-2.5">
                 {insights.patterns.map((p) => (
-                  <div key={p.title} className="smarty-card flex gap-3 border-primary/20 p-4">
+                  <div key={p.title} className={`flex gap-3 ${subCard}`}>
                     <span className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl bg-primary/10">
-                      <TrendingUp className="h-4.5 w-4.5 text-primary" />
+                      <TrendingUp className="h-4 w-4 text-primary" />
                     </span>
                     <div className="min-w-0">
                       <p className="text-sm font-bold text-foreground">{p.title}</p>
@@ -158,42 +205,23 @@ const InsightsPage = () => {
                   </div>
                 ))}
               </div>
-            </section>
+            </Card>
           )}
         </>
       ) : null}
 
-      <section className="animate-fade-up">
-        <h2 className="mb-3 text-sm font-bold text-foreground">Where your life happens</h2>
-        <div className="space-y-2.5">
-          {perModule.map((m) => (
-            <Link
-              key={m.id}
-              to={`/app/category/${m.id}`}
-              className="smarty-card flex items-center gap-3 p-3 transition-smooth active:scale-[0.99]"
-            >
-              <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-2xl ${m.tint}`}>
-                <m.icon className={`h-4.5 w-4.5 ${m.color}`} />
-              </span>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="truncate text-xs font-bold text-foreground">{m.label}</span>
-                  <span className="shrink-0 text-[11px] font-semibold tabular-nums text-muted-foreground">
-                    {m.count}
-                  </span>
-                </div>
-                <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-secondary">
-                  <div
-                    className={`h-full rounded-full transition-smooth ${m.tint.replace('/10', '')}`}
-                    style={{ width: `${Math.max(4, (m.count / max) * 100)}%` }}
-                  />
-                </div>
-              </div>
-              <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
-            </Link>
-          ))}
-        </div>
-      </section>
+      <Card title="Where your life happens" icon={LayoutGrid} lead="Every entry, grouped by category.">
+        <Link
+          to="/app/categories"
+          className="flex items-center justify-between gap-3 rounded-2xl bg-gradient-primary px-4 py-3.5 text-sm font-semibold text-primary-foreground shadow-glow transition-smooth active:scale-[0.99]"
+        >
+          <span>
+            Open your categories
+            <span className="ml-1.5 font-normal opacity-80">· {total} entries</span>
+          </span>
+          <ChevronRight className="h-4 w-4 shrink-0" />
+        </Link>
+      </Card>
     </div>
   );
 };
