@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink, Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Bell, CircleHelp, Info, LogOut, Menu, Search, ShieldCheck, Sparkles, Tag } from 'lucide-react';
+import { Bell, CircleHelp, Info, LifeBuoy, LogOut, Menu, Search, ShieldCheck, Sparkles, Tag } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import BottomNav from '@/components/BottomNav';
 import SiteFooter from '@/components/SiteFooter';
