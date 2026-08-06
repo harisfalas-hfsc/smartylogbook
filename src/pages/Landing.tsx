@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, Brain, Clock, Sparkles, Lock } from 'lucide-react';
 import InputsCircle from '@/components/InputsCircle';
-import { Hl, ExplainerRow } from '@/lib/marketing';
+import { Hl } from '@/lib/marketing';
 
 
 const highlights = [
