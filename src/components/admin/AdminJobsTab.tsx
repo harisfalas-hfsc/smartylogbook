@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Clock, Loader2, Pause, Play, Plus, RefreshCw, Save, Timer, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { CronJob, SCHEDULE_PRESETS, adminApi, describeJob, describeSchedule } from '@/lib/admin';
+import { CronJob, JOB_TEMPLATES, SCHEDULE_PRESETS, adminApi, describeJob, describeSchedule } from '@/lib/admin';
 import { cn } from '@/lib/utils';
 
 const fmtTime = (d?: string | null) =>
@@ -14,7 +14,7 @@ const fmtTime = (d?: string | null) =>
       })
     : '-';
 
-const EMPTY = { jobname: '', schedule: '0 7 * * *', command: '' };
+const EMPTY = { jobname: '', schedule: '0 7 * * *', command: '', template: '' };
 
 const AdminJobsTab = () => {
   const [jobs, setJobs] = useState<CronJob[]>([]);
@@ -23,6 +23,8 @@ const AdminJobsTab = () => {
   const [drafts, setDrafts] = useState<Record<number, { schedule: string; command: string }>>({});
   const [creating, setCreating] = useState(false);
   const [newJob, setNewJob] = useState(EMPTY);
+  const picked = JOB_TEMPLATES.find((t) => t.id === newJob.template);
+
 
   const load = async () => {
     setLoading(true);
