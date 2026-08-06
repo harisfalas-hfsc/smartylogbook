@@ -119,16 +119,60 @@ export interface AdminMessage {
   created_at: string;
 }
 
+/** Ready-made jobs an administrator can schedule without writing any SQL. */
+export interface JobTemplate {
+  id: string;
+  label: string;
+  description: string;
+  suggestedName: string;
+  suggestedSchedule: string;
+}
+
+export const JOB_TEMPLATES: JobTemplate[] = [
+  {
+    id: 'proactive_scan',
+    label: 'Proactive scan (reminders, bills, documents)',
+    description:
+      'Raises alerts two days before, one day before, on the day, and again one and two days after anything that was missed. Also checks bills, expiring documents, stale health readings and plan renewals, and empties expired Trash.',
+    suggestedName: 'smarty-proactive-scan',
+    suggestedSchedule: '10 * * * *',
+  },
+  {
+    id: 'daily_insights',
+    label: 'Daily insight message',
+    description:
+      'Sends each user one message at their chosen morning time: what is due today, what is coming tomorrow, what is still missed, and what they captured on this day in previous years.',
+    suggestedName: 'smarty-daily-insights',
+    suggestedSchedule: '5 * * * *',
+  },
+  {
+    id: 'weekly_recap',
+    label: 'Weekly recap message',
+    description:
+      'Every Monday morning: what was logged last week, what was completed, what slipped, and what is scheduled for the coming week.',
+    suggestedName: 'smarty-weekly-recap',
+    suggestedSchedule: '5 7 * * 1',
+  },
+  {
+    id: 'purge_trash',
+    label: 'Empty expired Trash',
+    description: 'Permanently deletes items that have been sitting in Trash for more than 30 days.',
+    suggestedName: 'smarty-purge-trash',
+    suggestedSchedule: '0 3 * * *',
+  },
+];
+
 /** Plain-language explanation of what a scheduled job does. */
 export const describeJob = (job: CronJob) => {
   const c = `${job.jobname} ${job.command}`.toLowerCase();
-  if (c.includes('proactive-scan'))
-    return 'Scans every account for due bills, tasks, health check-ins and upcoming events, writes alerts into the Message Center and sends each user their morning brief at their chosen time.';
-  if (c.includes('purge_expired_trash'))
-    return 'Permanently deletes items that have been sitting in Trash for more than 30 days.';
+  if (c.includes('proactive-scan')) return JOB_TEMPLATES[0].description;
+  if (c.includes('"mode":"recap"') || c.includes('weekly-recap')) return JOB_TEMPLATES[2].description;
+  if (c.includes('daily-insights')) return JOB_TEMPLATES[1].description;
+  if (c.includes('purge_expired_trash')) return JOB_TEMPLATES[3].description;
   if (c.includes('ai-brain')) return 'Runs a Smarty Assistant background task.';
   return 'Runs a scheduled database or function task.';
 };
+
 
 /** Human-readable cron expression, e.g. "10 * * * *" → "every hour at :10". */
 export const describeSchedule = (expr: string) => {

@@ -338,10 +338,31 @@ Deno.serve(async (req) => {
     if (action === "cron_save") {
       const jobname = String(body?.jobname ?? "").trim();
       const schedule = String(body?.schedule ?? "").trim();
-      const command = String(body?.command ?? "").trim();
+      const template = String(body?.template ?? "").trim();
       const active = body?.active !== false;
+
+      // Templates let an administrator schedule a known task without writing SQL.
+      const cronKey = Deno.env.get("CRON_JOB_KEY") ?? "";
+      const baseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+      const invoke = (fn: string, payload: string) => `
+  SELECT net.http_post(
+    url := '${baseUrl}/functions/v1/${fn}',
+    headers := jsonb_build_object('Content-Type', 'application/json', 'x-cron-key', '${cronKey}'),
+    body := '${payload}'::jsonb
+  );`;
+      const TEMPLATES: Record<string, string> = {
+        proactive_scan: invoke("proactive-scan", '{"source":"cron"}'),
+        daily_insights: invoke("daily-insights", '{"mode":"daily"}'),
+        weekly_recap: invoke("daily-insights", '{"mode":"recap"}'),
+        purge_trash: "SELECT public.purge_expired_trash();",
+      };
+
+      const command = template
+        ? (TEMPLATES[template] ?? "")
+        : String(body?.command ?? "").trim();
+      if (template && !command) return json({ error: "Unknown job template" }, 400);
       if (!jobname || !schedule || !command) {
-        return json({ error: "Name, schedule and command are all required" }, 400);
+        return json({ error: "Name, schedule and task are all required" }, 400);
       }
       const { data, error } = await admin.rpc("admin_save_cron_job", {
         _jobname: jobname,
@@ -352,6 +373,7 @@ Deno.serve(async (req) => {
       if (error) return json({ error: error.message }, 400);
       return json({ ok: true, result: data });
     }
+
 
     if (action === "cron_toggle") {
       const { error } = await admin.rpc("admin_set_cron_active", {
