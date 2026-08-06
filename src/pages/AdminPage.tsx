@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import {
-  ArrowLeft, BadgeCheck, ChevronRight, CreditCard, Crown, Loader2, Megaphone, RefreshCw, Save, Search, ShieldCheck, SlidersHorizontal, Timer, TrendingUp, UserPlus, Users, XCircle,
+  ArrowLeft, BadgeCheck, ChevronRight, CreditCard, Crown, LifeBuoy, Loader2, Megaphone, RefreshCw, Save, Search, ShieldCheck, SlidersHorizontal, Timer, TrendingUp, UserPlus, Users, XCircle,
 } from 'lucide-react';
 
 import { toast } from 'sonner';
