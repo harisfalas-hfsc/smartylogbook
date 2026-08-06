@@ -1,14 +1,7 @@
 import { Sparkles, ShieldCheck } from 'lucide-react';
 import { Panel, PageHeader, CtaCard, ExplainerRow } from '@/lib/marketing';
-import PillarsCircle from '@/components/PillarsCircle';
 import InputsCircle from '@/components/InputsCircle';
 
-const pillars = [
-  { e: '📥', t: 'Put anything in', s: 'Type it, say it, snap it, upload it.' },
-  { e: '🧠', t: 'It understands', s: 'Reads it and pulls out the details itself.' },
-  { e: '🔗', t: 'It relates', s: 'A scan links to an old injury. A receipt to a monthly bill.' },
-  { e: '💬', t: 'Ask in plain words', s: '"What did the doctor say in March?" It answers.' },
-];
 
 const promises = ['no-filing', 'no-busywork', 'private-by-default'];
 
@@ -36,10 +29,7 @@ const AboutPage = () => {
       title={<>A logbook <span className="gradient-text">with a brain.</span></>}
       lead="You put things in; the Smarty Assistant makes sense of them. Six seconds of effort from you, everything after that is Smarty Logbook."
     >
-      <PillarsCircle items={pillars} />
-      <div className="mt-4">
-        <InputsCircle />
-      </div>
+      <InputsCircle />
     </Panel>
 
 
