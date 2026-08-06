@@ -136,6 +136,8 @@ export const faqs = [
   { q: 'How private is my data?', a: 'Privacy-first architecture with encrypted storage in transit and at rest. You can export everything or permanently delete your account and all of its data at any time.' },
   { q: 'Does it work on mobile?', a: 'It is built mobile-first. Everything is reachable with one thumb, and capture takes about three seconds.' },
   { q: 'Is it a medical or financial adviser?', a: 'No. It organises and explains your own information. It does not replace a doctor, accountant or any other professional.' },
+  { q: 'What can I ask Smarty Assistant?', a: 'Anything about your own logbook: your entries, notes, photos and documents, your health, fitness, finance and business records, your reminders and calendar, your spending, your patterns over time and your plan. For example, "when was my last blood test?", "how much did I spend on groceries last month?", "explain this report", "what is coming up next week?"' },
+  { q: 'What happens if I ask something unrelated?', a: 'Smarty Assistant is the brain of your logbook, not a general chatbot. Questions like the weather, the news, a generic workout programme or writing an essay are politely declined with a suggestion of what it can look up in your records instead, and that question is not counted against your conversations.' },
 ];
 
 export const securityPoints = [
