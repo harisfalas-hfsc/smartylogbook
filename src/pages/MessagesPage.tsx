@@ -142,12 +142,11 @@ const MessagesPage = () => {
     return (
       <li
         key={m.id}
-        onClick={() => selecting && toggleOne(m.id)}
+        onClick={() => (selecting ? toggleOne(m.id) : openMessage(m))}
         className={cn(
-          'smarty-card flex gap-3 p-3.5 transition-smooth',
+          'smarty-card flex cursor-pointer gap-3 p-3.5 transition-smooth',
           !m.read_at && 'border-primary/40 bg-primary/[0.03]',
           missed && 'border-destructive/40 bg-destructive/[0.03]',
-          selecting && 'cursor-pointer',
           isPicked && 'border-primary bg-primary/[0.07]',
         )}
       >
@@ -161,12 +160,13 @@ const MessagesPage = () => {
             <Icon className={cn('h-4.5 w-4.5', style.color)} />
           </span>
         )}
-        <div className="min-w-0 flex-1" onClick={() => !selecting && !m.read_at && markRead(m.id)}>
+        <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <p className="min-w-0 flex-1 text-sm font-bold text-foreground">{m.title}</p>
+            <p className="min-w-0 flex-1 truncate text-sm font-bold text-foreground">{m.title}</p>
             <span className="shrink-0 text-[10px] font-medium text-muted-foreground">{when(m.created_at)}</span>
           </div>
-          {m.body && <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{m.body}</p>}
+          {m.body && <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted-foreground">{m.body}</p>}
+
           <div className="mt-2 flex flex-wrap items-center gap-2">
             <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-semibold text-secondary-foreground">
               {style.label}
