@@ -116,6 +116,8 @@ export interface AdminMessage {
   action_label: string | null;
   action_url: string | null;
   read_at: string | null;
+  archived_at: string | null;
+  related_at: string | null;
   created_at: string;
 }
 
