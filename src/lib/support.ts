@@ -56,7 +56,9 @@ export const submitTicket = async (
     attachment_name = input.file.name;
   }
 
+  const ticketId = crypto.randomUUID();
   const { error } = await supabase.from('support_tickets').insert({
+    id: ticketId,
     user_id: userId,
     name: parsed.data.name,
     email: parsed.data.email,
@@ -65,8 +67,53 @@ export const submitTicket = async (
     attachment_url,
     attachment_name,
   });
-  return { error };
+  if (error) return { error };
+
+  // Email the ticket to support, and confirm receipt to the customer.
+  let attachmentLink: string | undefined;
+  if (attachment_url) {
+    const { data: signed } = await supabase.storage
+      .from('support')
+      .createSignedUrl(attachment_url, 60 * 60 * 24 * 7);
+    attachmentLink = signed?.signedUrl ?? undefined;
+  }
+
+  try {
+    await Promise.all([
+      supabase.functions.invoke('send-transactional-email', {
+        body: {
+          templateName: 'support-ticket-notification',
+          idempotencyKey: `support-notify-${ticketId}`,
+          templateData: {
+            name: parsed.data.name,
+            email: parsed.data.email,
+            subject: parsed.data.subject,
+            message: parsed.data.message,
+            attachmentName: attachment_name ?? undefined,
+            attachmentUrl: attachmentLink,
+          },
+        },
+      }),
+      supabase.functions.invoke('send-transactional-email', {
+        body: {
+          templateName: 'support-ticket-confirmation',
+          recipientEmail: parsed.data.email,
+          idempotencyKey: `support-confirm-${ticketId}`,
+          templateData: {
+            name: parsed.data.name,
+            subject: parsed.data.subject,
+            message: parsed.data.message,
+          },
+        },
+      }),
+    ]);
+  } catch (e) {
+    console.error('Support ticket email failed', e);
+  }
+
+  return { error: null };
 };
+
 
 /** Admin view of every ticket that came in. */
 export const useSupportTickets = () => {
