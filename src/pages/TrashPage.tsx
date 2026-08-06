@@ -8,6 +8,8 @@ import { useTrash, daysLeftInTrash, TRASH_RETENTION_DAYS, type Memory } from '@/
 import { MODULES } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
+import TrashDetailSheet from '@/components/TrashDetailSheet';
+
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
