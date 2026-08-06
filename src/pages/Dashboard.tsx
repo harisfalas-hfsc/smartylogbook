@@ -1,17 +1,15 @@
 import { useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import {
-  AlertTriangle, ArrowRight, CalendarDays, Camera, ChevronRight, Loader2, Mic, Paperclip, RefreshCw, Sparkles,
+  AlertTriangle, ArrowRight, CalendarDays, ChevronRight, Loader2, Sparkles,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useMemories, whenLabel, Memory } from '@/lib/memories';
-import { usePreferences } from '@/lib/preferences';
-import { useDailyBrief } from '@/lib/assistant';
 import { useProactiveAlerts } from '@/lib/alerts';
 import { useCategories } from '@/lib/categories';
+import { useReminders, reminderIcon } from '@/lib/reminders';
 import MemoryDetailSheet from '@/components/MemoryDetailSheet';
 import { kindIcon } from '@/lib/constants';
-import { cn } from '@/lib/utils';
 
 const greeting = () => {
   const h = new Date().getHours();
@@ -21,14 +19,12 @@ const greeting = () => {
 };
 
 const Dashboard = () => {
-  const navigate = useNavigate();
   const { profile, user } = useAuth();
   const { memories, loading, reclassify, update, remove } = useMemories({ limit: 60 });
   const [selectedMemory, setSelectedMemory] = useState<Memory | null>(null);
-  const { prefs } = usePreferences();
-  const { brief, generating, regenerate } = useDailyBrief(memories, prefs, !loading);
   const { alerts } = useProactiveAlerts();
   const { categories } = useCategories();
+  const { reminders } = useReminders();
 
   const name = profile?.username ?? user?.email?.split('@')[0] ?? 'there';
   const todayKey = new Date().toDateString();
@@ -51,11 +47,28 @@ const Dashboard = () => {
   );
   const topCategories = ordered.slice(0, 8);
 
+  const upcoming = useMemo(
+    () => reminders
+      .filter((r) => !r.done && new Date(r.due_at).getTime() >= Date.now() - 12 * 60 * 60 * 1000)
+      .slice(0, 2),
+    [reminders]
+  );
+
+  const dueLabel = (iso: string) => {
+    const d = new Date(iso);
+    const day = d.toDateString();
+    const t = d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+    if (day === todayKey) return `Today · ${t}`;
+    const tomorrow = new Date(Date.now() + 86400000).toDateString();
+    if (day === tomorrow) return `Tomorrow · ${t}`;
+    return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' }) + ` · ${t}`;
+  };
 
   const dateLabel = new Date().toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' });
+  const timelineItems = (today.length ? today : memories).slice(0, 4);
 
   return (
-    <div className="flex flex-col gap-3 pb-2">
+    <div className="flex flex-col gap-4 pb-2">
       {/* Greeting */}
       <header className="animate-fade-up px-0.5">
         <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">{dateLabel}</p>
@@ -63,40 +76,6 @@ const Dashboard = () => {
           {greeting()}, {name}
         </h1>
       </header>
-
-      {/* Quick capture, the primary action, Keep-style */}
-      <section className="animate-fade-up">
-        <div className="smarty-card flex items-center gap-1.5 p-2 pl-4">
-          <button
-            type="button"
-            onClick={() => navigate('/app/capture')}
-            className="min-w-0 flex-1 truncate py-2 text-left text-sm font-medium text-muted-foreground"
-          >
-            Capture something…
-          </button>
-          <Link
-            to="/app/capture?mode=voice"
-            aria-label="Capture with voice"
-            className="grid h-10 w-10 place-items-center rounded-2xl bg-mod-personal/10 text-mod-personal transition-smooth active:scale-95"
-          >
-            <Mic className="h-4.5 w-4.5" />
-          </Link>
-          <Link
-            to="/app/capture?mode=photo"
-            aria-label="Capture a photo"
-            className="grid h-10 w-10 place-items-center rounded-2xl bg-mod-health/10 text-mod-health transition-smooth active:scale-95"
-          >
-            <Camera className="h-4.5 w-4.5" />
-          </Link>
-          <Link
-            to="/app/capture?mode=file"
-            aria-label="Upload a file or receipt"
-            className="grid h-10 w-10 place-items-center rounded-2xl bg-mod-documents/10 text-mod-documents transition-smooth active:scale-95"
-          >
-            <Paperclip className="h-4.5 w-4.5" />
-          </Link>
-        </div>
-      </section>
 
       {/* One alert max, so the screen stays calm */}
       {alerts.length > 0 && (
@@ -115,86 +94,109 @@ const Dashboard = () => {
         </Link>
       )}
 
-      {/* Timeline, the first thing you see: your latest records */}
+      {/* 1. Timeline, the hero of the home screen */}
       <section className="animate-fade-up">
-        <div className="mb-2 flex items-center justify-between px-0.5">
-          <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
-            Timeline {today.length ? '· today' : '· latest'}
-          </h2>
-          <Link to="/app/timeline" className="inline-flex items-center gap-1 text-xs font-semibold text-primary">
-            See all <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
-        </div>
-        {loading ? (
-          <div className="smarty-card grid h-24 place-items-center">
-            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-          </div>
-        ) : memories.length === 0 ? (
-          <div className="smarty-card p-6 text-center">
-            <Sparkles className="mx-auto h-5 w-5 text-primary" />
-            <p className="mt-2 text-sm font-semibold text-foreground">Your logbook is empty</p>
-            <p className="mt-0.5 text-xs text-muted-foreground">A thought, a meal, a receipt, start anywhere.</p>
-          </div>
-        ) : (
-          <div className="smarty-card divide-y divide-border p-1.5">
-            {(today.length ? today : memories).slice(0, 4).map((m) => {
-              const Icon = kindIcon(m.kind);
-              const mod = categories.find((c) => c.id === m.module) ?? categories[categories.length - 1];
-              return (
-                <button
-                  key={m.id}
-                  type="button"
-                  onClick={() => setSelectedMemory(m)}
-                  className="flex w-full items-center gap-3 px-2 py-2.5 text-left"
-                >
-                  <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-xl ${mod.tint}`}>
-                    <Icon className={`h-4 w-4 ${mod.color}`} />
-                  </span>
-                  <span className="min-w-0 flex-1 truncate text-xs font-semibold text-foreground">{m.title}</span>
-                  <span className="shrink-0 text-[10px] tabular-nums text-muted-foreground">{whenLabel(m)}</span>
-                </button>
-              );
-            })}
-          </div>
-        )}
-      </section>
-
-      {/* Smarty Assistant, one line, no chores */}
-      <section className="animate-fade-up">
-        <div className="smarty-card p-4">
-          <div className="flex items-center justify-between">
-            <p className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
-              <Sparkles className="h-3.5 w-3.5 text-primary" /> Smarty Assistant
-            </p>
-            <button
-              onClick={regenerate}
-              aria-label="Refresh"
-              disabled={generating}
-              className="grid h-7 w-7 place-items-center rounded-lg text-muted-foreground transition-smooth active:scale-95 disabled:opacity-50"
+        <div className="smarty-card overflow-hidden">
+          <div className="flex items-start justify-between gap-3 border-b border-border bg-primary/[0.04] px-4 py-3.5">
+            <div className="min-w-0">
+              <h2 className="text-base font-extrabold tracking-tight text-foreground">
+                Timeline
+              </h2>
+              <p className="mt-0.5 truncate text-[11px] text-muted-foreground">
+                {today.length ? 'Everything you logged today' : 'Your latest records, newest first'}
+              </p>
+            </div>
+            <Link
+              to="/app/timeline"
+              className="mt-0.5 inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-primary"
             >
-              <RefreshCw className={cn('h-3.5 w-3.5', generating && 'animate-spin')} />
-            </button>
+              See all <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
           </div>
-          {generating && !brief ? (
-            <p className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
-              <Loader2 className="h-4 w-4 animate-spin" /> Reading your logbook…
-            </p>
+          {loading ? (
+            <div className="grid h-28 place-items-center">
+              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+            </div>
+          ) : timelineItems.length === 0 ? (
+            <div className="p-6 text-center">
+              <Sparkles className="mx-auto h-5 w-5 text-primary" />
+              <p className="mt-2 text-sm font-semibold text-foreground">Your logbook is empty</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">A thought, a meal, a receipt, start anywhere.</p>
+            </div>
           ) : (
-            <p className="mt-1.5 text-sm leading-relaxed text-foreground">
-              {brief?.action ?? brief?.headline ?? 'Log one thing today and I’ll start connecting the dots.'}
-            </p>
+            <div className="divide-y divide-border">
+              {timelineItems.map((m) => {
+                const Icon = kindIcon(m.kind);
+                const mod = categories.find((c) => c.id === m.module) ?? categories[categories.length - 1];
+                return (
+                  <button
+                    key={m.id}
+                    type="button"
+                    onClick={() => setSelectedMemory(m)}
+                    className="flex w-full items-center gap-3 px-4 py-3 text-left transition-smooth active:bg-secondary/60"
+                  >
+                    <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl ${mod.tint}`}>
+                      <Icon className={`h-4.5 w-4.5 ${mod.color}`} />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-semibold text-foreground">{m.title}</span>
+                      <span className="block truncate text-[11px] text-muted-foreground">{mod.label}</span>
+                    </span>
+                    <span className="shrink-0 text-[10px] tabular-nums text-muted-foreground">{whenLabel(m)}</span>
+                  </button>
+                );
+              })}
+            </div>
           )}
-          <button
-            type="button"
-            onClick={() => navigate('/app/assistant')}
-            className="mt-2.5 inline-flex items-center gap-1 text-xs font-semibold text-primary"
-          >
-            Ask the assistant <ArrowRight className="h-3.5 w-3.5" />
-          </button>
         </div>
       </section>
 
-      {/* Categories, two rows of the busiest, the rest live on See all */}
+      {/* 2. Calendar, second in weight */}
+      <section className="animate-fade-up">
+        <div className="smarty-card overflow-hidden">
+          <Link
+            to="/app/calendar"
+            className="flex items-center gap-3 border-b border-border bg-primary/[0.04] px-4 py-3.5 transition-smooth active:opacity-80"
+          >
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-primary/10 text-primary">
+              <CalendarDays className="h-5 w-5" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-base font-extrabold tracking-tight text-foreground">Calendar</span>
+              <span className="block truncate text-[11px] text-muted-foreground">
+                Scheduled and logged days, month by month
+              </span>
+            </span>
+            <ArrowRight className="h-4 w-4 shrink-0 text-primary" />
+          </Link>
+          <div className="divide-y divide-border">
+            {upcoming.length === 0 ? (
+              <p className="px-4 py-3 text-xs text-muted-foreground">Nothing scheduled. Your days are clear.</p>
+            ) : (
+              upcoming.map((r) => {
+                const Icon = reminderIcon(r.type);
+                return (
+                  <Link
+                    key={r.id}
+                    to="/app/reminders"
+                    className="flex items-center gap-3 px-4 py-2.5 transition-smooth active:bg-secondary/60"
+                  >
+                    <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-secondary text-foreground">
+                      <Icon className="h-4 w-4" />
+                    </span>
+                    <span className="min-w-0 flex-1 truncate text-xs font-semibold text-foreground">{r.title}</span>
+                    <span className="shrink-0 text-[10px] font-medium tabular-nums text-muted-foreground">
+                      {dueLabel(r.due_at)}
+                    </span>
+                  </Link>
+                );
+              })
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* 3. Categories, two rows of the busiest, the rest live on See all */}
       <section className="animate-fade-up">
         <div className="mb-2 flex items-center justify-between px-0.5">
           <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">Categories</h2>
@@ -218,25 +220,6 @@ const Dashboard = () => {
           ))}
         </div>
       </section>
-
-
-      {/* Calendar shortcut */}
-      <Link
-        to="/app/calendar"
-        className="smarty-card flex animate-fade-up items-center gap-3 p-3.5 transition-smooth active:scale-95"
-      >
-        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl bg-primary/10 text-primary">
-          <CalendarDays className="h-4.5 w-4.5" />
-        </span>
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-bold text-foreground">Calendar</p>
-          <p className="truncate text-[11px] text-muted-foreground">
-            Scheduled and logged days, month by month
-          </p>
-        </div>
-        <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
-      </Link>
-
 
       <MemoryDetailSheet
         memory={selectedMemory}
