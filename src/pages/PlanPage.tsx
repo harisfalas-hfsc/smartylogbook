@@ -174,12 +174,13 @@ const PlanPage = () => {
             <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-emerald-600">
               <InfinityIcon className="h-3 w-3" /> Your current plan
             </span>
-            <p className="mt-2.5 text-xl font-extrabold text-foreground">Free logbook, €0</p>
+            <p className="mt-2.5 text-xl font-extrabold text-foreground">Free trial, €0</p>
             <p className="mt-1 text-xs text-muted-foreground">
-              Unlimited capture, storage, timeline, reminders and search. Forever.
+              One capture in each category. No Assistant, and deleting is permanent.
             </p>
             <ul className="mt-4 grid gap-2 sm:grid-cols-2">
               {FREE_BENEFITS.slice(0, 6).map((b) => (
+
                 <li key={b} className="flex items-start gap-2 text-[12px] text-muted-foreground">
                   <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-500" /> {b}
                 </li>
