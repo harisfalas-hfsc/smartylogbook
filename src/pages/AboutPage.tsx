@@ -38,36 +38,11 @@ const AboutPage = () => {
       lead="You put things in; the Smarty Assistant makes sense of them. Six seconds of effort from you, everything after that is Smarty Logbook."
     >
       <PillarsCircle items={pillars} />
-    </Panel>
-
-
-    <Panel
-      eyebrow="Life categories"
-      eyebrowEmoji="🗂️"
-      badge={Layers}
-      title={<>It files it, <span className="gradient-text">you stay in control.</span></>}
-      lead="Every entry lands in the right area on its own. Move it whenever you disagree, or create a category of your own."
-    >
-      <div className="sm:hidden">
-        <LifeModulesOrbit />
-      </div>
-      <div className="hidden sm:grid sm:grid-cols-3 lg:grid-cols-4 gap-2">
-        {MODULES.map((m) => (
-          <div key={m.id} className="flex items-center gap-2.5 rounded-2xl border border-primary/15 bg-card p-3">
-            <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${m.tint}`}>
-              <m.icon className={`h-4 w-4 ${m.color}`} />
-            </span>
-            <p className="text-[13px] font-bold leading-tight text-foreground">{m.label}</p>
-          </div>
-        ))}
-        <div className="flex items-center gap-2.5 rounded-2xl border border-dashed border-primary/40 bg-primary/5 p-3">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10">
-            <Plus className="h-4 w-4 text-primary" />
-          </span>
-          <p className="text-[13px] font-bold leading-tight text-primary">Add your own</p>
-        </div>
+      <div className="mt-4">
+        <InputsCircle />
       </div>
     </Panel>
+
 
     <Panel
       eyebrow="The promise"
