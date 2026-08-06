@@ -17,7 +17,9 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
   AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import MessageDetailSheet from '@/components/MessageDetailSheet';
 import { toast } from 'sonner';
+
 
 const when = (iso: string) => {
   const d = new Date(iso);
