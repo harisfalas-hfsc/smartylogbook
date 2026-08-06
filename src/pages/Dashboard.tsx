@@ -200,7 +200,7 @@ const Dashboard = () => {
       <section className="animate-fade-up">
         <div className="mb-2 flex items-center justify-between px-0.5">
           <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">Categories</h2>
-          <Link to="/app/modules" className="inline-flex items-center gap-1 text-xs font-semibold text-primary">
+          <Link to="/app/categories" className="inline-flex items-center gap-1 text-xs font-semibold text-primary">
             See all <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>

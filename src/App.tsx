@@ -97,7 +97,8 @@ const App = () => (
               <Route path="ai" element={<AiPage />} />
               <Route path="search" element={<AiPage />} />
               <Route path="insights" element={<InsightsPage />} />
-              <Route path="modules" element={<ModulesPage />} />
+              <Route path="categories" element={<ModulesPage />} />
+              <Route path="modules" element={<Navigate to="/app/categories" replace />} />
               <Route path="module/:id" element={<ModuleDetailPage />} />
               <Route path="reminders" element={<RemindersPage />} />
               <Route path="calendar" element={<CalendarPage />} />

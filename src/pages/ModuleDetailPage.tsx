@@ -96,7 +96,7 @@ const ModuleDetailPage = () => {
     const { error } = await removeCategory(own.id);
     if (error) { toast.error(error.message); return; }
     toast.success(count ? `"${module.label}" deleted, ${count} moved to Personal` : `"${module.label}" deleted`);
-    navigate('/app/modules');
+    navigate('/app/categories');
   };
 
   return (

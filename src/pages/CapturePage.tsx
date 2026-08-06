@@ -460,7 +460,13 @@ const CapturePage = () => {
         toast.info(`Reminder set: ${reminder.title}`);
       }
     }
-    toast.success(classified?.module ? `Filed under ${getModule(classified.module).label} automatically` : 'Captured');
+    toast.success(
+      targetModule === 'notes'
+        ? 'Saved in Notes. If you meant something different, move it and Smarty Assistant will learn.'
+        : classified?.module
+          ? `Filed under ${getModule(classified.module).label} automatically`
+          : 'Captured'
+    );
     setText('');
     setKind(null);
     setModule(null);
