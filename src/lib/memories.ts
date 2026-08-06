@@ -217,13 +217,25 @@ export const useTrash = () => {
     return { error };
   };
 
-  const emptyTrash = async () => {
-    const ids = items.map((m) => m.id);
+  const restoreMany = async (ids: string[]) => {
     if (!ids.length) return { error: null };
-    const { error } = await supabase.from('memories').delete().in('id', ids);
-    if (!error) setItems([]);
+    const { error } = await supabase.from('memories').update({ deleted_at: null }).in('id', ids);
+    if (!error) {
+      setItems((prev) => prev.filter((m) => !ids.includes(m.id)));
+      void indexMemories(ids);
+    }
     return { error };
   };
 
-  return { items, loading, reload: load, restore, deleteForever, emptyTrash };
+  const deleteMany = async (ids: string[]) => {
+    if (!ids.length) return { error: null };
+    const { error } = await supabase.from('memories').delete().in('id', ids);
+    if (!error) setItems((prev) => prev.filter((m) => !ids.includes(m.id)));
+    return { error };
+  };
+
+  const emptyTrash = async () => deleteMany(items.map((m) => m.id));
+
+  return { items, loading, reload: load, restore, deleteForever, restoreMany, deleteMany, emptyTrash };
 };
+
