@@ -5,11 +5,12 @@ import { Hl } from '@/lib/marketing';
 
 
 const highlights = [
-  { icon: Sparkles, t: 'Capture in 3 seconds', s: 'Voice, photo or text. No folders, no tags.' },
-  { icon: Clock, t: 'One life timeline', s: 'Everything you do, in one continuous feed.' },
-  { icon: Brain, t: 'It thinks for you', s: 'Patterns, answers and a daily brief from Smarty Assistant.' },
-  { icon: Lock, t: 'Always private', s: 'Encrypted, yours only. Never sold, never used to train models.' },
+  { icon: Sparkles, t: 'Capture in 3 seconds', s: 'Type, say or snap it.' },
+  { icon: Clock, t: 'One life timeline', s: 'Everything in one feed.' },
+  { icon: Brain, t: 'It thinks for you', s: 'Patterns and answers.' },
+  { icon: Lock, t: 'Always private', s: 'Encrypted, yours only.' },
 ];
+
 
 
 const Landing = () => {
