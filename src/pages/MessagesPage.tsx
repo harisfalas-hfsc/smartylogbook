@@ -1,11 +1,23 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Archive, ArchiveRestore, CheckCheck, Inbox, Loader2, Trash2 } from 'lucide-react';
+import {
+  Archive, ArchiveRestore, CheckCheck, ChevronDown, Inbox, Loader2, Mail, MailOpen,
+  MoreVertical, Trash2, X,
+} from 'lucide-react';
 import { useMessages, messageStyle, groupMessages, bucketOf, type MessageRow } from '@/lib/messages';
 import { useSubscription } from '@/lib/subscription';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
+  AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { toast } from 'sonner';
 
 const when = (iso: string) => {
   const d = new Date(iso);
@@ -22,7 +34,7 @@ const FILTERS: { id: Filter; label: string }[] = [
   { id: 'all', label: 'All' },
   { id: 'missed', label: 'Missed' },
   { id: 'today', label: 'Today' },
-  { id: 'upcoming', label: 'Upcoming' },
+  { id: 'upcoming', label: 'Soon' },
   { id: 'insights', label: 'Insights' },
 ];
 
@@ -39,8 +51,14 @@ const MessagesPage = () => {
   const { user } = useAuth();
   const [showArchived, setShowArchived] = useState(false);
   const [filter, setFilter] = useState<Filter>('all');
-  const { messages, loading, unread, markRead, markAllRead, archive, unarchive, remove, reload } =
-    useMessages(showArchived);
+  const [unreadOnly, setUnreadOnly] = useState(false);
+  const [selecting, setSelecting] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [confirm, setConfirm] = useState<{ ids: string[]; all?: boolean } | null>(null);
+  const {
+    messages, loading, unread, markRead, markAllRead, setRead, archive, unarchive, setArchived,
+    remove, removeMany, reload,
+  } = useMessages(showArchived);
   const { canUseAssistant, plan, renewsAt, isAdmin, loading: planLoading } = useSubscription();
 
   /* First visit: greet the user so the inbox is never empty. */
@@ -72,26 +90,77 @@ const MessagesPage = () => {
     return c;
   }, [messages]);
 
-  const visible = useMemo(() => messages.filter((m) => matches(m, filter)), [messages, filter]);
+  const visible = useMemo(
+    () => messages.filter((m) => matches(m, filter) && (!unreadOnly || !m.read_at)),
+    [messages, filter, unreadOnly],
+  );
   const groups = useMemo(() => groupMessages(visible), [visible]);
+
+  const visibleIds = useMemo(() => visible.map((m) => m.id), [visible]);
+  const picked = useMemo(() => visibleIds.filter((id) => selected.has(id)), [visibleIds, selected]);
+  const allPicked = visibleIds.length > 0 && picked.length === visibleIds.length;
+
+  const exitSelect = () => {
+    setSelecting(false);
+    setSelected(new Set());
+  };
+
+  const toggleOne = (id: string) =>
+    setSelected((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+
+  const toggleAll = () => setSelected(allPicked ? new Set() : new Set(visibleIds));
+
+  const bulkRead = async (read: boolean) => {
+    await setRead(picked, read);
+    toast.success(`${picked.length} marked as ${read ? 'read' : 'unread'}`);
+    exitSelect();
+  };
+
+  const bulkArchive = async () => {
+    await setArchived(picked, !showArchived);
+    toast.success(`${picked.length} ${showArchived ? 'restored' : 'archived'}`);
+    exitSelect();
+  };
+
+  const doDelete = async () => {
+    if (!confirm) return;
+    await removeMany(confirm.ids);
+    toast.success(`${confirm.ids.length} message${confirm.ids.length === 1 ? '' : 's'} deleted`);
+    setConfirm(null);
+    exitSelect();
+  };
 
   const renderMessage = (m: MessageRow) => {
     const style = messageStyle(m.kind);
     const Icon = style.icon;
     const missed = bucketOf(m) === 'missed';
+    const isPicked = selected.has(m.id);
     return (
       <li
         key={m.id}
+        onClick={() => selecting && toggleOne(m.id)}
         className={cn(
           'smarty-card flex gap-3 p-3.5 transition-smooth',
           !m.read_at && 'border-primary/40 bg-primary/[0.03]',
           missed && 'border-destructive/40 bg-destructive/[0.03]',
+          selecting && 'cursor-pointer',
+          isPicked && 'border-primary bg-primary/[0.07]',
         )}
       >
-        <span className={cn('grid h-9 w-9 shrink-0 place-items-center rounded-2xl', style.tint)}>
-          <Icon className={cn('h-4.5 w-4.5', style.color)} />
-        </span>
-        <div className="min-w-0 flex-1" onClick={() => !m.read_at && markRead(m.id)}>
+        {selecting ? (
+          <div className="grid h-9 w-9 shrink-0 place-items-center">
+            <Checkbox checked={isPicked} onCheckedChange={() => toggleOne(m.id)} aria-label="Select message" />
+          </div>
+        ) : (
+          <span className={cn('grid h-9 w-9 shrink-0 place-items-center rounded-2xl', style.tint)}>
+            <Icon className={cn('h-4.5 w-4.5', style.color)} />
+          </span>
+        )}
+        <div className="min-w-0 flex-1" onClick={() => !selecting && !m.read_at && markRead(m.id)}>
           <div className="flex items-center gap-2">
             <p className="min-w-0 flex-1 text-sm font-bold text-foreground">{m.title}</p>
             <span className="shrink-0 text-[10px] font-medium text-muted-foreground">{when(m.created_at)}</span>
@@ -115,7 +184,7 @@ const MessagesPage = () => {
                 {new Date(m.related_at).toLocaleString(undefined, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
               </span>
             )}
-            {m.action_url && (
+            {m.action_url && !selecting && (
               <Link
                 to={m.action_url}
                 onClick={() => markRead(m.id)}
@@ -126,22 +195,35 @@ const MessagesPage = () => {
             )}
           </div>
         </div>
-        <div className="flex shrink-0 flex-col gap-1">
-          <button
-            onClick={() => (showArchived ? unarchive(m.id) : archive(m.id))}
-            aria-label={showArchived ? 'Restore message' : 'Archive message'}
-            className="grid h-7 w-7 place-items-center rounded-full text-muted-foreground hover:bg-secondary"
-          >
-            {showArchived ? <ArchiveRestore className="h-4 w-4" /> : <Archive className="h-4 w-4" />}
-          </button>
-          <button
-            onClick={() => remove(m.id)}
-            aria-label="Delete message"
-            className="grid h-7 w-7 place-items-center rounded-full text-destructive hover:bg-destructive/10"
-          >
-            <Trash2 className="h-4 w-4" />
-          </button>
-        </div>
+        {!selecting && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                aria-label="Message options"
+                className="grid h-8 w-8 shrink-0 place-items-center self-start rounded-full text-muted-foreground hover:bg-secondary"
+              >
+                <MoreVertical className="h-4 w-4" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem onClick={() => setRead([m.id], !m.read_at)}>
+                {m.read_at ? <Mail className="mr-2 h-4 w-4" /> : <MailOpen className="mr-2 h-4 w-4" />}
+                Mark as {m.read_at ? 'unread' : 'read'}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => (showArchived ? unarchive(m.id) : archive(m.id))}>
+                {showArchived ? <ArchiveRestore className="mr-2 h-4 w-4" /> : <Archive className="mr-2 h-4 w-4" />}
+                {showArchived ? 'Restore to inbox' : 'Archive'}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => { setSelecting(true); setSelected(new Set([m.id])); }}>
+                <CheckCheck className="mr-2 h-4 w-4" /> Select messages
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => remove(m.id)}>
+                <Trash2 className="mr-2 h-4 w-4" /> Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </li>
     );
   };
@@ -154,27 +236,63 @@ const MessagesPage = () => {
             Message <span className="gradient-text">Center</span>
           </h1>
           <div className="flex shrink-0 items-center gap-1.5">
-            {unread > 0 && !showArchived && (
-              <button
-                onClick={markAllRead}
-                aria-label="Mark all as read"
-                title="Mark all as read"
-                className="grid h-9 w-9 place-items-center rounded-2xl bg-secondary text-secondary-foreground active:scale-95"
-              >
-                <CheckCheck className="h-4 w-4" />
-              </button>
-            )}
-            <button
-              onClick={() => setShowArchived((v) => !v)}
-              aria-label={showArchived ? 'Back to inbox' : 'Show archive'}
-              title={showArchived ? 'Back to inbox' : 'Show archive'}
-              className={cn(
-                'grid h-9 w-9 place-items-center rounded-2xl active:scale-95',
-                showArchived ? 'bg-primary/10 text-primary' : 'bg-secondary text-secondary-foreground'
-              )}
-            >
-              {showArchived ? <Inbox className="h-4 w-4" /> : <Archive className="h-4 w-4" />}
-            </button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex h-9 items-center gap-1 rounded-2xl bg-secondary px-3 text-xs font-semibold text-secondary-foreground active:scale-95">
+                  {showArchived ? 'Archive' : unreadOnly ? 'Unread' : 'Inbox'}
+                  <ChevronDown className="h-3.5 w-3.5" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem onClick={() => { setShowArchived(false); setUnreadOnly(false); exitSelect(); }}>
+                  <Inbox className="mr-2 h-4 w-4" /> Inbox
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => { setShowArchived(false); setUnreadOnly(true); exitSelect(); }}>
+                  <Mail className="mr-2 h-4 w-4" /> Unread only
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => { setShowArchived(true); setUnreadOnly(false); exitSelect(); }}>
+                  <Archive className="mr-2 h-4 w-4" /> Archive
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  aria-label="Inbox options"
+                  className="grid h-9 w-9 place-items-center rounded-2xl bg-secondary text-secondary-foreground active:scale-95"
+                >
+                  <MoreVertical className="h-4 w-4" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-52">
+                <DropdownMenuItem onClick={() => { setSelecting(true); setSelected(new Set(visibleIds)); }}>
+                  <CheckCheck className="mr-2 h-4 w-4" /> Select all
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSelecting(true)}>
+                  <CheckCheck className="mr-2 h-4 w-4" /> Select messages
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem disabled={unread === 0} onClick={() => markAllRead()}>
+                  <MailOpen className="mr-2 h-4 w-4" /> Mark all as read
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  disabled={!visibleIds.length}
+                  onClick={() => setArchived(visibleIds, !showArchived)}
+                >
+                  {showArchived ? <ArchiveRestore className="mr-2 h-4 w-4" /> : <Archive className="mr-2 h-4 w-4" />}
+                  {showArchived ? 'Restore all' : 'Archive all'}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  disabled={!visibleIds.length}
+                  className="text-destructive focus:text-destructive"
+                  onClick={() => setConfirm({ ids: visibleIds, all: true })}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" /> Delete all shown
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
         <p className="text-sm text-muted-foreground">
@@ -203,6 +321,63 @@ const MessagesPage = () => {
         ))}
       </div>
 
+      {selecting && (
+        <div className="sticky top-12 z-20 flex items-center gap-2 rounded-2xl border border-border bg-background/95 p-2 shadow-sm backdrop-blur lg:top-16">
+          <button
+            onClick={toggleAll}
+            className="flex shrink-0 items-center gap-2 rounded-xl px-2 py-1.5 text-xs font-semibold text-foreground hover:bg-secondary"
+          >
+            <Checkbox checked={allPicked} aria-label="Select all" />
+            <span className="whitespace-nowrap">{picked.length ? `${picked.length}` : 'All'}</span>
+          </button>
+          <div className="ml-auto flex shrink-0 items-center gap-1">
+            <button
+              disabled={!picked.length}
+              onClick={() => bulkRead(true)}
+              aria-label="Mark selected as read"
+              title="Mark as read"
+              className="grid h-9 w-9 place-items-center rounded-xl bg-secondary text-secondary-foreground disabled:opacity-40"
+            >
+              <MailOpen className="h-4 w-4" />
+            </button>
+            <button
+              disabled={!picked.length}
+              onClick={() => bulkRead(false)}
+              aria-label="Mark selected as unread"
+              title="Mark as unread"
+              className="grid h-9 w-9 place-items-center rounded-xl bg-secondary text-secondary-foreground disabled:opacity-40"
+            >
+              <Mail className="h-4 w-4" />
+            </button>
+            <button
+              disabled={!picked.length}
+              onClick={bulkArchive}
+              aria-label={showArchived ? 'Restore selected' : 'Archive selected'}
+              title={showArchived ? 'Restore' : 'Archive'}
+              className="grid h-9 w-9 place-items-center rounded-xl bg-secondary text-secondary-foreground disabled:opacity-40"
+            >
+              {showArchived ? <ArchiveRestore className="h-4 w-4" /> : <Archive className="h-4 w-4" />}
+            </button>
+            <button
+              disabled={!picked.length}
+              onClick={() => setConfirm({ ids: picked })}
+              aria-label="Delete selected"
+              title="Delete"
+              className="grid h-9 w-9 place-items-center rounded-xl bg-destructive/10 text-destructive disabled:opacity-40"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+            <button
+              onClick={exitSelect}
+              aria-label="Cancel selection"
+              title="Cancel"
+              className="grid h-9 w-9 place-items-center rounded-xl text-muted-foreground hover:bg-secondary"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {!planLoading && !canUseAssistant && (
         <div className="smarty-card p-4">
@@ -260,6 +435,26 @@ const MessagesPage = () => {
           ))}
         </div>
       )}
+
+      <AlertDialog open={!!confirm} onOpenChange={(o) => !o && setConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Delete {confirm?.ids.length} message{confirm?.ids.length === 1 ? '' : 's'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              This permanently removes {confirm?.all ? 'every message shown in this view' : 'the selected messages'}.
+              This cannot be undone. Archive instead if you want to keep them.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={doDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

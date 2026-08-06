@@ -109,6 +109,14 @@ export const useMessages = (archived = false) => {
     await supabase.from('messages').update({ read_at: now }).is('read_at', null);
   };
 
+  /** Marks a batch of messages read or unread. */
+  const setRead = async (ids: string[], read: boolean) => {
+    if (!ids.length) return;
+    const value = read ? new Date().toISOString() : null;
+    setMessages((prev) => prev.map((m) => (ids.includes(m.id) ? { ...m, read_at: value } : m)));
+    await supabase.from('messages').update({ read_at: value }).in('id', ids);
+  };
+
   const archive = async (id: string) => {
     setMessages((prev) => prev.filter((m) => m.id !== id));
     await supabase.from('messages').update({ archived_at: new Date().toISOString() }).eq('id', id);
@@ -119,15 +127,36 @@ export const useMessages = (archived = false) => {
     await supabase.from('messages').update({ archived_at: null }).eq('id', id);
   };
 
+  /** Archives or restores a batch of messages. */
+  const setArchived = async (ids: string[], archivedState: boolean) => {
+    if (!ids.length) return;
+    setMessages((prev) => prev.filter((m) => !ids.includes(m.id)));
+    await supabase
+      .from('messages')
+      .update({ archived_at: archivedState ? new Date().toISOString() : null })
+      .in('id', ids);
+  };
+
   const remove = async (id: string) => {
     setMessages((prev) => prev.filter((m) => m.id !== id));
     await supabase.from('messages').delete().eq('id', id);
   };
 
+  /** Permanently deletes a batch of messages. */
+  const removeMany = async (ids: string[]) => {
+    if (!ids.length) return;
+    setMessages((prev) => prev.filter((m) => !ids.includes(m.id)));
+    await supabase.from('messages').delete().in('id', ids);
+  };
+
   const unread = messages.filter((m) => !m.read_at).length;
 
-  return { messages, loading, unread, reload: load, markRead, markAllRead, archive, unarchive, remove };
+  return {
+    messages, loading, unread, reload: load,
+    markRead, markAllRead, setRead, archive, unarchive, setArchived, remove, removeMany,
+  };
 };
+
 
 /** Lightweight unread counter for the header bell. */
 export const useUnreadMessages = () => {
