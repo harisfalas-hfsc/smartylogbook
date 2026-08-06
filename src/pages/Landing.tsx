@@ -41,23 +41,7 @@ const Landing = () => {
       </section>
 
 
-      {/* Highlights */}
-      <section className="mx-auto w-full max-w-5xl px-5 pb-14 pt-2 md:px-8">
-        <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
-          {highlights.map((h) => (
-            <div key={h.t} className="smarty-card flex h-full items-center gap-3 p-4">
-              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-gradient-primary shadow-glow">
-                <h.icon className="h-5 w-5 text-primary-foreground" />
-              </span>
-              <div className="min-w-0">
-                <p className="truncate text-sm font-bold text-foreground">{h.t}</p>
-                <p className="mt-0.5 truncate text-xs text-muted-foreground">{h.s}</p>
-              </div>
-            </div>
-          ))}
-        </div>
 
-      </section>
 
 
 
