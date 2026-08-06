@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, ArrowRight, Home, Info, Sparkles, Tag, MessageSquareQuote, HelpCircle, ShieldCheck, User } from 'lucide-react';
+import { Menu, ArrowRight, Home, Info, Sparkles, Tag, MessageSquareQuote, HelpCircle, ShieldCheck, LifeBuoy, User } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import Logo from '@/components/Logo';
 import BackButton, { resetNavDepth } from '@/components/BackButton';
@@ -15,7 +15,9 @@ const discoverLinks = [
   { to: '/testimonials', label: 'Testimonials', icon: MessageSquareQuote },
   { to: '/faq', label: 'FAQ', icon: HelpCircle },
   { to: '/security', label: 'Security & Privacy', icon: ShieldCheck },
+  { to: '/contact', label: 'Contact & support', icon: LifeBuoy },
 ];
+
 
 const PublicLayout = () => {
   const [open, setOpen] = useState(false);
