@@ -14,6 +14,7 @@ import PricingPage from "./pages/PricingPage";
 import TestimonialsPage from "./pages/TestimonialsPage";
 import FaqPage from "./pages/FaqPage";
 import SecurityPage from "./pages/SecurityPage";
+import ContactPage from "./pages/ContactPage";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 import TermsPage from "./pages/TermsPage";
 import DisclaimerPage from "./pages/DisclaimerPage";
