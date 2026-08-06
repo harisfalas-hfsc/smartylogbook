@@ -87,8 +87,9 @@ const PricingPage = () => {
             <span className="text-xs font-medium text-muted-foreground">per month</span>
           </p>
           <p className="relative mt-2 text-[13px] leading-relaxed text-muted-foreground">
-            Everything in Free, and your logbook starts thinking.
+            The full membership: unlimited capture, Trash, and your logbook starts thinking.
           </p>
+
 
           <div className="relative mt-4 flex items-center gap-3 rounded-2xl bg-primary/8 p-3.5">
             <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-primary shadow-glow">
