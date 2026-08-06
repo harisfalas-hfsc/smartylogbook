@@ -1,4 +1,4 @@
-import { useEffect, useState, type LucideIcon } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   AlertTriangle,
@@ -11,6 +11,7 @@ import {
   Sparkles,
   TrendingUp,
   Wallet,
+  type LucideIcon,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useMemories } from '@/lib/memories';
