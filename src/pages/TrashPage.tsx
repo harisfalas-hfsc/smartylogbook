@@ -54,6 +54,11 @@ const TrashPage = () => {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [confirm, setConfirm] = useState<{ ids: string[]; all?: boolean } | null>(null);
   const [busy, setBusy] = useState(false);
+  const [openId, setOpenId] = useState<string | null>(null);
+
+  const opened = useMemo(() => items.find((m) => m.id === openId) ?? null, [items, openId]);
+
+
 
   const counts = useMemo(() => {
     const c: Record<Filter, number> = { all: items.length, soon: 0, notes: 0, photos: 0, files: 0 };
