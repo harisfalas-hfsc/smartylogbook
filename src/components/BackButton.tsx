@@ -50,15 +50,21 @@ export const useCanGoBack = () => useNavDepth() > 0;
 
 const BackButton = ({ className }: { className?: string }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const depth = useNavDepth();
 
-  if (depth <= 0) return null;
+  if (HOME_ROUTES.includes(location.pathname)) return null;
+
+  const goBack = () => {
+    if (depth > 0) navigate(-1);
+    else navigate(location.pathname.startsWith('/app') ? '/app' : '/', { replace: true });
+  };
 
   return (
     <button
       type="button"
       aria-label="Go back"
-      onClick={() => navigate(-1)}
+      onClick={goBack}
       className={cn(
         'inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-primary transition-colors hover:bg-primary/10',
         className
@@ -68,5 +74,6 @@ const BackButton = ({ className }: { className?: string }) => {
     </button>
   );
 };
+
 
 export default BackButton;
