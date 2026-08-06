@@ -5,11 +5,12 @@ import { Hl } from '@/lib/marketing';
 
 
 const highlights = [
-  { icon: Sparkles, t: 'Capture in 3 seconds', s: 'Voice, photo or text. No folders, no tags.' },
-  { icon: Clock, t: 'One life timeline', s: 'Everything you do, in one continuous feed.' },
-  { icon: Brain, t: 'It thinks for you', s: 'Patterns, answers and a daily brief from Smarty Assistant.' },
-  { icon: Lock, t: 'Always private', s: 'Encrypted, yours only. Never sold, never used to train models.' },
+  { icon: Sparkles, t: 'Capture in 3 seconds', s: 'Type, say or snap it.' },
+  { icon: Clock, t: 'One life timeline', s: 'Everything in one feed.' },
+  { icon: Brain, t: 'It thinks for you', s: 'Patterns and answers.' },
+  { icon: Lock, t: 'Always private', s: 'Encrypted, yours only.' },
 ];
+
 
 
 const Landing = () => {
@@ -35,7 +36,7 @@ const Landing = () => {
               to="/auth"
               className="flex w-full max-w-xs items-center justify-center gap-2 rounded-2xl bg-gradient-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground shadow-glow transition-smooth active:scale-95"
             >
-              Get Started free <ArrowRight className="h-4 w-4" />
+              Get Started <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
               to="/how-it-works"
@@ -58,17 +59,18 @@ const Landing = () => {
       <section className="mx-auto w-full max-w-5xl px-5 pb-14 md:px-8">
         <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
           {highlights.map((h) => (
-            <div key={h.t} className="smarty-card flex items-start gap-3 p-4">
+            <div key={h.t} className="smarty-card flex h-full items-center gap-3 p-4">
               <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-gradient-primary shadow-glow">
                 <h.icon className="h-5 w-5 text-primary-foreground" />
               </span>
-              <div>
-                <p className="text-sm font-bold text-foreground">{h.t}</p>
-                <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{h.s}</p>
+              <div className="min-w-0">
+                <p className="truncate text-sm font-bold text-foreground">{h.t}</p>
+                <p className="mt-0.5 truncate text-xs text-muted-foreground">{h.s}</p>
               </div>
             </div>
           ))}
         </div>
+
       </section>
 
 

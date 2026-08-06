@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { indexMemories } from '@/lib/semantic';
+import { hasPremium } from '@/lib/subscription';
+
 
 export interface Memory {
   id: string;
@@ -137,15 +139,20 @@ export const useMemories = (options?: { module?: string; limit?: number }) => {
     return { error };
   };
 
-  /** Soft delete: the record moves to Trash for 30 days and is hidden from the assistant. */
+  /**
+   * Premium: soft delete, the record moves to Trash for 30 days.
+   * Free: deleting is permanent, there is no Trash to park records in.
+   */
   const remove = async (id: string) => {
-    const { error } = await supabase
-      .from('memories')
-      .update({ deleted_at: new Date().toISOString() })
-      .eq('id', id);
+    if (!user) return { error: new Error('Not signed in') };
+    const premium = await hasPremium(user.id);
+    const { error } = premium
+      ? await supabase.from('memories').update({ deleted_at: new Date().toISOString() }).eq('id', id)
+      : await supabase.from('memories').delete().eq('id', id);
     if (!error) setMemories((prev) => prev.filter((m) => m.id !== id));
     return { error };
   };
+
 
   return { memories, loading, reload: load, create, remove, reclassify, update, moveAll };
 };

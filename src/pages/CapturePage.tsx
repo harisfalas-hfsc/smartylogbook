@@ -10,6 +10,9 @@ import { useMemories } from '@/lib/memories';
 import { CAPTURE_KINDS, MODULES, CaptureKind, getModule } from '@/lib/constants';
 import { useReminders } from '@/lib/reminders';
 import { cn } from '@/lib/utils';
+import { hasPremium } from '@/lib/subscription';
+import { FREE_CAPTURES_PER_CATEGORY } from '@/lib/pricing';
+
 
 /** Short, practical instructions shown per category (no fake sample entries). */
 const GENERIC_TIPS = [
@@ -351,6 +354,26 @@ const CapturePage = () => {
         /* fall back to raw capture */
       }
     }
+
+    /* Free accounts get one capture per category, then they upgrade or delete. */
+    const targetModule = module ?? classified?.module ?? 'personal';
+    if (user && !(await hasPremium(user.id))) {
+      const { count } = await supabase
+        .from('memories')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('module', targetModule)
+        .is('deleted_at', null);
+      if ((count ?? 0) >= FREE_CAPTURES_PER_CATEGORY) {
+        setSaving(false);
+        toast.error(
+          `Your free account already has a capture in ${getModule(targetModule)?.label ?? targetModule}. Upgrade to Premium, or delete that one first.`,
+          { action: { label: 'Upgrade', onClick: () => navigate('/app/checkout') } },
+        );
+        return;
+      }
+    }
+
 
     let attachmentUrl: string | null = null;
     if (file && user) {

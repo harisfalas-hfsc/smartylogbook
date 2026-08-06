@@ -150,7 +150,7 @@ const AssistantUpgrade = (props: Props) => {
         </span>
         <h2 className="mt-3 text-xl font-extrabold tracking-tight">Unlock Smarty Assistant</h2>
         <p className="mt-1.5 max-w-md text-[13px] leading-relaxed opacity-90">
-          Your logbook stays free forever. Smarty Assistant turns everything you have stored into reasoning,
+          One membership unlocks everything. Smarty Assistant turns what you have stored into reasoning,
           predictions and recommendations that are only about you.
         </p>
       </div>
