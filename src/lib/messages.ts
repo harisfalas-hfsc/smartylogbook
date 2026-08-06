@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
-  Bell, BrainCog, CalendarClock, CreditCard, FileText, HeartPulse, Receipt, Sparkles,
+  Bell, BrainCog, CalendarClock, CreditCard, FileText, HeartPulse, Megaphone, Receipt, Sparkles,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
