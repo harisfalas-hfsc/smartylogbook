@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
 
-export const SUPPORT_EMAIL = 'support@smartylogbook.com';
+export const SUPPORT_EMAIL = 'smartylogbook@outlook.com';
 
 export interface SupportTicket {
   id: string;
