@@ -3,7 +3,7 @@
   "short_name": "Smarty Logbook",
   "description": "The Smarty Logbook that remembers your life better than you do.",
   "id": "/",
-  "start_url": "/?source=pwa",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",

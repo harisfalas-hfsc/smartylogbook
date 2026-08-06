@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -47,6 +47,18 @@ import { HelmetProvider } from "react-helmet-async";
 
 const queryClient = new QueryClient();
 
+const AuthEntry = () => {
+  const location = useLocation();
+
+  // A direct browser or installed-app launch must always open the public home page.
+  // The sign-in screen remains available through in-app navigation.
+  if (location.key === "default") {
+    return <Navigate to="/" replace />;
+  }
+
+  return <AuthPage />;
+};
+
 const App = () => (
   <HelmetProvider>
   <QueryClientProvider client={queryClient}>
@@ -73,7 +85,7 @@ const App = () => (
               <Route path="/terms-and-conditions" element={<TermsPage />} />
               <Route path="/disclaimer" element={<DisclaimerPage />} />
             </Route>
-            <Route path="/auth" element={<AuthPage />} />
+            <Route path="/auth" element={<AuthEntry />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
             <Route path="/app" element={<ProtectedRoute><AppShell /></ProtectedRoute>}>
