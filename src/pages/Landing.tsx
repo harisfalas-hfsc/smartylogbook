@@ -39,16 +39,8 @@ const Landing = () => {
           </div>
         </div>
       </section>
-
-
-
-
-
-
-
-
-
     </div>
+
   );
 };
 
