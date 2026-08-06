@@ -27,6 +27,7 @@ import AssistantPage from "./pages/AssistantPage";
 import InsightsPage from "./pages/InsightsPage";
 import ModulesPage from "./pages/ModulesPage";
 import ModuleDetailPage from "./pages/ModuleDetailPage";
+import NotificationsPage from "./pages/NotificationsPage";
 import SettingsPage from "./pages/SettingsPage";
 import TrashPage from "./pages/TrashPage";
 import AdminPage from "./pages/AdminPage";
@@ -89,6 +90,7 @@ const App = () => (
               <Route path="reminders" element={<RemindersPage />} />
               <Route path="calendar" element={<CalendarPage />} />
               <Route path="messages" element={<MessagesPage />} />
+              <Route path="notifications" element={<NotificationsPage />} />
               <Route path="settings" element={<SettingsPage />} />
               <Route path="trash" element={<TrashPage />} />
               <Route path="account" element={<AccountPage />} />
