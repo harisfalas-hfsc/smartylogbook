@@ -8,6 +8,8 @@ import { useTrash, daysLeftInTrash, TRASH_RETENTION_DAYS, type Memory } from '@/
 import { MODULES } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
+import TrashDetailSheet from '@/components/TrashDetailSheet';
+
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
@@ -54,6 +56,11 @@ const TrashPage = () => {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [confirm, setConfirm] = useState<{ ids: string[]; all?: boolean } | null>(null);
   const [busy, setBusy] = useState(false);
+  const [openId, setOpenId] = useState<string | null>(null);
+
+  const opened = useMemo(() => items.find((m) => m.id === openId) ?? null, [items, openId]);
+
+
 
   const counts = useMemo(() => {
     const c: Record<Filter, number> = { all: items.length, soon: 0, notes: 0, photos: 0, files: 0 };
@@ -112,14 +119,14 @@ const TrashPage = () => {
     return (
       <li
         key={m.id}
-        onClick={() => selecting && toggleOne(m.id)}
+        onClick={() => (selecting ? toggleOne(m.id) : setOpenId(m.id))}
         className={cn(
-          'smarty-card flex gap-3 p-3.5 transition-smooth',
+          'smarty-card flex cursor-pointer gap-3 p-3.5 transition-smooth',
           urgent && 'border-destructive/40 bg-destructive/[0.03]',
-          selecting && 'cursor-pointer',
           isPicked && 'border-primary bg-primary/[0.07]',
         )}
       >
+
         {selecting ? (
           <div className="grid h-9 w-9 shrink-0 place-items-center" onClick={(e) => e.stopPropagation()}>
             <Checkbox checked={isPicked} onCheckedChange={() => toggleOne(m.id)} aria-label="Select record" />
@@ -157,10 +164,12 @@ const TrashPage = () => {
             <DropdownMenuTrigger asChild>
               <button
                 aria-label="Record options"
+                onClick={(e) => e.stopPropagation()}
                 className="grid h-8 w-8 shrink-0 place-items-center self-start rounded-full text-muted-foreground hover:bg-secondary"
               >
                 <MoreVertical className="h-4 w-4" />
               </button>
+
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
               <DropdownMenuItem
@@ -341,6 +350,22 @@ const TrashPage = () => {
       ) : (
         <ul className="space-y-2">{visible.map(renderItem)}</ul>
       )}
+
+      <TrashDetailSheet
+        record={opened}
+        open={!!opened}
+        onOpenChange={(o) => !o && setOpenId(null)}
+        onRestore={async (m) => {
+          setOpenId(null);
+          const { error } = await restore(m.id);
+          toast[error ? 'error' : 'success'](error ? 'Could not restore' : 'Record restored');
+        }}
+        onDelete={(m) => {
+          setOpenId(null);
+          setConfirm({ ids: [m.id] });
+        }}
+      />
+
 
       <AlertDialog open={!!confirm} onOpenChange={(o) => !o && setConfirm(null)}>
         <AlertDialogContent>

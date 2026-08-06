@@ -17,7 +17,9 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
   AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import MessageDetailSheet from '@/components/MessageDetailSheet';
 import { toast } from 'sonner';
+
 
 const when = (iso: string) => {
   const d = new Date(iso);
@@ -55,6 +57,8 @@ const MessagesPage = () => {
   const [selecting, setSelecting] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [confirm, setConfirm] = useState<{ ids: string[]; all?: boolean } | null>(null);
+  const [openId, setOpenId] = useState<string | null>(null);
+
   const {
     messages, loading, unread, markRead, markAllRead, setRead, archive, unarchive, setArchived,
     remove, removeMany, reload,
@@ -134,6 +138,15 @@ const MessagesPage = () => {
     exitSelect();
   };
 
+  const openMessage = (m: MessageRow) => {
+    setOpenId(m.id);
+    if (!m.read_at) void markRead(m.id);
+  };
+
+  const opened = useMemo(() => messages.find((m) => m.id === openId) ?? null, [messages, openId]);
+
+
+
   const renderMessage = (m: MessageRow) => {
     const style = messageStyle(m.kind);
     const Icon = style.icon;
@@ -142,12 +155,11 @@ const MessagesPage = () => {
     return (
       <li
         key={m.id}
-        onClick={() => selecting && toggleOne(m.id)}
+        onClick={() => (selecting ? toggleOne(m.id) : openMessage(m))}
         className={cn(
-          'smarty-card flex gap-3 p-3.5 transition-smooth',
+          'smarty-card flex cursor-pointer gap-3 p-3.5 transition-smooth',
           !m.read_at && 'border-primary/40 bg-primary/[0.03]',
           missed && 'border-destructive/40 bg-destructive/[0.03]',
-          selecting && 'cursor-pointer',
           isPicked && 'border-primary bg-primary/[0.07]',
         )}
       >
@@ -161,12 +173,13 @@ const MessagesPage = () => {
             <Icon className={cn('h-4.5 w-4.5', style.color)} />
           </span>
         )}
-        <div className="min-w-0 flex-1" onClick={() => !selecting && !m.read_at && markRead(m.id)}>
+        <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <p className="min-w-0 flex-1 text-sm font-bold text-foreground">{m.title}</p>
+            <p className="min-w-0 flex-1 truncate text-sm font-bold text-foreground">{m.title}</p>
             <span className="shrink-0 text-[10px] font-medium text-muted-foreground">{when(m.created_at)}</span>
           </div>
-          {m.body && <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{m.body}</p>}
+          {m.body && <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted-foreground">{m.body}</p>}
+
           <div className="mt-2 flex flex-wrap items-center gap-2">
             <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-semibold text-secondary-foreground">
               {style.label}
@@ -188,12 +201,13 @@ const MessagesPage = () => {
             {m.action_url && !selecting && (
               <Link
                 to={m.action_url}
-                onClick={() => markRead(m.id)}
+                onClick={(e) => { e.stopPropagation(); markRead(m.id); }}
                 className="ml-auto rounded-2xl bg-gradient-primary px-3 py-1.5 text-[11px] font-semibold text-primary-foreground"
               >
                 {m.action_label ?? 'Open'}
               </Link>
             )}
+
           </div>
         </div>
         {!selecting && (
@@ -201,10 +215,12 @@ const MessagesPage = () => {
             <DropdownMenuTrigger asChild>
               <button
                 aria-label="Message options"
+                onClick={(e) => e.stopPropagation()}
                 className="grid h-8 w-8 shrink-0 place-items-center self-start rounded-full text-muted-foreground hover:bg-secondary"
               >
                 <MoreVertical className="h-4 w-4" />
               </button>
+
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
               <DropdownMenuItem onClick={() => setRead([m.id], !m.read_at)}>
@@ -436,6 +452,28 @@ const MessagesPage = () => {
           ))}
         </div>
       )}
+
+      <MessageDetailSheet
+        message={opened}
+        open={!!opened}
+        archived={showArchived}
+        onOpenChange={(o) => !o && setOpenId(null)}
+        onToggleRead={async (m) => {
+          await setRead([m.id], !m.read_at);
+          toast.success(`Marked as ${m.read_at ? 'unread' : 'read'}`);
+        }}
+        onToggleArchive={async (m) => {
+          await setArchived([m.id], !showArchived);
+          setOpenId(null);
+          toast.success(showArchived ? 'Restored to inbox' : 'Archived');
+        }}
+        onDelete={async (m) => {
+          setOpenId(null);
+          await remove(m.id);
+          toast.success('Message deleted');
+        }}
+      />
+
 
       <AlertDialog open={!!confirm} onOpenChange={(o) => !o && setConfirm(null)}>
         <AlertDialogContent>
