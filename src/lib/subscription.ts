@@ -38,6 +38,24 @@ export const isActive = (sub: SubscriptionRow | null) =>
 export const findPlan = (pricing: PricingConfig, key?: string | null): PlanConfig | null =>
   pricing.plans.find((p) => p.key === key) ?? pricing.plans[0] ?? null;
 
+/**
+ * One-off premium check, for places that must not carry the whole hook
+ * (capture limits, delete behaviour). Administrators always count as premium.
+ */
+export const hasPremium = async (userId: string): Promise<boolean> => {
+  const [{ data: sub }, { data: role }] = await Promise.all([
+    supabase
+      .from('subscriptions')
+      .select('plan, plan_key, status, source, current_period_start, current_period_end, cancel_at_period_end')
+      .eq('user_id', userId)
+      .maybeSingle(),
+    supabase.from('user_roles').select('role').eq('user_id', userId).eq('role', 'admin').maybeSingle(),
+  ]);
+  if (role) return true;
+  return isActive((sub as SubscriptionRow | null) ?? null);
+};
+
+
 export const useSubscription = () => {
   const { user } = useAuth();
   const { isAdmin, loading: adminLoading } = useIsAdmin();
