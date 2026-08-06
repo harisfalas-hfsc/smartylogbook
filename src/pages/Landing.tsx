@@ -36,7 +36,7 @@ const Landing = () => {
               to="/auth"
               className="flex w-full max-w-xs items-center justify-center gap-2 rounded-2xl bg-gradient-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground shadow-glow transition-smooth active:scale-95"
             >
-              Get Started free <ArrowRight className="h-4 w-4" />
+              Get Started <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
               to="/how-it-works"

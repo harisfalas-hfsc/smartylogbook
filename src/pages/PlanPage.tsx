@@ -59,7 +59,7 @@ const PlanPage = () => {
       <header className="animate-fade-up">
         <h1 className="text-2xl font-extrabold tracking-tight text-foreground">My plan</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Your logbook is free forever. Smarty Assistant is the part you pay for.
+          One membership, €9.99 a month. A free account is only a taste of the logbook.
         </p>
       </header>
 

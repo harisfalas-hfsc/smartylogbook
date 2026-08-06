@@ -4,8 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 /**
  * Pricing / monetisation model.
  *
- * Smarty Logbook is free forever. Smarty Assistant (the intelligence layer)
- * is the paid product and is metered in AI Conversations.
+ * One membership: Smarty Premium. A free account can try one capture per
+ * category. Smarty Assistant is metered in AI Conversations.
  *
  * Nothing is hardcoded: the whole model lives in `pricing_config` and is
  * editable from the admin panel. The numbers below are only the fallback used
