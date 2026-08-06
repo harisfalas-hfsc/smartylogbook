@@ -451,6 +451,28 @@ const MessagesPage = () => {
         </div>
       )}
 
+      <MessageDetailSheet
+        message={opened}
+        open={!!opened}
+        archived={showArchived}
+        onOpenChange={(o) => !o && setOpenId(null)}
+        onToggleRead={async (m) => {
+          await setRead([m.id], !m.read_at);
+          toast.success(`Marked as ${m.read_at ? 'unread' : 'read'}`);
+        }}
+        onToggleArchive={async (m) => {
+          await setArchived([m.id], !showArchived);
+          setOpenId(null);
+          toast.success(showArchived ? 'Restored to inbox' : 'Archived');
+        }}
+        onDelete={async (m) => {
+          setOpenId(null);
+          await remove(m.id);
+          toast.success('Message deleted');
+        }}
+      />
+
+
       <AlertDialog open={!!confirm} onOpenChange={(o) => !o && setConfirm(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
