@@ -70,7 +70,7 @@ const PricingPage = () => {
             to="/auth"
             className="relative mt-6 flex items-center justify-center rounded-2xl bg-gradient-primary px-5 py-3.5 text-sm font-bold text-primary-foreground shadow-glow transition-smooth active:scale-[0.98]"
           >
-            Start free
+            Create an account
           </Link>
         </div>
 
