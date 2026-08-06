@@ -466,7 +466,8 @@ Deno.serve(async (req) => {
         kind: "announcement",
         title,
         body: text,
-        level: String(body?.level ?? "info"),
+        // The app only understands "normal" and "high"; map the admin wording onto it.
+        level: String(body?.level ?? "normal") === "warning" ? "high" : "normal",
         related_at: now,
         metadata: { sent_by: caller.id, audience },
       }));
