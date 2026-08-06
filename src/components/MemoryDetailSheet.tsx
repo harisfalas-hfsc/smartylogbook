@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar as CalendarIcon, Check, Link2, MapPin, Pencil, Save, Sparkles, Trash2 } from 'lucide-react';
+import { Calendar as CalendarIcon, Check, FileText, Link2, MapPin, Pencil, Save, Sparkles, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { kindIcon } from '@/lib/constants';
-import { albumOf, formatBytes, formatDuration, durationOf, isVideoMemory, useSignedUrl } from '@/lib/media';
+import { albumOf, formatBytes, formatDuration, durationOf, isImageMemory, isVideoMemory, useSignedUrl } from '@/lib/media';
 import { useCategories } from '@/lib/categories';
 import { Memory, titleOf } from '@/lib/memories';
 import { cn } from '@/lib/utils';
