@@ -26,7 +26,7 @@ const AdminMessagesTab = () => {
   const [search, setSearch] = useState('');
   const [editing, setEditing] = useState<string | null>(null);
   const [draft, setDraft] = useState({ title: '', body: '' });
-  const [broadcast, setBroadcast] = useState({ title: '', body: '', audience: 'all', level: 'info' });
+  const [broadcast, setBroadcast] = useState({ title: '', body: '', audience: 'all', level: 'normal' });
 
   const load = async () => {
     setLoading(true);
