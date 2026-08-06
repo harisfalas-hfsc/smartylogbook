@@ -47,10 +47,16 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* Highlights */}
-      <section className="mx-auto w-full max-w-5xl px-5 md:px-8 pb-10">
-        <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
+      {/* One line, four ways in */}
+      <section className="mx-auto w-full max-w-5xl px-5 pb-6 md:px-8">
+        <div className="smarty-card p-4 md:p-8">
+          <InputsCircle />
+        </div>
+      </section>
 
+      {/* Highlights */}
+      <section className="mx-auto w-full max-w-5xl px-5 pb-14 md:px-8">
+        <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
           {highlights.map((h) => (
             <div key={h.t} className="smarty-card flex items-start gap-3 p-4">
               <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-gradient-primary shadow-glow">
@@ -65,21 +71,6 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* One line, four ways in */}
-      <section className="mx-auto w-full max-w-5xl px-5 pb-6 md:px-8">
-        <div className="smarty-card p-4 md:p-8">
-          <InputsCircle />
-        </div>
-      </section>
-
-      {/* Privacy reassurance */}
-      <section className="mx-auto w-full max-w-5xl px-5 pb-14 md:px-8">
-        <div className="grid gap-2.5 sm:grid-cols-3">
-          <ExplainerRow id="private-by-default" />
-          <ExplainerRow id="no-filing" />
-          <ExplainerRow id="no-busywork" />
-        </div>
-      </section>
 
 
 
