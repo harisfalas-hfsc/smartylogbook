@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink, Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Bell, LogOut, Menu, Search, ShieldCheck, Sparkles } from 'lucide-react';
+import { Bell, CircleHelp, Info, LogOut, Menu, Search, ShieldCheck, Sparkles, Tag } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import BottomNav from '@/components/BottomNav';
 import SiteFooter from '@/components/SiteFooter';
@@ -29,13 +29,20 @@ const AppShell = () => {
   const { getCategory } = useCategories();
   const initial = (profile?.username ?? user?.email ?? 'S').charAt(0).toUpperCase();
   const desktopLinks = [...NAV_TABS.filter((t) => t.path !== '/app/capture'), ...MORE_LINKS];
-  const categoryMatch = pathname.match(/^\/app\/module\/([^/]+)$/);
+  const categoryMatch = pathname.match(/^\/app\/(?:category|module)\/([^/]+)$/);
   const activeCategory = categoryMatch?.[1] ? getCategory(decodeURIComponent(categoryMatch[1])) : null;
   const desktopTitle = activeCategory?.label ?? desktopLinks.find((link) => link.path === pathname)?.label ?? 'Smarty Logbook';
 
   const sections = [
     { heading: 'Your Logbook', items: NAV_TABS },
     { heading: 'More', items: MORE_LINKS },
+    { heading: 'Discover', items: [
+      { path: '/about', label: 'About', icon: Info },
+      { path: '/how-it-works', label: 'How it works', icon: Sparkles },
+      { path: '/pricing', label: 'Pricing', icon: Tag },
+      { path: '/faq', label: 'FAQ', icon: CircleHelp },
+      { path: '/security', label: 'Security & Privacy', icon: ShieldCheck },
+    ] },
   ];
 
   useEffect(() => {
@@ -85,6 +92,12 @@ const AppShell = () => {
           className="mt-4 flex items-center justify-center gap-2 rounded-2xl bg-gradient-primary px-4 py-3 text-sm font-semibold text-primary-foreground shadow-glow transition-smooth hover:opacity-95"
         >
           <Sparkles className="h-4 w-4" /> Quick Capture
+        </Link>
+        <Link
+          to="/pricing"
+          className="mt-2 flex items-center justify-center gap-2 rounded-2xl border border-primary px-4 py-2.5 text-sm font-semibold text-primary"
+        >
+          <Tag className="h-4 w-4" /> View membership
         </Link>
       </aside>
 

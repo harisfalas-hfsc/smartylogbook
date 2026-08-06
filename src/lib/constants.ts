@@ -7,7 +7,7 @@ import {
 
 export type ModuleId =
   | 'health' | 'fitness' | 'nutrition' | 'finance' | 'business' | 'documents'
-  | 'photos' | 'videos' | 'personal';
+  | 'photos' | 'videos' | 'notes' | 'personal';
 
 export interface ModuleInfo {
   id: ModuleId;
@@ -61,6 +61,11 @@ export const MODULES: ModuleInfo[] = [
     topics: ['Albums', 'Family', 'Trips', 'Recordings', 'Short clips'],
   },
   {
+    id: 'notes', label: 'Notes', icon: NotebookPen, color: 'text-primary', tint: 'bg-primary/10',
+    description: 'Ideas, lists & anything to remember',
+    topics: ['Notes', 'Ideas', 'Lists', 'Thoughts', 'Things to remember'],
+  },
+  {
     id: 'personal', label: 'Personal', icon: Heart, color: 'text-mod-personal', tint: 'bg-mod-personal/10',
     description: 'Ideas, journal, travel & more',
     topics: ['Ideas', 'Journal', 'Travel', 'Books', 'Movies', 'Important dates', 'Wishlist'],
@@ -110,7 +115,7 @@ export const MORE_LINKS = [
   { path: '/app/calendar', icon: CalendarClock, label: 'Calendar' },
   { path: '/app/messages', icon: Inbox, label: 'Messages' },
   { path: '/app/reminders', icon: Bell, label: 'Reminders' },
-  { path: '/app/modules', icon: Activity, label: 'Modules' },
+  { path: '/app/categories', icon: Activity, label: 'Categories' },
   { path: '/app/settings', icon: Settings, label: 'Settings' },
 ];
 

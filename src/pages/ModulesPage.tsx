@@ -98,7 +98,7 @@ const ModulesPage = () => {
           const own = custom.find((c) => c.id === m.id);
           return (
             <div key={m.id} className="smarty-card flex animate-fade-up items-center gap-3 p-4">
-              <Link to={`/app/module/${m.id}`} className="flex min-w-0 flex-1 items-center gap-4">
+              <Link to={`/app/category/${m.id}`} className="flex min-w-0 flex-1 items-center gap-4">
                 <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${m.tint}`}>
                   <m.icon className={`h-6 w-6 ${m.color}`} />
                 </div>

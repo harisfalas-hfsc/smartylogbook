@@ -460,7 +460,13 @@ const CapturePage = () => {
         toast.info(`Reminder set: ${reminder.title}`);
       }
     }
-    toast.success(classified?.module ? `Filed under ${getModule(classified.module).label} automatically` : 'Captured');
+    toast.success(
+      targetModule === 'notes'
+        ? 'Saved in Notes. If you meant something different, move it and Smarty Assistant will learn.'
+        : classified?.module
+          ? `Filed under ${getModule(classified.module).label} automatically`
+          : 'Captured'
+    );
     setText('');
     setKind(null);
     setModule(null);
@@ -515,7 +521,7 @@ const CapturePage = () => {
                 ['Date', extracted.date],
                 ['Amount', extracted.amount != null ? `${extracted.amount} ${extracted.currency ?? ''}`.trim() : null],
                 ['Category', extracted.category],
-                ['Module', extracted.module],
+                ['Category', extracted.module ? getModule(extracted.module).label : null],
               ]
                 .filter(([, v]) => v)
                 .map(([label, value]) => (
