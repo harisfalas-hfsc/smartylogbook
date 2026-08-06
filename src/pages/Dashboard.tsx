@@ -213,14 +213,16 @@ const Dashboard = () => {
         </div>
       </section>
 
-      {/* Categories, always a clean 4-across grid */}
+      {/* Categories, two rows of the busiest, the rest live on See all */}
       <section className="animate-fade-up">
         <div className="mb-2 flex items-center justify-between px-0.5">
           <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">Categories</h2>
-          <Link to="/app/modules" className="text-xs font-semibold text-primary">See all</Link>
+          <Link to="/app/modules" className="inline-flex items-center gap-1 text-xs font-semibold text-primary">
+            See all <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
         </div>
         <div className="grid grid-cols-4 gap-2">
-          {ordered.map((m) => (
+          {topCategories.map((m) => (
             <Link
               key={m.id}
               to={`/app/module/${m.id}`}
@@ -233,19 +235,9 @@ const Dashboard = () => {
               <span className="text-[9px] font-medium text-muted-foreground">{counts[m.id] ?? 0}</span>
             </Link>
           ))}
-          <button
-            type="button"
-            onClick={() => setNewOpen(true)}
-            className="flex flex-col items-center gap-1.5 rounded-3xl border border-dashed border-border px-1 py-3 transition-smooth active:scale-95"
-          >
-            <span className="grid h-9 w-9 place-items-center rounded-2xl bg-secondary text-muted-foreground">
-              <Plus className="h-4.5 w-4.5" />
-            </span>
-            <span className="text-[10px] font-bold text-muted-foreground">New</span>
-            <span className="text-[9px] text-transparent">.</span>
-          </button>
         </div>
       </section>
+
 
       {/* Calendar shortcut */}
       <Link
