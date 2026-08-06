@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  AlertTriangle, ArrowRight, CalendarDays, Camera, ChevronRight, Loader2, Mic, Paperclip, Plus, RefreshCw, Sparkles,
+  AlertTriangle, ArrowRight, CalendarDays, Camera, ChevronRight, Loader2, Mic, Paperclip, RefreshCw, Sparkles,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useMemories, whenLabel, Memory } from '@/lib/memories';
@@ -12,12 +12,6 @@ import { useCategories } from '@/lib/categories';
 import MemoryDetailSheet from '@/components/MemoryDetailSheet';
 import { kindIcon } from '@/lib/constants';
 import { cn } from '@/lib/utils';
-import { toast } from 'sonner';
-import {
-  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 
 const greeting = () => {
   const h = new Date().getHours();
@@ -34,10 +28,7 @@ const Dashboard = () => {
   const { prefs } = usePreferences();
   const { brief, generating, regenerate } = useDailyBrief(memories, prefs, !loading);
   const { alerts } = useProactiveAlerts();
-  const { categories, addCategory } = useCategories();
-  const [newOpen, setNewOpen] = useState(false);
-  const [newName, setNewName] = useState('');
-  const [saving, setSaving] = useState(false);
+  const { categories } = useCategories();
 
   const name = profile?.username ?? user?.email?.split('@')[0] ?? 'there';
   const todayKey = new Date().toDateString();
@@ -47,26 +38,19 @@ const Dashboard = () => {
     [memories, todayKey]
   );
 
-  const focus = prefs?.focus_modules ?? [];
-  const ordered = focus.length
-    ? [...categories].sort((a, b) => Number(focus.includes(b.id)) - Number(focus.includes(a.id)))
-    : categories;
-
   const counts = useMemo(() => {
     const map: Record<string, number> = {};
     memories.forEach((m) => { map[m.module] = (map[m.module] ?? 0) + 1; });
     return map;
   }, [memories]);
 
-  const submitCategory = async () => {
-    setSaving(true);
-    const { error } = await addCategory(newName);
-    setSaving(false);
-    if (error) { toast.error(error.message); return; }
-    toast.success(`"${newName.trim()}" added`, { description: 'Smarty Assistant can file entries here too.' });
-    setNewName('');
-    setNewOpen(false);
-  };
+  // Busiest categories first, then the two-row grid keeps the home screen light.
+  const ordered = useMemo(
+    () => [...categories].sort((a, b) => (counts[b.id] ?? 0) - (counts[a.id] ?? 0)),
+    [categories, counts]
+  );
+  const topCategories = ordered.slice(0, 8);
+
 
   const dateLabel = new Date().toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' });
 
@@ -210,14 +194,16 @@ const Dashboard = () => {
         </div>
       </section>
 
-      {/* Categories, always a clean 4-across grid */}
+      {/* Categories, two rows of the busiest, the rest live on See all */}
       <section className="animate-fade-up">
         <div className="mb-2 flex items-center justify-between px-0.5">
           <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">Categories</h2>
-          <Link to="/app/modules" className="text-xs font-semibold text-primary">See all</Link>
+          <Link to="/app/modules" className="inline-flex items-center gap-1 text-xs font-semibold text-primary">
+            See all <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
         </div>
         <div className="grid grid-cols-4 gap-2">
-          {ordered.map((m) => (
+          {topCategories.map((m) => (
             <Link
               key={m.id}
               to={`/app/module/${m.id}`}
@@ -230,19 +216,9 @@ const Dashboard = () => {
               <span className="text-[9px] font-medium text-muted-foreground">{counts[m.id] ?? 0}</span>
             </Link>
           ))}
-          <button
-            type="button"
-            onClick={() => setNewOpen(true)}
-            className="flex flex-col items-center gap-1.5 rounded-3xl border border-dashed border-border px-1 py-3 transition-smooth active:scale-95"
-          >
-            <span className="grid h-9 w-9 place-items-center rounded-2xl bg-secondary text-muted-foreground">
-              <Plus className="h-4.5 w-4.5" />
-            </span>
-            <span className="text-[10px] font-bold text-muted-foreground">New</span>
-            <span className="text-[9px] text-transparent">.</span>
-          </button>
         </div>
       </section>
+
 
       {/* Calendar shortcut */}
       <Link
@@ -261,30 +237,6 @@ const Dashboard = () => {
         <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
       </Link>
 
-
-      <Dialog open={newOpen} onOpenChange={setNewOpen}>
-        <DialogContent className="max-w-sm rounded-3xl">
-          <DialogHeader>
-            <DialogTitle>New category</DialogTitle>
-            <DialogDescription>
-              Add your own category, the assistant can file entries into it too.
-            </DialogDescription>
-          </DialogHeader>
-          <Input
-            autoFocus
-            value={newName}
-            maxLength={28}
-            placeholder="e.g. Car, Home, Studies"
-            onChange={(e) => setNewName(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter' && newName.trim()) submitCategory(); }}
-          />
-          <DialogFooter>
-            <Button onClick={submitCategory} disabled={!newName.trim() || saving} className="w-full rounded-2xl">
-              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Add category'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       <MemoryDetailSheet
         memory={selectedMemory}
