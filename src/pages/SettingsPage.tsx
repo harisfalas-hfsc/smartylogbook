@@ -1,16 +1,13 @@
-import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Trash2, FolderInput,
   Bell, BellRing, ChevronRight, CreditCard, FileText, LogOut, Moon, Shield, ShieldCheck, Sparkles, Target, User,
 } from 'lucide-react';
-import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsAdmin } from '@/lib/admin';
 import { useMemories } from '@/lib/memories';
 import { usePreferences } from '@/lib/preferences';
-import { requestNotificationPermission } from '@/lib/reminders';
-import { cn } from '@/lib/utils';
+
 
 const NOTIFY_ROWS = [
   { key: 'notify_coach', label: 'Daily assistant brief', sub: 'One morning recommendation' },
