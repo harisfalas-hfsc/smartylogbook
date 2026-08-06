@@ -487,7 +487,7 @@ async function enforceAssistantAccess(
       .from("ai_conversations")
       .update({ last_message_at: new Date().toISOString(), messages: Number(open.messages ?? 1) + 1 })
       .eq("id", open.id);
-    return { allowance, used, conversationId: open.id as string };
+    return { allowance, used, conversationId: open.id as string, created: false };
   }
 
   if (used >= allowance) {
@@ -514,7 +514,31 @@ async function enforceAssistantAccess(
     .select("id")
     .maybeSingle();
 
-  return { allowance, used: used + 1, conversationId: (created?.id as string) ?? null };
+  return { allowance, used: used + 1, conversationId: (created?.id as string) ?? null, created: true };
+}
+
+/**
+ * Out of scope turns must not cost the user a conversation: either remove the
+ * conversation we just opened, or undo the message we added to an open one.
+ */
+async function refundConversation(conversationId: string | null, created?: boolean) {
+  if (!conversationId) return;
+  try {
+    const admin = await serviceClient();
+    if (created) {
+      await admin.from("ai_conversations").delete().eq("id", conversationId);
+      return;
+    }
+    const { data: row } = await admin
+      .from("ai_conversations")
+      .select("messages")
+      .eq("id", conversationId)
+      .maybeSingle();
+    const next = Math.max(1, Number(row?.messages ?? 2) - 1);
+    await admin.from("ai_conversations").update({ messages: next }).eq("id", conversationId);
+  } catch (e) {
+    console.error("refundConversation failed", e);
+  }
 }
 
 
