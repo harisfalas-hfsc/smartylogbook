@@ -47,16 +47,19 @@ const Dashboard = () => {
     [memories, todayKey]
   );
 
-  const focus = prefs?.focus_modules ?? [];
-  const ordered = focus.length
-    ? [...categories].sort((a, b) => Number(focus.includes(b.id)) - Number(focus.includes(a.id)))
-    : categories;
-
   const counts = useMemo(() => {
     const map: Record<string, number> = {};
     memories.forEach((m) => { map[m.module] = (map[m.module] ?? 0) + 1; });
     return map;
   }, [memories]);
+
+  // Busiest categories first, then the two-row grid keeps the home screen light.
+  const ordered = useMemo(
+    () => [...categories].sort((a, b) => (counts[b.id] ?? 0) - (counts[a.id] ?? 0)),
+    [categories, counts]
+  );
+  const topCategories = ordered.slice(0, 8);
+
 
   const submitCategory = async () => {
     setSaving(true);
