@@ -42,6 +42,7 @@ const AppShell = () => {
       { path: '/pricing', label: 'Pricing', icon: Tag },
       { path: '/faq', label: 'FAQ', icon: CircleHelp },
       { path: '/security', label: 'Security & Privacy', icon: ShieldCheck },
+      { path: '/contact', label: 'Contact & support', icon: LifeBuoy },
     ] },
   ];
 
