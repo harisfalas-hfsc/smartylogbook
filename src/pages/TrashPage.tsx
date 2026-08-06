@@ -112,14 +112,14 @@ const TrashPage = () => {
     return (
       <li
         key={m.id}
-        onClick={() => selecting && toggleOne(m.id)}
+        onClick={() => (selecting ? toggleOne(m.id) : setOpenId(m.id))}
         className={cn(
-          'smarty-card flex gap-3 p-3.5 transition-smooth',
+          'smarty-card flex cursor-pointer gap-3 p-3.5 transition-smooth',
           urgent && 'border-destructive/40 bg-destructive/[0.03]',
-          selecting && 'cursor-pointer',
           isPicked && 'border-primary bg-primary/[0.07]',
         )}
       >
+
         {selecting ? (
           <div className="grid h-9 w-9 shrink-0 place-items-center" onClick={(e) => e.stopPropagation()}>
             <Checkbox checked={isPicked} onCheckedChange={() => toggleOne(m.id)} aria-label="Select record" />
