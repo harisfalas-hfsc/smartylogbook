@@ -9,7 +9,7 @@ const GOOD_TO_KNOW = [
   {
     emoji: '💬',
     q: 'What is one AI Conversation?',
-    a: 'One topic with the Assistant, follow-ups included. Capturing, searching and reminders never use one.',
+    a: 'One logbook topic with the Assistant, follow-ups included. Capturing, searching and reminders never use one, and questions outside your logbook are not counted.',
   },
   {
     emoji: '⏳',
