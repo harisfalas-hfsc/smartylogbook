@@ -20,6 +20,11 @@ const ModulesPage = () => {
   const quota = active ? STORAGE_QUOTA_BYTES.premium : STORAGE_QUOTA_BYTES.free;
   const pct = Math.min(100, Math.round((used / quota) * 100));
   const { categories, custom, addCategory, updateCategory, removeCategory } = useCategories();
+  const counts = memories.reduce<Record<string, number>>((acc, m) => {
+    acc[m.module] = (acc[m.module] ?? 0) + 1;
+    return acc;
+  }, {});
+  const ordered = [...categories].sort((a, b) => (counts[b.id] ?? 0) - (counts[a.id] ?? 0));
   const [editing, setEditing] = useState<CustomCategory | 'new' | null>(null);
   const [name, setName] = useState('');
   const [icon, setIcon] = useState('folder');
@@ -89,7 +94,7 @@ const ModulesPage = () => {
       </div>
 
       <div className="space-y-3">
-        {categories.map((m) => {
+        {ordered.map((m) => {
           const own = custom.find((c) => c.id === m.id);
           return (
             <div key={m.id} className="smarty-card flex animate-fade-up items-center gap-3 p-4">
@@ -101,7 +106,7 @@ const ModulesPage = () => {
                   <p className="text-sm font-bold text-foreground">{m.label}</p>
                   <p className="truncate text-xs text-muted-foreground">{m.description}</p>
                   <p className="mt-1 text-[11px] font-semibold text-primary">
-                    {memories.filter((x) => x.module === m.id).length} entries
+                    {counts[m.id] ?? 0} entries
                   </p>
                 </div>
               </Link>

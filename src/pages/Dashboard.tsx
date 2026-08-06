@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  AlertTriangle, ArrowRight, CalendarDays, Camera, ChevronRight, Loader2, Mic, Paperclip, Plus, RefreshCw, Sparkles,
+  AlertTriangle, ArrowRight, CalendarDays, Camera, ChevronRight, Loader2, Mic, Paperclip, RefreshCw, Sparkles,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useMemories, whenLabel, Memory } from '@/lib/memories';
@@ -12,12 +12,6 @@ import { useCategories } from '@/lib/categories';
 import MemoryDetailSheet from '@/components/MemoryDetailSheet';
 import { kindIcon } from '@/lib/constants';
 import { cn } from '@/lib/utils';
-import { toast } from 'sonner';
-import {
-  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 
 const greeting = () => {
   const h = new Date().getHours();
@@ -34,10 +28,7 @@ const Dashboard = () => {
   const { prefs } = usePreferences();
   const { brief, generating, regenerate } = useDailyBrief(memories, prefs, !loading);
   const { alerts } = useProactiveAlerts();
-  const { categories, addCategory } = useCategories();
-  const [newOpen, setNewOpen] = useState(false);
-  const [newName, setNewName] = useState('');
-  const [saving, setSaving] = useState(false);
+  const { categories } = useCategories();
 
   const name = profile?.username ?? user?.email?.split('@')[0] ?? 'there';
   const todayKey = new Date().toDateString();
@@ -60,16 +51,6 @@ const Dashboard = () => {
   );
   const topCategories = ordered.slice(0, 8);
 
-
-  const submitCategory = async () => {
-    setSaving(true);
-    const { error } = await addCategory(newName);
-    setSaving(false);
-    if (error) { toast.error(error.message); return; }
-    toast.success(`"${newName.trim()}" added`, { description: 'Smarty Assistant can file entries here too.' });
-    setNewName('');
-    setNewOpen(false);
-  };
 
   const dateLabel = new Date().toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' });
 
@@ -256,30 +237,6 @@ const Dashboard = () => {
         <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
       </Link>
 
-
-      <Dialog open={newOpen} onOpenChange={setNewOpen}>
-        <DialogContent className="max-w-sm rounded-3xl">
-          <DialogHeader>
-            <DialogTitle>New category</DialogTitle>
-            <DialogDescription>
-              Add your own category, the assistant can file entries into it too.
-            </DialogDescription>
-          </DialogHeader>
-          <Input
-            autoFocus
-            value={newName}
-            maxLength={28}
-            placeholder="e.g. Car, Home, Studies"
-            onChange={(e) => setNewName(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter' && newName.trim()) submitCategory(); }}
-          />
-          <DialogFooter>
-            <Button onClick={submitCategory} disabled={!newName.trim() || saving} className="w-full rounded-2xl">
-              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Add category'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       <MemoryDetailSheet
         memory={selectedMemory}
