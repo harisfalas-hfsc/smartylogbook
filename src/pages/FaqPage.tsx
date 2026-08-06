@@ -1,5 +1,6 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { HelpCircle, Sparkles, CreditCard } from 'lucide-react';
+import { HelpCircle, Sparkles, CreditCard, ShieldCheck } from 'lucide-react';
+
 import { PageHeader, Panel, BrandText, faqs } from '@/lib/marketing';
 
 /* Curated: the questions people actually ask. The rest lives in the pages themselves. */
@@ -23,6 +24,15 @@ const groups = [
     chip: 'bg-accent/10 text-accent',
   },
   {
+    eyebrow: 'Privacy & security',
+    emoji: '🔒',
+    badge: ShieldCheck,
+    title: <>How <span className="gradient-text">private</span> it is</>,
+    picks: [25, 26, 27, 28, 29, 20],
+    accent: 'border-mod-health/45',
+    chip: 'bg-mod-health/10 text-mod-health',
+  },
+  {
     eyebrow: 'Plans & pricing',
     emoji: '💶',
     badge: CreditCard,
@@ -32,6 +42,7 @@ const groups = [
     chip: 'bg-mod-finance/10 text-mod-finance',
   },
 ];
+
 
 const FaqPage = () => (
   <div className="mx-auto max-w-4xl px-3 py-7 sm:px-5 sm:py-10">

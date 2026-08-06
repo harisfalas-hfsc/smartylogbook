@@ -1,5 +1,6 @@
-import { Wand2, Brain, Inbox, Sparkles } from 'lucide-react';
-import { Panel, SubCard, PageHeader, givesIn, givesBack, Hl } from '@/lib/marketing';
+import { Wand2, Brain, Inbox, Sparkles, ShieldCheck } from 'lucide-react';
+import { Panel, SubCard, PageHeader, givesIn, givesBack, Hl, ExplainerRow } from '@/lib/marketing';
+
 
 import PillarsCircle from '@/components/PillarsCircle';
 
@@ -68,6 +69,30 @@ const HowItWorksPage = () => (
         </p>
       </SubCard>
     </Panel>
+
+
+    <Panel
+      eyebrow="Privacy"
+      eyebrowEmoji="🔒"
+      badge={ShieldCheck}
+      title={<>Private by default, <span className="gradient-text">not by setting.</span></>}
+      lead="Your logbook is yours alone. Tap a card to see exactly what that means."
+    >
+      <SubCard>
+        <p className="mx-auto max-w-3xl text-center text-[14px] leading-relaxed text-foreground sm:text-base md:text-lg">
+          Everything you capture is <Hl>encrypted</Hl> in transit and at rest, and locked to your account
+          so <Hl>only you</Hl> can read it. Documents sit in a private bucket behind short-lived signed
+          links. Nothing is sold, nothing is shown to other users and nothing is used to{' '}
+          <Hl>train third-party models</Hl>. You can export everything, or delete it all, whenever you want.
+        </p>
+      </SubCard>
+      <div className="mt-3 grid gap-2 sm:grid-cols-3">
+        <ExplainerRow id="private-by-default" />
+        <ExplainerRow id="no-filing" />
+        <ExplainerRow id="no-busywork" />
+      </div>
+    </Panel>
+
 
 
 
