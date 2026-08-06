@@ -157,10 +157,12 @@ const TrashPage = () => {
             <DropdownMenuTrigger asChild>
               <button
                 aria-label="Record options"
+                onClick={(e) => e.stopPropagation()}
                 className="grid h-8 w-8 shrink-0 place-items-center self-start rounded-full text-muted-foreground hover:bg-secondary"
               >
                 <MoreVertical className="h-4 w-4" />
               </button>
+
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
               <DropdownMenuItem
