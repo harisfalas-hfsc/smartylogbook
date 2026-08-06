@@ -95,8 +95,8 @@ const InsightsPage = () => {
   const total = MODULES.reduce((n, m) => n + memories.filter((x) => x.module === m.id).length, 0);
 
   return (
-    <div className="space-y-3 lg:grid lg:grid-cols-2 lg:items-start lg:gap-3 lg:space-y-0">
-      <header className="flex items-start justify-between gap-3 animate-fade-up lg:col-span-2">
+    <div className="space-y-3">
+      <header className="flex items-start justify-between gap-3 animate-fade-up">
         <div>
           <h1 className="text-2xl font-extrabold tracking-tight text-foreground">Insights</h1>
           <p className="mt-1 text-sm text-muted-foreground">Plain-language summaries, no scores, no ratings.</p>
@@ -112,21 +112,21 @@ const InsightsPage = () => {
       </header>
 
       {memories.length === 0 ? (
-        <div className="smarty-card p-10 text-center lg:col-span-2">
+        <div className="smarty-card p-10 text-center">
           <Sparkles className="mx-auto h-6 w-6 text-primary" />
           <p className="mt-3 text-sm font-semibold text-foreground">Nothing to analyse yet</p>
           <p className="mt-1 text-xs text-muted-foreground">Capture a week of life and the picture starts forming.</p>
         </div>
       ) : loading && !insights ? (
-        <div className="smarty-card flex items-center justify-center gap-2 p-10 text-sm text-muted-foreground lg:col-span-2">
+        <div className="smarty-card flex items-center justify-center gap-2 p-10 text-sm text-muted-foreground">
           <Loader2 className="h-4 w-4 animate-spin" /> Reading your logbook…
         </div>
       ) : error ? (
-        <div className="smarty-card p-6 text-center text-sm text-muted-foreground lg:col-span-2">{error}</div>
+        <div className="smarty-card p-6 text-center text-sm text-muted-foreground">{error}</div>
       ) : insights ? (
         <>
           {insights.overview && (
-            <section className="smarty-card animate-fade-up p-4 sm:p-5 lg:col-span-2">
+            <section className="smarty-card animate-fade-up p-4 sm:p-5">
               <p className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">Right now</p>
               <p className="mt-2 text-sm leading-relaxed text-foreground">{insights.overview}</p>
             </section>
@@ -146,7 +146,7 @@ const InsightsPage = () => {
 
           {insights.summaries?.length > 0 && (
             <Card title="Summaries" icon={Sparkles}>
-              <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+              <div className="grid gap-2.5 sm:grid-cols-2">
                 {insights.summaries.map((s) => {
                   const mod = getModule(s.module);
                   return (
