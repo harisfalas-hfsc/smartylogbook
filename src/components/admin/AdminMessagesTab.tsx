@@ -141,9 +141,8 @@ const AdminMessagesTab = () => {
               className="w-full rounded-2xl border border-border bg-card px-3 py-2.5 text-sm font-semibold text-foreground outline-none"
               aria-label="Importance"
             >
-              <option value="info">Normal</option>
-              <option value="warning">Important</option>
-              <option value="success">Good news</option>
+              <option value="normal">Normal</option>
+              <option value="warning">Important (red in the Message Center)</option>
             </select>
           </div>
           <button
@@ -153,7 +152,7 @@ const AdminMessagesTab = () => {
                 'broadcast',
                 async () => {
                   const res = await adminApi<{ sent: number }>('broadcast_message', broadcast);
-                  setBroadcast({ title: '', body: '', audience: 'all', level: 'info' });
+                  setBroadcast({ title: '', body: '', audience: 'all', level: 'normal' });
                   return res;
                 },
                 'Message sent',
@@ -196,6 +195,16 @@ const AdminMessagesTab = () => {
               >
                 {m.read_at ? 'Read' : 'Unread'}
               </span>
+              {m.level === 'high' && (
+                <span className="rounded-full bg-destructive/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-destructive">
+                  Important
+                </span>
+              )}
+              {m.archived_at && (
+                <span className="rounded-full bg-muted px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                  Archived
+                </span>
+              )}
               <span className="ml-auto text-[11px] text-muted-foreground">{fmtTime(m.created_at)}</span>
             </div>
             <p className="truncate text-[11px] text-muted-foreground">To {m.email}</p>
