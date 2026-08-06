@@ -152,9 +152,10 @@ const MessagesPage = () => {
         )}
       >
         {selecting ? (
-          <div className="grid h-9 w-9 shrink-0 place-items-center">
+          <div className="grid h-9 w-9 shrink-0 place-items-center" onClick={(e) => e.stopPropagation()}>
             <Checkbox checked={isPicked} onCheckedChange={() => toggleOne(m.id)} aria-label="Select message" />
           </div>
+
         ) : (
           <span className={cn('grid h-9 w-9 shrink-0 place-items-center rounded-2xl', style.tint)}>
             <Icon className={cn('h-4.5 w-4.5', style.color)} />
