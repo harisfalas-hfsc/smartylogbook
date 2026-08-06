@@ -147,53 +147,62 @@ const MessagesPage = () => {
   };
 
   return (
-    <div className="space-y-5 pb-4">
-      <header className="animate-fade-up flex items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-extrabold tracking-tight text-foreground">
+    <div className="space-y-4 pb-4">
+      <header className="animate-fade-up space-y-3">
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="min-w-0 truncate text-2xl font-extrabold tracking-tight text-foreground">
             Message <span className="gradient-text">Center</span>
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Everything Smarty Assistant wants you to know, reminders, bills, health, calendar and your plan.
-          </p>
-        </div>
-        <div className="flex shrink-0 items-center gap-1.5">
-          {unread > 0 && !showArchived && (
-            <button
-              onClick={markAllRead}
-              className="flex items-center gap-1.5 rounded-2xl bg-secondary px-3 py-2 text-xs font-semibold text-secondary-foreground active:scale-95"
-            >
-              <CheckCheck className="h-4 w-4" /> Mark all
-            </button>
-          )}
-          <button
-            onClick={() => setShowArchived((v) => !v)}
-            className={cn(
-              'flex items-center gap-1.5 rounded-2xl px-3 py-2 text-xs font-semibold active:scale-95',
-              showArchived ? 'bg-primary/10 text-primary' : 'bg-secondary text-secondary-foreground'
+          <div className="flex shrink-0 items-center gap-1.5">
+            {unread > 0 && !showArchived && (
+              <button
+                onClick={markAllRead}
+                aria-label="Mark all as read"
+                title="Mark all as read"
+                className="grid h-9 w-9 place-items-center rounded-2xl bg-secondary text-secondary-foreground active:scale-95"
+              >
+                <CheckCheck className="h-4 w-4" />
+              </button>
             )}
-          >
-            <Archive className="h-4 w-4" /> {showArchived ? 'Inbox' : 'Archive'}
-          </button>
+            <button
+              onClick={() => setShowArchived((v) => !v)}
+              aria-label={showArchived ? 'Back to inbox' : 'Show archive'}
+              title={showArchived ? 'Back to inbox' : 'Show archive'}
+              className={cn(
+                'grid h-9 w-9 place-items-center rounded-2xl active:scale-95',
+                showArchived ? 'bg-primary/10 text-primary' : 'bg-secondary text-secondary-foreground'
+              )}
+            >
+              {showArchived ? <Inbox className="h-4 w-4" /> : <Archive className="h-4 w-4" />}
+            </button>
+          </div>
         </div>
+        <p className="text-sm text-muted-foreground">
+          {showArchived
+            ? 'Your archived messages, restore or delete them.'
+            : 'Everything Smarty Assistant wants you to know, reminders, bills, health, calendar and your plan.'}
+        </p>
       </header>
 
-      <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1">
+      <div className="grid grid-cols-5 gap-1 rounded-2xl bg-secondary/60 p-1">
         {FILTERS.map((f) => (
           <button
             key={f.id}
             onClick={() => setFilter(f.id)}
             className={cn(
-              'shrink-0 rounded-2xl px-3.5 py-2 text-xs font-semibold transition-smooth active:scale-95',
-              filter === f.id ? 'bg-gradient-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground',
+              'flex min-w-0 items-center justify-center gap-1 rounded-xl px-1 py-2 text-[11px] font-semibold leading-none transition-smooth active:scale-95',
+              filter === f.id
+                ? 'bg-gradient-primary text-primary-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground',
               f.id === 'missed' && counts.missed > 0 && filter !== f.id && 'text-destructive',
             )}
           >
-            {f.label}
-            {counts[f.id] > 0 && <span className="ml-1.5 opacity-70">{counts[f.id]}</span>}
+            <span className="truncate">{f.label}</span>
+            {counts[f.id] > 0 && <span className="shrink-0 opacity-70">{counts[f.id]}</span>}
           </button>
         ))}
       </div>
+
 
       {!planLoading && !canUseAssistant && (
         <div className="smarty-card p-4">
