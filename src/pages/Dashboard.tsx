@@ -208,7 +208,7 @@ const Dashboard = () => {
           {topCategories.map((m) => (
             <Link
               key={m.id}
-              to={`/app/module/${m.id}`}
+              to={`/app/category/${m.id}`}
               className="smarty-card flex flex-col items-center gap-1.5 px-1 py-3 transition-smooth active:scale-95"
             >
               <span className={`grid h-9 w-9 place-items-center rounded-2xl ${m.tint}`}>

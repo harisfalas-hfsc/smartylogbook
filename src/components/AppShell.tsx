@@ -29,7 +29,7 @@ const AppShell = () => {
   const { getCategory } = useCategories();
   const initial = (profile?.username ?? user?.email ?? 'S').charAt(0).toUpperCase();
   const desktopLinks = [...NAV_TABS.filter((t) => t.path !== '/app/capture'), ...MORE_LINKS];
-  const categoryMatch = pathname.match(/^\/app\/module\/([^/]+)$/);
+  const categoryMatch = pathname.match(/^\/app\/(?:category|module)\/([^/]+)$/);
   const activeCategory = categoryMatch?.[1] ? getCategory(decodeURIComponent(categoryMatch[1])) : null;
   const desktopTitle = activeCategory?.label ?? desktopLinks.find((link) => link.path === pathname)?.label ?? 'Smarty Logbook';
 

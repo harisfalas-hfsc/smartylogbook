@@ -169,7 +169,7 @@ const InsightsPage = () => {
           {perModule.map((m) => (
             <Link
               key={m.id}
-              to={`/app/module/${m.id}`}
+              to={`/app/category/${m.id}`}
               className="smarty-card flex items-center gap-3 p-3 transition-smooth active:scale-[0.99]"
             >
               <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-2xl ${m.tint}`}>

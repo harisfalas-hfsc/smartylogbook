@@ -521,7 +521,7 @@ const CapturePage = () => {
                 ['Date', extracted.date],
                 ['Amount', extracted.amount != null ? `${extracted.amount} ${extracted.currency ?? ''}`.trim() : null],
                 ['Category', extracted.category],
-                ['Module', extracted.module],
+                ['Category', extracted.module ? getModule(extracted.module).label : null],
               ]
                 .filter(([, v]) => v)
                 .map(([label, value]) => (
