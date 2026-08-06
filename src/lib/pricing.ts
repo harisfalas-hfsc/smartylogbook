@@ -128,13 +128,17 @@ export const ASSISTANT_BENEFITS = [
   'Recommendations and decision support',
 ];
 
+/**
+ * The free tier is a trial, not a plan. You can open an account and try one
+ * capture in each category. To keep capturing, you upgrade.
+ */
+export const FREE_CAPTURES_PER_CATEGORY = 1;
+
 export const FREE_BENEFITS = [
-  'Unlimited notes, lists and ideas',
-  'Unlimited photos, PDFs and receipts',
-  'Medical reports and documents',
-  'Workouts, meals and expenses',
-  'Reminders and calendar events',
-  'Full timeline and manual organisation',
-  'Search your own logbook',
-  'Export everything, any time',
+  'One capture in each category, to try it',
+  'Your timeline and manual organisation',
+  'No Smarty Assistant, no analysis, no daily brief',
+  'Deleting is permanent, there is no Trash',
+  'Upgrade any time to keep everything',
 ];
+
