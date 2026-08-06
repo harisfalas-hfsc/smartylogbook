@@ -414,7 +414,7 @@ async function enforceAssistantAccess(
   billable: boolean,
   input: string,
 ): Promise<
-  | { allowance: number; used: number; conversationId: string | null }
+  | { allowance: number; used: number; conversationId: string | null; created?: boolean }
   | { error: string; upgrade: true; reason: string; resetsAt?: string | null; allowance?: number; used?: number }
 > {
   const db = await userClient(authHeader);
