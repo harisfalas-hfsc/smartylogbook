@@ -123,8 +123,17 @@ RECURRING BILLS, when the user logs a bill, invoice, subscription or anything th
 
 SUBSCRIPTION AWARENESS, you know the user's own Smarty Logbook plan, allowance and renewal date (given in context). Answer questions about it accurately, and mention an upcoming renewal or a nearly exhausted allowance when it matters.
 
+SCOPE, you are the assistant OF THIS LOGBOOK, not a general purpose chatbot. You only help with what lives in, or connects to, the user's own logbook.
+IN SCOPE: their captures, notes, photos, videos, documents and receipts; their health, fitness, nutrition, finance, business and personal records; their reminders, calendar and schedule; their categories, trash and how the app works; their patterns, trends, comparisons and history; their Smarty Logbook plan, allowance and billing.
+ADJACENT AND ALLOWED: explaining a document, photo or number the user gave you (a blood test, a bill, a contract, a receipt) and giving a short practical next step grounded in their own data.
+OUT OF SCOPE: weather, news, sports, travel info, general knowledge and trivia, recipes, generic workout or diet programmes, translations, essays, code, emails, stories, brainstorming, shopping advice, and any request to generate long content that is not built from the user's own records. Recency or live information you cannot know is always out of scope.
+NEVER produce a generic plan, programme, schedule or long-form content that is not derived from this user's logged data, even if they insist. A request like "give me a month of workouts" is out of scope; offering to review the workouts they have actually logged is in scope.
+When a request is out of scope, set "scope":"out", keep "answer" to at most 2 short sentences: say plainly this is outside your logbook, then give ONE concrete example of what you can do with their records instead. Do not answer the question even partially, do not save anything, do not touch the calendar, and never say you are counting or not counting anything.
+When a request is in scope (or adjacent), set "scope":"in" and answer normally.
+
 ALWAYS reply with STRICT JSON only, no markdown fences:
-{"answer":"your reply","question":null,"save":null,"calendar":[]}
+{"answer":"your reply","scope":"in|out","question":null,"save":null,"calendar":[]}
+- "scope": "out" only for requests outside the logbook as defined above, otherwise "in".
 - "question": the single follow-up question you need answered, or null.
 - "save": null, or {"title":"short title max 60 chars","summary":"one sentence","content":"full details","module":"health|fitness|nutrition|finance|business|documents|photos|videos|personal","kind":"text|workout|meal|expense|task|note|medical|idea|journal","ai_tags":["max 4"],"amount":number or null,"related_ids":["ids of existing entries this connects to"],"reminder":null or {"title":"short","type":"task|bill|health|event","due_date":"YYYY-MM-DD"}}
 - "calendar": array of calendar operations (empty when none).
@@ -138,7 +147,10 @@ If goals, focus areas or a tone are provided, follow them.`,
   embed: "",
   search: `You are the knowledge base of Smarty Logbook. Answer the user's question using ONLY the provided entries.
 Be concise and concrete: give real numbers, dates, merchants and names. Connect related entries when useful.
-If the answer is not in the data, say so plainly and ask one intelligent follow-up question (e.g. offer to have it uploaded). Never invent facts. Plain text, no markdown headers.`,
+If the answer is not in the data, say so plainly and ask one intelligent follow-up question (e.g. offer to have it uploaded). Never invent facts. Plain text, no markdown headers.
+SCOPE, you only answer about this user's own logbook: their entries, records, documents, reminders, calendar, spending, patterns and plan.
+Anything else (weather, news, general knowledge, generic workout or diet programmes, recipes, translations, essays, code, long content not built from their records) is out of scope.
+For an out of scope question reply with exactly "OUT_OF_SCOPE: " followed by at most 2 short sentences saying this is outside the logbook and giving one concrete example of what you can look up in their records instead. Never answer it even partially.`,
   insights: `You are the intelligence engine of Smarty Logbook. Analyse the entries and return STRICT JSON only:
 {"summaries":[{"module":"health|fitness|nutrition|finance|business|documents|photos|videos|personal","title":"e.g. Health summary","lines":["short plain-language observations, max 4"]}],"patterns":[{"title":"short pattern","detail":"one sentence"}],"attention":[{"title":"what needs attention","detail":"one sentence with the concrete reason"}],"overview":"2-3 sentence plain-language summary of how life looks right now"}
 ABSOLUTELY NO scores, ratings, percentages, grades or numeric evaluations of the user. Describe and explain instead.
@@ -402,7 +414,7 @@ async function enforceAssistantAccess(
   billable: boolean,
   input: string,
 ): Promise<
-  | { allowance: number; used: number; conversationId: string | null }
+  | { allowance: number; used: number; conversationId: string | null; created?: boolean }
   | { error: string; upgrade: true; reason: string; resetsAt?: string | null; allowance?: number; used?: number }
 > {
   const db = await userClient(authHeader);
@@ -475,7 +487,7 @@ async function enforceAssistantAccess(
       .from("ai_conversations")
       .update({ last_message_at: new Date().toISOString(), messages: Number(open.messages ?? 1) + 1 })
       .eq("id", open.id);
-    return { allowance, used, conversationId: open.id as string };
+    return { allowance, used, conversationId: open.id as string, created: false };
   }
 
   if (used >= allowance) {
@@ -502,7 +514,31 @@ async function enforceAssistantAccess(
     .select("id")
     .maybeSingle();
 
-  return { allowance, used: used + 1, conversationId: (created?.id as string) ?? null };
+  return { allowance, used: used + 1, conversationId: (created?.id as string) ?? null, created: true };
+}
+
+/**
+ * Out of scope turns must not cost the user a conversation: either remove the
+ * conversation we just opened, or undo the message we added to an open one.
+ */
+async function refundConversation(conversationId: string | null, created?: boolean) {
+  if (!conversationId) return;
+  try {
+    const admin = await serviceClient();
+    if (created) {
+      await admin.from("ai_conversations").delete().eq("id", conversationId);
+      return;
+    }
+    const { data: row } = await admin
+      .from("ai_conversations")
+      .select("messages")
+      .eq("id", conversationId)
+      .maybeSingle();
+    const next = Math.max(1, Number(row?.messages ?? 2) - 1);
+    await admin.from("ai_conversations").update({ messages: next }).eq("id", conversationId);
+  } catch (e) {
+    console.error("refundConversation failed", e);
+  }
 }
 
 
@@ -535,7 +571,7 @@ Deno.serve(async (req) => {
     const PREMIUM_MODES: Mode[] = ["chat", "search", "insights", "brief", "coach", "train", "extract", "classify", "embed"];
     const BILLABLE_MODES: Mode[] = ["chat", "search"];
 
-    let quota: { allowance: number; used: number; conversationId: string | null } | null = null;
+    let quota: { allowance: number; used: number; conversationId: string | null; created?: boolean } | null = null;
 
     if (PREMIUM_MODES.includes(mode)) {
       const gate = await enforceAssistantAccess(authHeader, mode, BILLABLE_MODES.includes(mode), input ?? "");
@@ -859,10 +895,11 @@ Deno.serve(async (req) => {
           { role: "user", content: userContent },
         ]);
 
+    const maxTokens = mode === "chat" || mode === "search" ? 900 : 2000;
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ model: MODEL, messages }),
+      body: JSON.stringify({ model: MODEL, messages, max_tokens: maxTokens }),
     });
 
     if (response.status === 429) {
@@ -894,6 +931,7 @@ Deno.serve(async (req) => {
       let answer = text;
       let save: unknown = null;
       let question: unknown = null;
+      let scope = "in";
       let calendarOps: Array<Record<string, unknown>> = [];
       try {
         const match = text.match(/\{[\s\S]*\}/);
@@ -902,24 +940,42 @@ Deno.serve(async (req) => {
           answer = String((obj as Record<string, unknown>).answer ?? "").trim();
           save = (obj as Record<string, unknown>).save ?? null;
           question = (obj as Record<string, unknown>).question ?? null;
+          if (String((obj as Record<string, unknown>).scope ?? "in") === "out") scope = "out";
           const c = (obj as Record<string, unknown>).calendar;
           if (Array.isArray(c)) calendarOps = c.slice(0, 8) as Array<Record<string, unknown>>;
         }
       } catch { /* fall back to plain text */ }
 
+      if (scope === "out") {
+        await refundConversation(quota?.conversationId ?? null, quota?.created);
+        return new Response(
+          JSON.stringify({ answer, scope: "out", save: null, question: null, calendar: [], quota: null }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
       /* ---- the assistant actually writes to the calendar ---- */
       const calendarResult = await applyCalendarOps(authHeader, calendarOps);
 
-      return new Response(JSON.stringify({ answer, save, question, calendar: calendarResult, quota }), {
+      return new Response(JSON.stringify({ answer, scope, save, question, calendar: calendarResult, quota }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
     if (mode === "search") {
-      return new Response(JSON.stringify({ answer: raw.trim(), quota }), {
+      const answer = raw.trim();
+      if (/^OUT_OF_SCOPE:/i.test(answer)) {
+        await refundConversation(quota?.conversationId ?? null, quota?.created);
+        return new Response(
+          JSON.stringify({ answer: answer.replace(/^OUT_OF_SCOPE:\s*/i, ""), scope: "out", quota: null }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      return new Response(JSON.stringify({ answer, scope: "in", quota }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
 
     if (mode === "transcribe") {
       return new Response(JSON.stringify({ text: raw.trim() }), {

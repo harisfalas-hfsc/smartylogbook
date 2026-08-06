@@ -49,6 +49,29 @@ const HowItWorksPage = () => (
     </Panel>
 
 
+    <Panel
+      eyebrow="Asking the Assistant"
+      eyebrowEmoji="💬"
+      badge={Sparkles}
+      title={<>Your logbook's brain, <span className="gradient-text">not a chatbot.</span></>}
+      lead="It answers about your life, because it has read it."
+    >
+      <SubCard>
+        <p className="mx-auto max-w-3xl text-center text-[14px] leading-relaxed text-foreground sm:text-base md:text-lg">
+          <Hl>Smarty Assistant</Hl> works only with what is in your logbook: your entries, documents,
+          photos, reminders, calendar, spending and the patterns behind them. Ask it{' '}
+          <Hl>"when was my last blood test?"</Hl>, <Hl>"how much did I spend on groceries last month?"</Hl>,{' '}
+          <Hl>"explain this report"</Hl>, <Hl>"what is coming up next week?"</Hl> or{' '}
+          <Hl>"schedule my dentist on Tuesday at 10:00"</Hl>. Ask it for the weather, the news or a generic
+          workout programme and it will politely point you back to your records, and that question is{' '}
+          <Hl>not counted</Hl> against your conversations.
+        </p>
+      </SubCard>
+    </Panel>
+
+
+
+
   </div>
 );
 

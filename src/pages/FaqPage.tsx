@@ -18,7 +18,7 @@ const groups = [
     emoji: '🧠',
     badge: Sparkles,
     title: <>How the <span className="gradient-text">Assistant</span> works</>,
-    picks: [6, 7, 10, 20],
+    picks: [6, 23, 24, 7],
     accent: 'border-accent/45',
     chip: 'bg-accent/10 text-accent',
   },
