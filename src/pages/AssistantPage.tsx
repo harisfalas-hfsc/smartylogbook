@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils';
 interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
+  outOfScope?: boolean;
   attachments?: { url: string; name: string; isImage: boolean }[];
 }
 
@@ -243,7 +244,10 @@ const AssistantPage = () => {
       const content = question2 && !answer.includes(question2)
         ? `${answer}\n\n${question2}`.trim()
         : answer;
-      setMessages((prev) => [...prev, { role: 'assistant', content: content || 'I could not read that, try again.' }]);
+      setMessages((prev) => [
+        ...prev,
+        { role: 'assistant', content: content || 'I could not read that, try again.', outOfScope: data?.scope === 'out' },
+      ]);
     } catch (err) {
       toast.error((err as Error).message || 'Smarty Assistant is unavailable right now');
       setMessages((prev) => [...prev, { role: 'assistant', content: 'Something went wrong reaching me just now. Please try again.' }]);
@@ -267,7 +271,7 @@ const AssistantPage = () => {
           Smarty <span className="gradient-text">Assistant</span>
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Ask anything about your life. It searches everything you have logged, reads your documents and answers.
+          Ask anything about your logbook. It searches everything you have logged, reads your documents and answers. Questions outside your logbook are not counted.
         </p>
       </header>
 
@@ -329,6 +333,11 @@ const AssistantPage = () => {
                 )
               )}
               {m.content && <p className="whitespace-pre-wrap">{m.content}</p>}
+              {m.outOfScope && (
+                <p className="text-[11px] font-medium text-muted-foreground">
+                  Outside your logbook, this one was not counted.
+                </p>
+              )}
             </div>
           </div>
         ))}
@@ -373,7 +382,7 @@ const AssistantPage = () => {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             rows={2}
-            placeholder="Ask your assistant anything…"
+            placeholder="Ask about your captures, records, reminders or spending…"
             className="w-full resize-none bg-transparent px-1 text-sm text-foreground outline-none placeholder:text-muted-foreground"
           />
 
