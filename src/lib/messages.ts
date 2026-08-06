@@ -26,6 +26,8 @@ export interface MessageRow {
 export const MESSAGE_KINDS: Record<string, { label: string; icon: typeof Bell; tint: string; color: string }> = {
   welcome: { label: 'Welcome', icon: Sparkles, tint: 'bg-primary/10', color: 'text-primary' },
   brief: { label: 'Daily brief', icon: BrainCog, tint: 'bg-primary/10', color: 'text-primary' },
+  insight: { label: 'Daily insight', icon: Sparkles, tint: 'bg-primary/10', color: 'text-primary' },
+  recap: { label: 'Weekly recap', icon: BrainCog, tint: 'bg-primary/10', color: 'text-primary' },
   assistant: { label: 'Assistant', icon: BrainCog, tint: 'bg-primary/10', color: 'text-primary' },
   calendar: { label: 'Calendar', icon: CalendarClock, tint: 'bg-mod-business/10', color: 'text-mod-business' },
   event: { label: 'Event', icon: CalendarClock, tint: 'bg-mod-business/10', color: 'text-mod-business' },
@@ -38,6 +40,41 @@ export const MESSAGE_KINDS: Record<string, { label: string; icon: typeof Bell; t
 };
 
 export const messageStyle = (kind: string) => MESSAGE_KINDS[kind] ?? MESSAGE_KINDS.info;
+
+export type MessageBucket = 'missed' | 'today' | 'tomorrow' | 'week' | 'earlier';
+
+export const BUCKETS: { id: MessageBucket; label: string }[] = [
+  { id: 'missed', label: 'Missed' },
+  { id: 'today', label: 'Today' },
+  { id: 'tomorrow', label: 'Tomorrow' },
+  { id: 'week', label: 'This week' },
+  { id: 'earlier', label: 'Earlier' },
+];
+
+const dayKey = (iso: string) => new Date(iso).toLocaleDateString('en-CA');
+
+/** Where a message belongs in the notification center, based on when it is relevant. */
+export const bucketOf = (m: MessageRow, now = new Date()): MessageBucket => {
+  const ref = m.related_at ?? m.created_at;
+  const key = dayKey(ref);
+  const today = now.toLocaleDateString('en-CA');
+  const tomorrow = new Date(now.getTime() + 86400000).toLocaleDateString('en-CA');
+  const weekEnd = new Date(now.getTime() + 7 * 86400000).toLocaleDateString('en-CA');
+  if (key === today) return 'today';
+  if (key === tomorrow) return 'tomorrow';
+  if (key > tomorrow && key <= weekEnd) return 'week';
+  if (key < today) return m.level === 'high' && m.related_at ? 'missed' : 'earlier';
+  return 'earlier';
+};
+
+/** Groups messages into the notification center sections, missed first. */
+export const groupMessages = (messages: MessageRow[], now = new Date()) => {
+  const groups = new Map<MessageBucket, MessageRow[]>();
+  for (const b of BUCKETS) groups.set(b.id, []);
+  for (const m of messages) groups.get(bucketOf(m, now))!.push(m);
+  return BUCKETS.map((b) => ({ ...b, items: groups.get(b.id)! })).filter((g) => g.items.length > 0);
+};
+
 
 /** Everything Smarty Assistant wants to tell the user, in one inbox. */
 export const useMessages = (archived = false) => {

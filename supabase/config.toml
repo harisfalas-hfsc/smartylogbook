@@ -12,6 +12,9 @@ verify_jwt = true
 [functions.proactive-scan]
 verify_jwt = false
 
+[functions.daily-insights]
+verify_jwt = false
+
 [functions.create-checkout]
 verify_jwt = false
 
