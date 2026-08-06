@@ -169,14 +169,16 @@ const ModuleDetailPage = () => {
         </div>
       </div>
 
-      {albums.length > 0 ? (
-        <section className="smarty-card p-3.5">
-          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
-            Albums in {module.label}
-          </p>
-          <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
-            Albums are subfolders inside this category. Open a record and set its album to file it here.
-          </p>
+      <section className="smarty-card p-3.5">
+        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+          Albums in {module.label}
+        </p>
+        <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
+          Albums are subfolders inside this category. Open any record, tap Edit and type an album name
+          (for example "Blood tests" or "Greece trip") to file it here. You can also ask Smarty Assistant
+          to do it for you.
+        </p>
+        {albums.length > 0 ? (
           <div className="mt-2.5 flex flex-wrap gap-1.5">
             <button
               onClick={() => setAlbum(null)}
@@ -200,8 +202,13 @@ const ModuleDetailPage = () => {
               </button>
             ))}
           </div>
-        </section>
-      ) : null}
+        ) : (
+          <p className="mt-2 text-[11px] font-semibold text-muted-foreground/80">
+            No albums yet in this category.
+          </p>
+        )}
+      </section>
+
 
 
       <Link

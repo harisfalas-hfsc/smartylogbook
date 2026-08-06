@@ -14,6 +14,7 @@ import PricingPage from "./pages/PricingPage";
 import TestimonialsPage from "./pages/TestimonialsPage";
 import FaqPage from "./pages/FaqPage";
 import SecurityPage from "./pages/SecurityPage";
+import ContactPage from "./pages/ContactPage";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 import TermsPage from "./pages/TermsPage";
 import DisclaimerPage from "./pages/DisclaimerPage";
@@ -81,6 +82,8 @@ const App = () => (
               <Route path="/testimonials" element={<TestimonialsPage />} />
               <Route path="/faq" element={<FaqPage />} />
               <Route path="/security" element={<SecurityPage />} />
+              <Route path="/contact" element={<ContactPage />} />
+              <Route path="/support" element={<Navigate to="/contact" replace />} />
               <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
               <Route path="/terms-and-conditions" element={<TermsPage />} />
               <Route path="/disclaimer" element={<DisclaimerPage />} />

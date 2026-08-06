@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import {
-  ArrowLeft, BadgeCheck, ChevronRight, CreditCard, Crown, Loader2, Megaphone, RefreshCw, Save, Search, ShieldCheck, SlidersHorizontal, Timer, TrendingUp, UserPlus, Users, XCircle,
+  ArrowLeft, BadgeCheck, ChevronRight, CreditCard, Crown, LifeBuoy, Loader2, Megaphone, RefreshCw, Save, Search, ShieldCheck, SlidersHorizontal, Timer, TrendingUp, UserPlus, Users, XCircle,
 } from 'lucide-react';
 
 import { toast } from 'sonner';
@@ -14,8 +14,9 @@ import {
 } from '@/lib/pricing';
 import AdminJobsTab from '@/components/admin/AdminJobsTab';
 import AdminMessagesTab from '@/components/admin/AdminMessagesTab';
+import AdminSupportTab from '@/components/admin/AdminSupportTab';
 
-const TABS = ['Revenue', 'Customers', 'Subscriptions', 'Payments', 'Pricing', 'Jobs', 'Messages'] as const;
+const TABS = ['Revenue', 'Customers', 'Subscriptions', 'Payments', 'Pricing', 'Jobs', 'Messages', 'Support'] as const;
 type Tab = (typeof TABS)[number];
 
 const TAB_META: Record<Tab, { icon: typeof Users; blurb: string; tint: string }> = {
@@ -26,6 +27,7 @@ const TAB_META: Record<Tab, { icon: typeof Users; blurb: string; tint: string }>
   Pricing: { icon: SlidersHorizontal, blurb: 'Price, allowance and cost model', tint: 'from-violet-500/15 to-violet-500/5 text-violet-600' },
   Jobs: { icon: Timer, blurb: 'Scheduled automations and their runs', tint: 'from-rose-500/15 to-rose-500/5 text-rose-600' },
   Messages: { icon: Megaphone, blurb: 'Everything sent, edit or broadcast', tint: 'from-cyan-500/15 to-cyan-500/5 text-cyan-600' },
+  Support: { icon: LifeBuoy, blurb: 'Customer messages from the contact page', tint: 'from-orange-500/15 to-orange-500/5 text-orange-600' },
 };
 
 
@@ -421,6 +423,7 @@ const AdminPage = () => {
           {tab === 'Jobs' && <AdminJobsTab />}
 
           {tab === 'Messages' && <AdminMessagesTab />}
+          {tab === 'Support' && <AdminSupportTab />}
 
 
           {tab === 'Pricing' && (

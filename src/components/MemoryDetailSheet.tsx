@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar as CalendarIcon, Check, Link2, MapPin, Pencil, Save, Sparkles, Trash2 } from 'lucide-react';
+import { Calendar as CalendarIcon, Check, FileText, Link2, MapPin, Pencil, Save, Sparkles, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { kindIcon } from '@/lib/constants';
-import { albumOf, formatBytes, formatDuration, durationOf, isVideoMemory, useSignedUrl } from '@/lib/media';
+import { albumOf, formatBytes, formatDuration, durationOf, isImageMemory, isVideoMemory, useSignedUrl } from '@/lib/media';
 import { useCategories } from '@/lib/categories';
 import { Memory, titleOf } from '@/lib/memories';
 import { cn } from '@/lib/utils';
@@ -218,12 +218,30 @@ const MemoryDetailSheet = ({
               {memory.attachment_url && attachment && (
                 isVideoMemory(memory) ? (
                   <video src={attachment} controls playsInline className="w-full overflow-hidden rounded-2xl border border-border" />
-                ) : (
+                ) : isImageMemory(memory) ? (
                   <a href={attachment} target="_blank" rel="noreferrer" className="block overflow-hidden rounded-2xl border border-border">
                     <img src={attachment} alt={titleOf(memory)} className="w-full object-cover" loading="lazy" />
                   </a>
+                ) : (
+                  <a
+                    href={attachment}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3.5 transition-smooth hover:border-primary/40"
+                  >
+                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+                      <FileText className="h-5 w-5" />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block truncate text-sm font-bold text-foreground">
+                        {String(memory.metadata?.file_name ?? titleOf(memory))}
+                      </span>
+                      <span className="block text-[11px] text-muted-foreground">Tap to open or download</span>
+                    </span>
+                  </a>
                 )
               )}
+
               {memory.attachment_url && (
                 <p className="text-[11px] text-muted-foreground">
                   {typeof memory.metadata?.file_size === 'number' ? formatBytes(memory.metadata.file_size as number) : 'File'}

@@ -8,6 +8,7 @@ const socials = [
 ];
 
 const legal = [
+  { to: '/contact', label: 'Contact' },
   { to: '/privacy-policy', label: 'Privacy Policy' },
   { to: '/terms-and-conditions', label: 'Terms & Conditions' },
   { to: '/disclaimer', label: 'Disclaimer' },

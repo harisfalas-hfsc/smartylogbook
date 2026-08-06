@@ -199,6 +199,13 @@ export const SEO_BY_PATH: Record<string, PageSeo> = {
     keywords: "logbook data security, GDPR journal app, encrypted personal database",
     breadcrumb: [{ name: "Security", path: "/security" }],
   },
+  "/contact": {
+    title: "Contact & Support, Smarty Logbook",
+    description:
+      "Get help with Smarty Logbook. Ask Smarty Assistant for instant fixes, or send us a message with a screenshot and we answer by email.",
+    keywords: "smarty logbook support, contact smarty logbook, logbook app help",
+    breadcrumb: [{ name: "Contact", path: "/contact" }],
+  },
   "/privacy-policy": {
     title: "Privacy Policy, Smarty Logbook",
     description:

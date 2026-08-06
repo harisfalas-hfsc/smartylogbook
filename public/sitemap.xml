@@ -44,6 +44,11 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://smartylogbook.com/contact</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://smartylogbook.com/privacy-policy</loc>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>
