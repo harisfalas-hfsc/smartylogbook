@@ -23,39 +23,13 @@ const NOTIFY_ROWS = [
 const SettingsPage = () => {
   const { user, profile, signOut } = useAuth();
   const { memories } = useMemories();
-  const { prefs, update } = usePreferences();
+  const { prefs } = usePreferences();
   const navigate = useNavigate();
   const { isAdmin } = useIsAdmin();
 
-  const [permission, setPermission] = useState<string>(
-    typeof Notification !== 'undefined' ? Notification.permission : 'unsupported',
-  );
+  const enabledCount = NOTIFY_ROWS.filter((r) => (prefs ? Boolean(prefs[r.key]) : false)).length;
 
-  const toggleNotify = async (key: string, value: boolean) => {
-    if (value) {
-      const perm = await requestNotificationPermission();
-      setPermission(perm);
-      if (perm !== 'granted') {
-        toast.info('Allow browser notifications to receive these nudges');
-      }
-    }
-    await update({ [key]: value });
-  };
 
-  const testNotification = async () => {
-    const perm = await requestNotificationPermission();
-    setPermission(perm);
-    if (perm !== 'granted') {
-      toast.error(
-        perm === 'unsupported'
-          ? 'This browser cannot show notifications'
-          : 'Notifications are blocked, enable them in your browser settings',
-      );
-      return;
-    }
-    new Notification('Smarty Logbook', { body: 'Notifications are working. This is a test nudge.' });
-    toast.success('Test notification sent');
-  };
 
 
   const rows = [
