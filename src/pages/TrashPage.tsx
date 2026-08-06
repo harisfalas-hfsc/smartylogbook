@@ -349,6 +349,22 @@ const TrashPage = () => {
         <ul className="space-y-2">{visible.map(renderItem)}</ul>
       )}
 
+      <TrashDetailSheet
+        record={opened}
+        open={!!opened}
+        onOpenChange={(o) => !o && setOpenId(null)}
+        onRestore={async (m) => {
+          setOpenId(null);
+          const { error } = await restore(m.id);
+          toast[error ? 'error' : 'success'](error ? 'Could not restore' : 'Record restored');
+        }}
+        onDelete={(m) => {
+          setOpenId(null);
+          setConfirm({ ids: [m.id] });
+        }}
+      />
+
+
       <AlertDialog open={!!confirm} onOpenChange={(o) => !o && setConfirm(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
