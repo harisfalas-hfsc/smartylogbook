@@ -895,10 +895,11 @@ Deno.serve(async (req) => {
           { role: "user", content: userContent },
         ]);
 
+    const maxTokens = mode === "chat" || mode === "search" ? 900 : 2000;
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ model: MODEL, messages }),
+      body: JSON.stringify({ model: MODEL, messages, max_tokens: maxTokens }),
     });
 
     if (response.status === 429) {
