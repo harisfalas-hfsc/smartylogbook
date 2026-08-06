@@ -571,7 +571,7 @@ Deno.serve(async (req) => {
     const PREMIUM_MODES: Mode[] = ["chat", "search", "insights", "brief", "coach", "train", "extract", "classify", "embed"];
     const BILLABLE_MODES: Mode[] = ["chat", "search"];
 
-    let quota: { allowance: number; used: number; conversationId: string | null } | null = null;
+    let quota: { allowance: number; used: number; conversationId: string | null; created?: boolean } | null = null;
 
     if (PREMIUM_MODES.includes(mode)) {
       const gate = await enforceAssistantAccess(authHeader, mode, BILLABLE_MODES.includes(mode), input ?? "");
