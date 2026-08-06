@@ -1,19 +1,11 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Brain, Clock, Sparkles, Lock } from 'lucide-react';
+import { ArrowRight, Sparkles } from 'lucide-react';
 
 import { Hl } from '@/lib/marketing';
 
 
-const highlights = [
-  { icon: Sparkles, t: 'Capture in 3 seconds', s: 'Type, say or snap it.' },
-  { icon: Clock, t: 'One life timeline', s: 'Everything in one feed.' },
-  { icon: Brain, t: 'It thinks for you', s: 'Patterns and answers.' },
-  { icon: Lock, t: 'Always private', s: 'Encrypted, yours only.' },
-];
-
-
-
 const Landing = () => {
+
   return (
     <div>
       {/* Hero */}
