@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { indexMemories } from '@/lib/semantic';
+import { hasPremium } from '@/lib/subscription';
+
 
 export interface Memory {
   id: string;
