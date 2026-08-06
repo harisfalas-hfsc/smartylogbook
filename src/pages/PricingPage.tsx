@@ -35,27 +35,28 @@ const PricingPage = () => {
     <div className="mx-auto max-w-4xl px-3 py-7 sm:px-5 sm:py-10">
       <PageHeader
         eyebrow="Pricing"
-        title="One free logbook. One premium brain."
-        subtitle="Keep everything you capture at no cost, forever. Add Smarty Assistant when you want your logbook to think."
+        title="One membership. One brain."
+        subtitle="Open an account and try one capture in each category. To keep using your logbook, you go Premium."
       />
 
       <div className="grid gap-3.5 lg:grid-cols-2">
-        {/* Free */}
+        {/* Free trial */}
         <div className="smarty-card relative flex flex-col overflow-hidden p-5 sm:p-7">
           <div className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-emerald-500/10 blur-2xl" />
           <span className="relative inline-flex w-fit items-center gap-1.5 rounded-full bg-emerald-500/10 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-emerald-600">
-            <InfinityIcon className="h-3 w-3" /> Free forever
+            <InfinityIcon className="h-3 w-3" /> Free trial
           </span>
           <p className="relative mt-4 flex items-baseline gap-1.5">
             <span className="text-5xl font-extrabold tracking-tight text-foreground">€0</span>
-            <span className="text-xs font-medium text-muted-foreground">forever</span>
+            <span className="text-xs font-medium text-muted-foreground">to try</span>
           </p>
           <p className="relative mt-2 text-[13px] leading-relaxed text-muted-foreground">
-            Your complete logbook, unlimited, no card needed. Without the Assistant.
+            One capture in each category, so you can see how it feels. No Assistant, no Trash.
           </p>
 
           <ul className="relative mt-5 flex-1 space-y-2">
-            {FREE_BENEFITS.slice(0, 4).map((b) => (
+            {FREE_BENEFITS.slice(0, 5).map((b) => (
+
               <li key={b} className="flex items-start gap-2.5 text-[13px] text-foreground">
                 <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-emerald-500/15">
                   <Check className="h-2.5 w-2.5 text-emerald-600" />
