@@ -15,6 +15,8 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useMemories } from '@/lib/memories';
+import { useFacts } from '@/lib/facts';
+import { useMoney } from '@/lib/money';
 import { MODULES, getModule } from '@/lib/constants';
 import TrendsSection from '@/components/TrendsSection';
 import MoneySection from '@/components/MoneySection';
@@ -56,6 +58,10 @@ const subCard = 'smarty-sub rounded-2xl border-2 border-primary/25 bg-secondary/
 
 const InsightsPage = () => {
   const { memories, loading: memLoading } = useMemories({ limit: 200 });
+  const { trends } = useFacts({ limit: 300 });
+  const { items: moneyItems } = useMoney();
+  const hasNumbers = trends.length > 0;
+  const hasMoney = moneyItems.length > 0;
   const [insights, setInsights] = useState<Insights | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -126,13 +132,17 @@ const InsightsPage = () => {
             </section>
           )}
 
-          <Card title="Your numbers" icon={BarChart3} lead="Values the Assistant pulled out of your entries.">
-            <TrendsSection />
-          </Card>
+          {hasNumbers && (
+            <Card title="Your numbers" icon={BarChart3} lead="Values the Assistant pulled out of your entries.">
+              <TrendsSection />
+            </Card>
+          )}
 
-          <Card title="Your money" icon={Wallet} lead="Built from the bills, receipts and notes you captured.">
-            <MoneySection />
-          </Card>
+          {hasMoney && (
+            <Card title="Your money" icon={Wallet} lead="Built from the bills, receipts and notes you captured.">
+              <MoneySection />
+            </Card>
+          )}
 
           {insights.summaries?.length > 0 && (
             <Card title="Summaries" icon={Sparkles}>
