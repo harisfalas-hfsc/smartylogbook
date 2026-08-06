@@ -188,12 +188,13 @@ const MessagesPage = () => {
             {m.action_url && !selecting && (
               <Link
                 to={m.action_url}
-                onClick={() => markRead(m.id)}
+                onClick={(e) => { e.stopPropagation(); markRead(m.id); }}
                 className="ml-auto rounded-2xl bg-gradient-primary px-3 py-1.5 text-[11px] font-semibold text-primary-foreground"
               >
                 {m.action_label ?? 'Open'}
               </Link>
             )}
+
           </div>
         </div>
         {!selecting && (
