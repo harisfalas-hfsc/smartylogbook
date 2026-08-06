@@ -1,9 +1,18 @@
-import { Sparkles, ShieldCheck } from 'lucide-react';
+import { Sparkles, ShieldCheck, Brain, Clock, Lock, Zap } from 'lucide-react';
 import { Panel, PageHeader, CtaCard, ExplainerRow } from '@/lib/marketing';
 import InputsCircle from '@/components/InputsCircle';
 
 
 const promises = ['no-filing', 'no-busywork', 'private-by-default'];
+
+const highlights = [
+  { icon: Sparkles, t: 'Capture in 3 seconds', s: 'Type, say or snap it.' },
+  { icon: Clock, t: 'One life timeline', s: 'Everything in one feed.' },
+  { icon: Brain, t: 'It thinks for you', s: 'Patterns and answers.' },
+  { icon: Lock, t: 'Always private', s: 'Encrypted, yours only.' },
+];
+
+
 
 
 const AboutPage = () => {
