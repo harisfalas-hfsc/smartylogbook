@@ -1,5 +1,5 @@
 import { Play } from 'lucide-react';
-import { Memory } from '@/lib/memories';
+import { Memory, titleOf } from '@/lib/memories';
 import { durationOf, formatDuration, isVideoMemory, useSignedUrl } from '@/lib/media';
 import { kindIcon } from '@/lib/constants';
 
@@ -21,13 +21,13 @@ const MediaTile = ({ memory, onOpen }: Props) => {
       className="group relative aspect-square overflow-hidden rounded-2xl border border-border bg-secondary text-left transition-smooth active:scale-[0.98]"
     >
       {url && !video ? (
-        <img src={url} alt={memory.title} loading="lazy" className="h-full w-full object-cover" />
+        <img src={url} alt={titleOf(memory)} loading="lazy" className="h-full w-full object-cover" />
       ) : url && video ? (
         <video src={url} muted playsInline preload="metadata" className="h-full w-full object-cover" />
       ) : (
         <span className="flex h-full w-full flex-col items-center justify-center gap-1.5 p-2 text-center">
           <Icon className="h-5 w-5 text-muted-foreground" />
-          <span className="line-clamp-2 text-[10px] font-semibold text-muted-foreground">{memory.title}</span>
+          <span className="line-clamp-2 text-[10px] font-semibold text-muted-foreground">{titleOf(memory)}</span>
         </span>
       )}
       {video && (

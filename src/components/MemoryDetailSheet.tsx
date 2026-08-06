@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { kindIcon } from '@/lib/constants';
 import { albumOf, formatBytes, formatDuration, durationOf, isVideoMemory, useSignedUrl } from '@/lib/media';
 import { useCategories } from '@/lib/categories';
-import { Memory } from '@/lib/memories';
+import { Memory, titleOf } from '@/lib/memories';
 import { cn } from '@/lib/utils';
 
 interface Props {
@@ -86,7 +86,7 @@ const MemoryDetailSheet = ({
               <Icon className={`h-5 w-5 ${module.color}`} />
             </div>
             <SheetTitle className="min-w-0 flex-1 truncate text-left text-base font-extrabold">
-              {editing ? 'Edit record' : memory.title}
+              {editing ? 'Edit record' : titleOf(memory)}
             </SheetTitle>
             {onSave && (
               editing ? (
@@ -220,7 +220,7 @@ const MemoryDetailSheet = ({
                   <video src={attachment} controls playsInline className="w-full overflow-hidden rounded-2xl border border-border" />
                 ) : (
                   <a href={attachment} target="_blank" rel="noreferrer" className="block overflow-hidden rounded-2xl border border-border">
-                    <img src={attachment} alt={memory.title} className="w-full object-cover" loading="lazy" />
+                    <img src={attachment} alt={titleOf(memory)} className="w-full object-cover" loading="lazy" />
                   </a>
                 )
               )}

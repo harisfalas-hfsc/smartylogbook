@@ -181,6 +181,17 @@ export const timeOf = (iso: string) =>
 /** A record is stamped with the moment it was captured, so we always show that time. */
 export const whenLabel = (m: Pick<Memory, 'occurred_at'>) => timeOf(m.occurred_at);
 
+/** Never show a blank row: fall back to the file name, then a neutral label. */
+export const titleOf = (m: Pick<Memory, 'title' | 'metadata'>) => {
+  const t = (m.title ?? '').trim();
+  if (t) return t;
+  const file = (m.metadata as { file_name?: string } | null)?.file_name;
+  if (typeof file === 'string' && file.trim()) return file.trim();
+  return 'Untitled record';
+};
+
+
+
 
 export const TRASH_RETENTION_DAYS = 30;
 

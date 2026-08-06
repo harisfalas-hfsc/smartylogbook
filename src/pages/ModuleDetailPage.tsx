@@ -169,44 +169,40 @@ const ModuleDetailPage = () => {
         </div>
       </div>
 
-      {albums.length > 0 && (
-        <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 scrollbar-hide">
-          <button
-            onClick={() => setAlbum(null)}
-            className={cn(
-              'shrink-0 rounded-2xl px-3 py-1.5 text-[11px] font-semibold transition-smooth',
-              album === null ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'
-            )}
-          >
-            All albums
-          </button>
-          {albums.map((a) => (
+      {albums.length > 0 ? (
+        <section className="smarty-card p-3.5">
+          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+            Albums in {module.label}
+          </p>
+          <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
+            Albums are subfolders inside this category. Open a record and set its album to file it here.
+          </p>
+          <div className="mt-2.5 flex flex-wrap gap-1.5">
             <button
-              key={a.name}
-              onClick={() => setAlbum(a.name === album ? null : a.name)}
+              onClick={() => setAlbum(null)}
               className={cn(
-                'shrink-0 rounded-2xl px-3 py-1.5 text-[11px] font-semibold transition-smooth',
-                album === a.name ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'
+                'rounded-2xl px-3 py-1.5 text-[11px] font-semibold transition-smooth active:scale-95',
+                album === null ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'
               )}
             >
-              {a.name} <span className="opacity-60">{a.count}</span>
+              All
             </button>
-          ))}
-        </div>
-      )}
+            {albums.map((a) => (
+              <button
+                key={a.name}
+                onClick={() => setAlbum(a.name === album ? null : a.name)}
+                className={cn(
+                  'rounded-2xl px-3 py-1.5 text-[11px] font-semibold transition-smooth active:scale-95',
+                  album === a.name ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'
+                )}
+              >
+                {a.name} <span className="opacity-60">{a.count}</span>
+              </button>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
-      <p className="px-0.5 text-[11px] text-muted-foreground">
-        Albums work as subfolders inside this category. Open any record and set its album to file it.
-      </p>
-
-
-      <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 scrollbar-hide">
-        {module.topics.map((t) => (
-          <span key={t} className="shrink-0 rounded-2xl bg-secondary px-3 py-1.5 text-[11px] font-semibold text-secondary-foreground">
-            {t}
-          </span>
-        ))}
-      </div>
 
       <Link
         to={`/app/capture?module=${module.id}`}
