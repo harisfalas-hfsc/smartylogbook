@@ -1,8 +1,7 @@
-import { Sparkles, Layers, ShieldCheck, Plus } from 'lucide-react';
+import { Sparkles, ShieldCheck } from 'lucide-react';
 import { Panel, PageHeader, CtaCard, ExplainerRow } from '@/lib/marketing';
-import { MODULES } from '@/lib/constants';
 import PillarsCircle from '@/components/PillarsCircle';
-import LifeModulesOrbit from '@/components/LifeModulesOrbit';
+import InputsCircle from '@/components/InputsCircle';
 
 const pillars = [
   { e: '📥', t: 'Put anything in', s: 'Type it, say it, snap it, upload it.' },
