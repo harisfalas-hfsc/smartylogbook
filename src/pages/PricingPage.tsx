@@ -106,7 +106,7 @@ const PricingPage = () => {
               <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-primary/15">
                 <Check className="h-2.5 w-2.5 text-primary" />
               </span>
-              Everything in Free, always unlimited
+              Unlimited captures in every category, plus 30 day Trash
             </li>
             {ASSISTANT_BENEFITS.slice(0, 4).map((b) => (
               <li key={b} className="flex items-start gap-2.5 text-[13px] text-foreground">
