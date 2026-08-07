@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  AlertTriangle, ArrowRight, CalendarDays, ChevronRight, Loader2, Sparkles,
+  AlertTriangle, ArrowRight, CalendarDays, ChevronRight, History as HistoryIcon, LayoutGrid, Loader2, Sparkles,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useMemories, whenLabel, Memory } from '@/lib/memories';
