@@ -44,13 +44,15 @@ const TimelinePage = () => {
     const parsed = parsePlainLanguage(raw);
     if (!parsed.matched) {
       setApplied(null);
-      return;
+      return false;
     }
     if (parsed.range) setRange(parsed.range === 'today' ? 'today' : (parsed.range as typeof range));
     setModule(parsed.module);
     setQuery(parsed.keywords);
     setApplied(describeQuery(parsed));
+    return true;
   };
+
 
   const clearAll = () => {
     setAsk('');
