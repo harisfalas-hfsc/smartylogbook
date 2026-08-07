@@ -248,11 +248,20 @@ const ModuleDetailPage = () => {
           {groups.map((g) => (
             <section key={g.key}>
               <p className="mb-2.5 text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
-                {g.key} <span className="text-muted-foreground/60">{g.items.length}</span>
+                {g.key}{' '}
+                <span className="text-muted-foreground/60">
+                  {isMedia ? g.items.reduce((n, m) => n + Math.max(1, filesOf(m).length), 0) : g.items.length}
+                </span>
               </p>
               {view === 'grid' ? (
                 <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
-                  {g.items.map((m) => <MediaTile key={m.id} memory={m} onOpen={setSelected} />)}
+                  {g.items.flatMap((m) => {
+                    const files = filesOf(m);
+                    if (!files.length) return [<MediaTile key={m.id} memory={m} onOpen={setSelected} />];
+                    return files.map((f) => (
+                      <MediaTile key={`${m.id}-${f.path}`} memory={m} file={f} onOpen={setSelected} />
+                    ));
+                  })}
                 </div>
               ) : (
                 <div className="space-y-2.5">
