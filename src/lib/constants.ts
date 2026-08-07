@@ -110,8 +110,7 @@ export const NAV_TABS = [
 ];
 
 export const MORE_LINKS = [
-  { path: '/app/ai', icon: Brain, label: 'Ask your logbook' },
-  { path: '/app/search', icon: Search, label: 'Search' },
+  { path: '/app/timeline', icon: Search, label: 'Search' },
   { path: '/app/calendar', icon: CalendarClock, label: 'Calendar' },
   { path: '/app/messages', icon: Inbox, label: 'Messages' },
   { path: '/app/reminders', icon: Bell, label: 'Reminders' },
