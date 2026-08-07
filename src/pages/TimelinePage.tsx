@@ -83,12 +83,15 @@ const TimelinePage = () => {
       if (module && m.module !== module) return false;
       if (status !== 'all' && asStatus(m.status) !== status) return false;
       if (query) {
-        const hay = `${m.title} ${m.summary ?? ''} ${m.content ?? ''} ${m.ai_tags.join(' ')}`.toLowerCase();
+        const label = categories.find((c) => c.id === m.module)?.label ?? '';
+        const hay =
+          `${m.title} ${m.summary ?? ''} ${m.content ?? ''} ${m.ai_tags.join(' ')} ${m.module} ${label} ${m.kind ?? ''}`.toLowerCase();
         if (!hay.includes(query.toLowerCase())) return false;
       }
       return true;
     });
-  }, [memories, range, module, query, from, to, status]);
+  }, [memories, range, module, query, from, to, status, categories]);
+
 
   useEffect(() => {
     setVisible(PAGE);
