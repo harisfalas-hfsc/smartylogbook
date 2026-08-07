@@ -151,50 +151,66 @@ const AdminJobsTab = () => {
 
               <label className="block">
                 <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                  Schedule (cron)
+                  When it runs
                 </span>
-                <div className="mt-1 grid gap-2 sm:grid-cols-2">
+                <select
+                  value={SCHEDULE_PRESETS.some((p) => p.value === draft.schedule) ? draft.schedule : 'custom'}
+                  onChange={(e) =>
+                    e.target.value !== 'custom' &&
+                    setDrafts((p) => ({ ...p, [job.jobid]: { ...draft, schedule: e.target.value } }))
+                  }
+                  className="mt-1 w-full rounded-2xl border border-border bg-card px-3 py-2.5 text-sm font-semibold text-foreground outline-none"
+                  aria-label="When it runs"
+                >
+                  {!SCHEDULE_PRESETS.some((p) => p.value === draft.schedule) && (
+                    <option value="custom">Custom: {describeSchedule(draft.schedule)}</option>
+                  )}
+                  {SCHEDULE_PRESETS.map((p) => (
+                    <option key={p.value} value={p.value}>
+                      {p.label}
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-1 text-[11px] text-muted-foreground">{describeSchedule(draft.schedule)}.</p>
+              </label>
+
+              <details className="rounded-2xl border border-border bg-card/60 p-3">
+                <summary className="cursor-pointer text-[11px] font-bold text-muted-foreground">
+                  Advanced: exact timing and command
+                </summary>
+                <label className="mt-2 block">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                    Timing pattern (minute, hour, day of month, month, day of week)
+                  </span>
                   <input
                     value={draft.schedule}
                     onChange={(e) =>
                       setDrafts((p) => ({ ...p, [job.jobid]: { ...draft, schedule: e.target.value } }))
                     }
-                    className="w-full rounded-2xl border border-border bg-card px-3 py-2 text-sm font-semibold text-foreground outline-none"
+                    spellCheck={false}
+                    className="mt-1 w-full rounded-2xl border border-border bg-card px-3 py-2 font-mono text-sm font-semibold text-foreground outline-none"
                   />
-                  <select
-                    value=""
+                  <span className="mt-1 block text-[11px] text-muted-foreground">
+                    A star means “every”. So <code>5 * * * *</code> is “at minute 5 of every hour”, and{' '}
+                    <code>0 7 * * 1</code> is “07:00 on Mondays”.
+                  </span>
+                </label>
+                <label className="mt-2 block">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                    Command it runs
+                  </span>
+                  <textarea
+                    value={draft.command}
                     onChange={(e) =>
-                      e.target.value &&
-                      setDrafts((p) => ({ ...p, [job.jobid]: { ...draft, schedule: e.target.value } }))
+                      setDrafts((p) => ({ ...p, [job.jobid]: { ...draft, command: e.target.value } }))
                     }
-                    className="w-full rounded-2xl border border-border bg-card px-3 py-2 text-sm font-semibold text-foreground outline-none"
-                    aria-label="Schedule presets"
-                  >
-                    <option value="">Pick a preset…</option>
-                    {SCHEDULE_PRESETS.map((p) => (
-                      <option key={p.value} value={p.value}>
-                        {p.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <p className="mt-1 text-[11px] text-muted-foreground">Runs {describeSchedule(draft.schedule)}.</p>
-              </label>
-
-              <details className="rounded-2xl border border-border bg-card/60 p-3">
-                <summary className="cursor-pointer text-[11px] font-bold text-muted-foreground">
-                  Advanced: the exact command this job runs
-                </summary>
-                <textarea
-                  value={draft.command}
-                  onChange={(e) =>
-                    setDrafts((p) => ({ ...p, [job.jobid]: { ...draft, command: e.target.value } }))
-                  }
-                  rows={4}
-                  spellCheck={false}
-                  className="mt-2 w-full rounded-2xl border border-border bg-card px-3 py-2 font-mono text-[11px] leading-relaxed text-foreground outline-none"
-                />
+                    rows={4}
+                    spellCheck={false}
+                    className="mt-1 w-full rounded-2xl border border-border bg-card px-3 py-2 font-mono text-[11px] leading-relaxed text-foreground outline-none"
+                  />
+                </label>
               </details>
+
 
 
               <div className="flex flex-wrap gap-2">
