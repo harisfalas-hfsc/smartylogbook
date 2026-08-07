@@ -151,6 +151,8 @@ const MemoryDetailSheet = ({
   const status = localStatus;
   const statusMeta = STATUS_META[status];
   const overdue = isOverdue(localDueAt, status);
+  const gallery = isGalleryModule(localModule);
+  const actionable = isActionableItem({ ...memory, module: localModule, status: localStatus, due_at: localDueAt });
 
   const setStatus = async (next: 'open' | 'done' | 'postponed', dueAt?: string) => {
     if (!onSave || changingStatus) return;
