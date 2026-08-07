@@ -26,10 +26,10 @@ const readAsDataUrl = (file: File | Blob) =>
   });
 
 const AssistantPage = () => {
-  const { memories, loading, create, reload } = useMemories({ limit: 60 });
+  const { memories, create, reload } = useMemories({ limit: 60 });
   const { prefs } = usePreferences();
   const {
-    pricing, plan, active, allowance, used, canUseAssistant, renewsAt, renewNow, loading: subLoading, reload: reloadSub,
+    pricing, active, allowance, used, canUseAssistant, renewsAt, renewNow, loading: subLoading, reload: reloadSub,
   } = useSubscription();
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
