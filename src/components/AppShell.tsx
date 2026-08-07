@@ -179,10 +179,8 @@ const AppShell = () => {
         <Outlet />
       </main>
 
-      <div className="mx-auto hidden max-w-3xl px-4 pb-8 pt-6 lg:block">
-        <SiteFooter />
-      </div>
       <div className="pb-28" />
+
 
       <BottomNav />
 
