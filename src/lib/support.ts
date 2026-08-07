@@ -228,7 +228,16 @@ export const useTicketThread = (ticketId: string | null) => {
     return { error };
   };
 
-  return { replies, loading, reload: load, sendAsCustomer, sendAsAdmin };
+  /** Asks Smarty Assistant to write the first-line answer on this ticket. */
+  const askAssistant = async () => {
+    if (!ticketId) return { error: new Error('No conversation') };
+    const { error } = await supabase.functions.invoke('support-assistant', { body: { ticketId } });
+    if (!error) await load();
+    return { error };
+  };
+
+  return { replies, loading, reload: load, sendAsCustomer, sendAsAdmin, askAssistant };
+
 };
 
 /** One ticket the signed-in customer owns, with its conversation. */
