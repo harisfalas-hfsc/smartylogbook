@@ -182,6 +182,32 @@ export const useSupportTickets = () => {
   return { tickets, loading, reload: load, setStatus, remove, attachmentUrl };
 };
 
+/** Emails the Smarty Logbook support inbox when a customer writes again on a ticket. */
+const notifyAdminOfFollowUp = async (ticketId: string, body: string, replyId: string) => {
+  try {
+    const { data: ticket } = await supabase
+      .from('support_tickets')
+      .select('name,email,subject')
+      .eq('id', ticketId)
+      .maybeSingle();
+    if (!ticket) return;
+    await supabase.functions.invoke('send-transactional-email', {
+      body: {
+        templateName: 'support-ticket-notification',
+        idempotencyKey: `support-followup-${replyId}`,
+        templateData: {
+          name: ticket.name,
+          email: ticket.email,
+          subject: `Follow-up: ${ticket.subject}`,
+          message: body,
+        },
+      },
+    });
+  } catch (e) {
+    console.error('Support follow-up notification failed', e);
+  }
+};
+
 
 /** The full back and forth on one ticket, shared by the customer and the admin. */
 export const useTicketThread = (ticketId: string | null) => {
