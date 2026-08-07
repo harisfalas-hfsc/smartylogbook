@@ -42,6 +42,7 @@ import AppearancePage from "./pages/AppearancePage";
 import CalendarPage from "./pages/CalendarPage";
 import RemindersPage from "./pages/RemindersPage";
 import MessagesPage from "./pages/MessagesPage";
+import SupportThreadPage from "./pages/SupportThreadPage";
 import OnboardingPage from "./pages/OnboardingPage";
 import NotFound from "./pages/NotFound";
 import AnalyticsTracker from "./components/AnalyticsTracker";
@@ -125,6 +126,7 @@ const App = () => (
               <Route path="reminders" element={<RemindersPage />} />
               <Route path="calendar" element={<CalendarPage />} />
               <Route path="messages" element={<MessagesPage />} />
+              <Route path="support/:id" element={<SupportThreadPage />} />
               <Route path="notifications" element={<NotificationsPage />} />
               <Route path="settings" element={<SettingsPage />} />
               <Route path="trash" element={<TrashPage />} />
