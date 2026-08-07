@@ -8,6 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { useCategories } from '@/lib/categories';
 import { describeQuery, parsePlainLanguage } from '@/lib/nlSearch';
+import { asStatus, ItemStatus, STATUS_FILTERS } from '@/lib/status';
+
 import { cn } from '@/lib/utils';
 
 const RANGES = [
