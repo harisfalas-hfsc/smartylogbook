@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Calendar as CalendarIcon, Check, FileText, Link2, Loader2, MapPin, Paperclip, Pencil,
-  Plus, RotateCcw, Save, Sparkles, Trash2,
+  Plus, RotateCcw, Save, Sparkles, Trash2, X,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
