@@ -9,7 +9,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { kindIcon } from '@/lib/constants';
-import { albumOf, formatBytes, formatDuration, durationOf, isImageMemory, isVideoMemory, useSignedUrl } from '@/lib/media';
+import { albumOf, formatBytes, useSignedUrl } from '@/lib/media';
 import { useCategories } from '@/lib/categories';
 import { Memory, titleOf } from '@/lib/memories';
 import { supabase } from '@/integrations/supabase/client';
@@ -122,7 +122,6 @@ const MemoryDetailSheet = ({
   const [localCompletedAt, setLocalCompletedAt] = useState<string | null>(null);
   const [localAttachments, setLocalAttachments] = useState<StoredAttachment[]>([]);
   const fileInput = useRef<HTMLInputElement | null>(null);
-  const attachment = useSignedUrl(memory?.attachment_url);
   const { categories, getCategory } = useCategories();
 
   useEffect(() => {
