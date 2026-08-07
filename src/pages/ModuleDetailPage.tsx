@@ -189,9 +189,9 @@ const ModuleDetailPage = () => {
           Albums in {module.label}
         </p>
         <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
-          Albums are subfolders inside this category. Open any record, tap Edit and type an album name
-          (for example "Blood tests" or "Greece trip") to file it here. You can also ask Smarty Assistant
-          to do it for you.
+          {isMedia
+            ? 'Albums are subfolders inside this gallery. Everything is filed by month automatically. Open any item, tap Edit and type your own album name (for example "Greece trip") to group it your way.'
+            : 'Albums are subfolders inside this category. Open any record, tap Edit and type an album name (for example "Blood tests") to file it here. You can also ask Smarty Assistant to do it for you.'}
         </p>
         {albums.length > 0 ? (
           <div className="mt-2.5 flex flex-wrap gap-1.5">
