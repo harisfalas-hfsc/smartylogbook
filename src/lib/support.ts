@@ -19,6 +19,20 @@ export interface SupportTicket {
   created_at: string;
 }
 
+export interface SupportReply {
+  id: string;
+  ticket_id: string;
+  author: 'customer' | 'assistant' | 'admin';
+  body: string;
+  created_at: string;
+}
+
+export const AUTHOR_LABEL: Record<SupportReply['author'], string> = {
+  customer: 'You',
+  assistant: 'Smarty Assistant',
+  admin: 'Smarty Logbook support',
+};
+
 export const ticketSchema = z.object({
   name: z.string().trim().min(2, 'Please tell us your name').max(80),
   email: z.string().trim().email('Enter a valid email address').max(255),
@@ -68,6 +82,11 @@ export const submitTicket = async (
     attachment_name,
   });
   if (error) return { error };
+
+  // Smarty Assistant answers the very first message straight away.
+  supabase.functions
+    .invoke('support-assistant', { body: { ticketId } })
+    .catch((e) => console.error('Support assistant reply failed', e));
 
   // Email the ticket to support, and confirm receipt to the customer.
   let attachmentLink: string | undefined;
@@ -152,4 +171,73 @@ export const useSupportTickets = () => {
   };
 
   return { tickets, loading, reload: load, setStatus, remove, attachmentUrl };
+};
+
+
+/** The full back and forth on one ticket, shared by the customer and the admin. */
+export const useTicketThread = (ticketId: string | null) => {
+  const [replies, setReplies] = useState<SupportReply[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    if (!ticketId) { setReplies([]); setLoading(false); return; }
+    setLoading(true);
+    const { data } = await supabase
+      .from('support_replies')
+      .select('*')
+      .eq('ticket_id', ticketId)
+      .order('created_at', { ascending: true });
+    setReplies((data ?? []) as SupportReply[]);
+    setLoading(false);
+  }, [ticketId]);
+
+  useEffect(() => { load(); }, [load]);
+
+  /** Customer follow-up, written from their own message center. */
+  const sendAsCustomer = async (body: string) => {
+    if (!ticketId) return { error: new Error('No conversation') };
+    const text = body.trim();
+    if (text.length < 2) return { error: new Error('Write a short message first') };
+    const { data, error } = await supabase
+      .from('support_replies')
+      .insert({ ticket_id: ticketId, author: 'customer', body: text.slice(0, 4000) })
+      .select('*')
+      .single();
+    if (!error && data) setReplies((prev) => [...prev, data as SupportReply]);
+    return { error };
+  };
+
+  /** Admin answer, delivered to the customer's message center. */
+  const sendAsAdmin = async (body: string) => {
+    if (!ticketId) return { error: new Error('No conversation') };
+    const text = body.trim();
+    if (text.length < 2) return { error: new Error('Write a short reply first') };
+    const { error } = await supabase.functions.invoke('admin-api', {
+      body: { action: 'support_reply', ticketId, body: text.slice(0, 4000) },
+    });
+    if (!error) await load();
+    return { error };
+  };
+
+  return { replies, loading, reload: load, sendAsCustomer, sendAsAdmin };
+};
+
+/** One ticket the signed-in customer owns, with its conversation. */
+export const useMyTicket = (ticketId: string | null) => {
+  const [ticket, setTicket] = useState<SupportTicket | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      if (!ticketId) { setTicket(null); setLoading(false); return; }
+      const { data } = await supabase.from('support_tickets').select('*').eq('id', ticketId).maybeSingle();
+      if (!alive) return;
+      setTicket((data as SupportTicket) ?? null);
+      setLoading(false);
+    })();
+    return () => { alive = false; };
+  }, [ticketId]);
+
+  return { ticket, loading };
 };
