@@ -123,7 +123,10 @@ const ModuleDetailPage = () => {
         <div className="min-w-0 flex-1">
           <h1 className="text-xl font-extrabold tracking-tight text-foreground">{module.label}</h1>
           <p className="truncate text-xs text-muted-foreground">
-            {visible.length} {visible.length === 1 ? 'record' : 'records'} , {module.description}
+            {isMedia
+              ? `${itemCount} ${itemCount === 1 ? (module.id === 'videos' ? 'video' : 'photo') : module.id === 'videos' ? 'videos' : 'photos'}`
+              : `${visible.length} ${visible.length === 1 ? 'record' : 'records'}`}
+            {' · '}{module.description}
           </p>
         </div>
         {own ? (
