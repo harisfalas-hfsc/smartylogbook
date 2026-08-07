@@ -62,6 +62,20 @@ const AuthEntry = () => {
   return <AuthPage />;
 };
 
+// A cold launch (browser or installed app) of a signed-in user opens the dashboard.
+// Navigating to Home from inside the app still shows the public landing page.
+const HomeEntry = () => {
+  const location = useLocation();
+  const { user, loading } = useAuth();
+
+  if (location.key === "default") {
+    if (loading) return null;
+    if (user) return <Navigate to="/app" replace />;
+  }
+
+  return <Landing />;
+};
+
 const App = () => (
   <HelmetProvider>
   <QueryClientProvider client={queryClient}>
