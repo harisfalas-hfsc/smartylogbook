@@ -127,7 +127,9 @@ export const useMemories = (options?: { module?: string; limit?: number }) => {
       .update({ module: toModule })
       .eq('id', memory.id);
     if (error) return { error };
-    setMemories((prev) => prev.map((m) => (m.id === memory.id ? { ...m, module: toModule } : m)));
+    setMemories((prev) => options?.module && options.module !== toModule
+      ? prev.filter((m) => m.id !== memory.id)
+      : prev.map((m) => (m.id === memory.id ? { ...m, module: toModule } : m)));
     await supabase.from('classification_corrections').insert({
       user_id: user.id,
       memory_id: memory.id,
