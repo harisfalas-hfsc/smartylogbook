@@ -74,6 +74,9 @@ export const useReminders = () => {
     amount?: number | null;
     module?: string | null;
     repeat_rule?: string | null;
+    notes?: string | null;
+    attachment_url?: string | null;
+    attachment_name?: string | null;
   }) => {
     if (!user) return { error: new Error('Not signed in') };
     const { error } = await supabase.from('reminders').insert({
@@ -84,7 +87,10 @@ export const useReminders = () => {
       amount: r.amount ?? null,
       module: r.module ?? null,
       repeat_rule: r.repeat_rule ?? null,
-    });
+      notes: r.notes ?? null,
+      attachment_url: r.attachment_url ?? null,
+      attachment_name: r.attachment_name ?? null,
+    } as never);
     if (!error) await load();
     return { error };
   };
