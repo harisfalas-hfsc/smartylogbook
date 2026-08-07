@@ -903,12 +903,14 @@ export type Database = {
           id: string
           notify_bills: boolean
           notify_coach: boolean
+          notify_daily_tip: boolean
           notify_events: boolean
           notify_health: boolean
           notify_tasks: boolean
           onboarding_completed: boolean
           quiet_hours_end: string
           quiet_hours_start: string
+          timezone: string
           tone: string
           updated_at: string
           user_id: string
@@ -922,12 +924,14 @@ export type Database = {
           id?: string
           notify_bills?: boolean
           notify_coach?: boolean
+          notify_daily_tip?: boolean
           notify_events?: boolean
           notify_health?: boolean
           notify_tasks?: boolean
           onboarding_completed?: boolean
           quiet_hours_end?: string
           quiet_hours_start?: string
+          timezone?: string
           tone?: string
           updated_at?: string
           user_id: string
@@ -941,12 +945,14 @@ export type Database = {
           id?: string
           notify_bills?: boolean
           notify_coach?: boolean
+          notify_daily_tip?: boolean
           notify_events?: boolean
           notify_health?: boolean
           notify_tasks?: boolean
           onboarding_completed?: boolean
           quiet_hours_end?: string
           quiet_hours_start?: string
+          timezone?: string
           tone?: string
           updated_at?: string
           user_id?: string
