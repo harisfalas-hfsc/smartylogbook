@@ -113,3 +113,22 @@ export const useStorageUsage = () => {
 
   return { used, files, loading, reload: load };
 };
+
+export interface MemoryFile { path: string; name?: string; type?: string }
+
+/** Every file stored on a record: the primary attachment plus extra ones. */
+export const filesOf = (m: Memory): MemoryFile[] => {
+  const extra = Array.isArray(m.metadata?.attachments)
+    ? (m.metadata.attachments as unknown[]).filter(
+        (f): f is MemoryFile => !!f && typeof f === 'object' && typeof (f as MemoryFile).path === 'string'
+      )
+    : [];
+  const primary: MemoryFile[] = m.attachment_url
+    ? [{
+        path: m.attachment_url,
+        name: typeof m.metadata?.file_name === 'string' ? m.metadata.file_name : undefined,
+        type: typeof m.metadata?.file_type === 'string' ? m.metadata.file_type : undefined,
+      }]
+    : [];
+  return [...primary, ...extra.filter((f) => f.path !== m.attachment_url)];
+};
