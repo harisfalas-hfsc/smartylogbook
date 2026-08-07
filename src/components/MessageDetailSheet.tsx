@@ -37,18 +37,19 @@ const MessageDetailSheet = ({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="flex max-h-[80vh] w-[calc(100%-2rem)] max-w-md flex-col gap-0 overflow-hidden rounded-3xl border-2 border-primary/20 p-0 shadow-xl sm:rounded-3xl"
+        className="flex max-h-[82vh] w-[calc(100%-2.5rem)] max-w-sm flex-col gap-0 overflow-hidden rounded-3xl border-2 border-primary/20 p-0 shadow-xl sm:w-1/2 sm:max-w-2xl sm:rounded-3xl md:max-h-[78vh]"
       >
-        <DialogHeader className="shrink-0 space-y-0 border-b border-border px-4 py-3.5 text-left">
+        <DialogHeader className="shrink-0 space-y-0 border-b border-border px-4 py-3.5 text-left sm:px-6 sm:py-5">
           <div className="flex items-center gap-3 pr-8">
-            <span className={cn('grid h-9 w-9 shrink-0 place-items-center rounded-2xl', style.tint)}>
-              <Icon className={cn('h-4 w-4', style.color)} />
+            <span className={cn('grid h-9 w-9 shrink-0 place-items-center rounded-2xl sm:h-11 sm:w-11', style.tint)}>
+              <Icon className={cn('h-4 w-4 sm:h-5 sm:w-5', style.color)} />
             </span>
-            <DialogTitle className="min-w-0 flex-1 text-left text-base font-extrabold leading-snug">
+            <DialogTitle className="min-w-0 flex-1 text-left text-base font-extrabold leading-snug sm:text-xl">
               {message.title}
             </DialogTitle>
           </div>
         </DialogHeader>
+
 
         <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-4">
           <div className="flex flex-wrap items-center gap-2">
