@@ -23,6 +23,9 @@ export interface Memory {
   related_ids: string[];
   relation_note: string | null;
   deleted_at?: string | null;
+  status?: string | null;
+  completed_at?: string | null;
+  due_at?: string | null;
   occurred_at: string;
   created_at: string;
   updated_at: string;
