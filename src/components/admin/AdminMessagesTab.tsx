@@ -112,36 +112,25 @@ const AdminMessagesTab = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <div className="smarty-card p-4">
-          <div className="flex items-center gap-2 text-primary">
-            <Bell className="h-4 w-4" />
-            <span className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Delivered</span>
-          </div>
-          <p className="mt-2 text-2xl font-extrabold text-foreground">{meta.total}</p>
-          <p className="text-[11px] text-muted-foreground">most recent 200 messages, all members</p>
-        </div>
-        <div className="smarty-card p-4">
-          <div className="flex items-center gap-2 text-primary">
-            <MailOpen className="h-4 w-4" />
-            <span className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Still unread</span>
-          </div>
-          <p className="mt-2 text-2xl font-extrabold text-foreground">{meta.unread}</p>
-          <p className="text-[11px] text-muted-foreground">nobody has opened these yet</p>
-        </div>
-        <div className="smarty-card p-4">
-          <span className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Members</span>
-          <p className="mt-2 text-2xl font-extrabold text-foreground">{meta.audience.all}</p>
-          <p className="text-[11px] text-muted-foreground">
-            {meta.audience.premium} premium · {meta.audience.free} free
-          </p>
-        </div>
-        <div className="smarty-card p-4">
-          <span className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Types in use</span>
-          <p className="mt-2 text-2xl font-extrabold text-foreground">{meta.byKind.length}</p>
-          <p className="text-[11px] text-muted-foreground">see the breakdown below</p>
-        </div>
+      <div className="smarty-card flex flex-wrap items-center gap-2 p-4">
+        <p className="w-full text-[12px] leading-relaxed text-muted-foreground">
+          <strong className="text-foreground">{meta.total}</strong> messages sent to{' '}
+          <strong className="text-foreground">{meta.audience.all}</strong>{' '}
+          {meta.audience.all === 1 ? 'member' : 'members'} ({meta.audience.premium} premium, {meta.audience.free} free).{' '}
+          <strong className="text-foreground">{meta.unread}</strong> have not been opened yet, which tells you whether
+          an automation is landing or being ignored.
+        </p>
+        <button
+          onClick={() => setUnreadOnly((v) => !v)}
+          className={cn(
+            'inline-flex items-center gap-1.5 rounded-2xl border px-3.5 py-2 text-[11px] font-bold transition-smooth active:scale-95',
+            unreadOnly ? 'border-primary bg-primary/10 text-primary' : 'border-border text-foreground',
+          )}
+        >
+          <MailOpen className="h-3.5 w-3.5" /> {unreadOnly ? 'Showing unopened only' : `Show the ${meta.unread} unopened`}
+        </button>
       </div>
+
 
       <div className="smarty-card p-4">
         <p className="text-sm font-bold text-foreground">Breakdown by type</p>
