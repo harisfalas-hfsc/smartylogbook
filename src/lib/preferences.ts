@@ -10,7 +10,10 @@ export interface Preferences {
   focus_modules: string[];
   tone: string;
   coach_time: string;
+  /** IANA timezone, so the 6 a.m. daily tip lands at the user's own 6 a.m. */
+  timezone: string;
   notify_coach: boolean;
+  notify_daily_tip: boolean;
   notify_tasks: boolean;
   notify_bills: boolean;
   notify_health: boolean;
