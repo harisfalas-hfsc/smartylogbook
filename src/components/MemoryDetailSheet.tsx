@@ -39,11 +39,14 @@ const MemoryDetailSheet = ({
   memory, open, onOpenChange, allMemories = [], onOpenMemory, onSave, onMove, onDelete,
 }: Props) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState<Partial<Memory>>({});
   const [tagsText, setTagsText] = useState('');
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [album, setAlbum] = useState('');
+  const fileInput = useRef<HTMLInputElement | null>(null);
   const attachment = useSignedUrl(memory?.attachment_url);
   const { categories, getCategory } = useCategories();
 
@@ -66,6 +69,44 @@ const MemoryDetailSheet = ({
   const module = getCategory(memory.module);
   const Icon = kindIcon(memory.kind);
   const related = allMemories.filter((m) => memory.related_ids?.includes(m.id));
+  const status = asStatus(memory.status);
+  const statusMeta = STATUS_META[status];
+  const overdue = isOverdue(memory.due_at, status);
+
+  const setStatus = async (next: 'open' | 'done' | 'postponed', dueAt?: string) => {
+    if (!onSave) return;
+    const res = await onSave(memory.id, {
+      status: next,
+      completed_at: next === 'done' ? new Date().toISOString() : null,
+      ...(dueAt ? { due_at: dueAt } : {}),
+    });
+    if (res && 'error' in res && res.error) return toast.error('Could not update this record');
+    toast.success(
+      next === 'done' ? 'Marked as completed' : next === 'postponed' ? 'Postponed' : 'Reopened'
+    );
+  };
+
+  const uploadFile = async (file: File) => {
+    if (!user || !onSave) return;
+    setUploading(true);
+    const ext = file.name.split('.').pop() ?? 'dat';
+    const path = `${user.id}/${Date.now()}.${ext}`;
+    const { error: uploadError } = await supabase.storage.from('captures').upload(path, file, {
+      contentType: file.type,
+    });
+    if (uploadError) {
+      setUploading(false);
+      return toast.error(uploadError.message);
+    }
+    const res = await onSave(memory.id, {
+      attachment_url: path,
+      metadata: { ...(memory.metadata ?? {}), file_name: file.name, file_type: file.type, file_size: file.size },
+    });
+    setUploading(false);
+    if (res && 'error' in res && res.error) return toast.error('Could not attach the file');
+    toast.success('File attached');
+  };
+
 
   const save = async () => {
     if (!onSave) return;
