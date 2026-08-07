@@ -198,7 +198,22 @@ const RemindersPage = () => {
           )}
         </>
       )}
+
+      <ReminderDetailSheet
+        reminder={active}
+        open={!!open}
+        onOpenChange={(o) => !o && setOpen(null)}
+        onUpdate={update}
+        onToggleDone={toggleDone}
+        onReschedule={reschedule}
+        onDelete={async (id) => {
+          const res = await remove(id);
+          setOpen(null);
+          return res;
+        }}
+      />
     </div>
+
   );
 };
 
