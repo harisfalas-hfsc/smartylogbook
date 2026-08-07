@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Link, NavLink, Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Link, Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Bell, CircleHelp, Info, LifeBuoy, LogOut, Menu, Search, ShieldCheck, Sparkles, Tag } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import BottomNav from '@/components/BottomNav';
-import SiteFooter from '@/components/SiteFooter';
+
 import Logo from '@/components/Logo';
 import BackButton, { resetNavDepth } from '@/components/BackButton';
 import { MORE_LINKS, NAV_TABS } from '@/lib/constants';
@@ -14,7 +14,7 @@ import { usePreferences } from '@/lib/preferences';
 import { useNotificationEngine } from '@/lib/reminders';
 import { useMemoryIndex } from '@/lib/semantic';
 import { useUnreadMessages } from '@/lib/messages';
-import { useCategories } from '@/lib/categories';
+
 
 const AppShell = () => {
   const { pathname } = useLocation();
@@ -26,12 +26,8 @@ const AppShell = () => {
   useNotificationEngine(prefs);
   useMemoryIndex(!prefsLoading && !!user);
   const unread = useUnreadMessages();
-  const { getCategory } = useCategories();
   const initial = (profile?.username ?? user?.email ?? 'S').charAt(0).toUpperCase();
-  const desktopLinks = [...NAV_TABS.filter((t) => t.path !== '/app/capture'), ...MORE_LINKS];
-  const categoryMatch = pathname.match(/^\/app\/(?:category|module)\/([^/]+)$/);
-  const activeCategory = categoryMatch?.[1] ? getCategory(decodeURIComponent(categoryMatch[1])) : null;
-  const desktopTitle = activeCategory?.label ?? desktopLinks.find((link) => link.path === pathname)?.label ?? 'Smarty Logbook';
+
 
   const sections = [
     { heading: 'Your Logbook', items: NAV_TABS },
@@ -56,55 +52,9 @@ const AppShell = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Desktop sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-border bg-card/60 px-4 py-6 lg:flex">
-        <div className="mb-8 flex items-center gap-2 px-2">
-          <Link
-            to="/app"
-            onClick={(e) => {
-              e.preventDefault();
-              navigate('/app', { replace: true });
-              resetNavDepth();
-            }}
-          >
-            <Logo />
-          </Link>
-        </div>
-        <nav className="flex flex-1 flex-col gap-1">
-          {desktopLinks.map((link) => (
-            <NavLink
-              key={link.path}
-              to={link.path}
-              end={link.path === '/app'}
-              className={({ isActive }) =>
-                cn(
-                  'flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium transition-smooth',
-                  isActive ? 'bg-secondary text-primary' : 'text-muted-foreground hover:bg-secondary/60'
-                )
-              }
-            >
-              <link.icon className="h-4.5 w-4.5" />
-              {link.label}
-            </NavLink>
-          ))}
-        </nav>
-        <Link
-          to="/app/capture"
-          className="mt-4 flex items-center justify-center gap-2 rounded-2xl bg-gradient-primary px-4 py-3 text-sm font-semibold text-primary-foreground shadow-glow transition-smooth hover:opacity-95"
-        >
-          <Sparkles className="h-4 w-4" /> Quick Capture
-        </Link>
-        <Link
-          to="/pricing"
-          className="mt-2 flex items-center justify-center gap-2 rounded-2xl border border-primary px-4 py-2.5 text-sm font-semibold text-primary"
-        >
-          <Tag className="h-4 w-4" /> View membership
-        </Link>
-      </aside>
-
-      {/* Mobile header, Smarty Wellness family style */}
-      <header className="sticky top-0 z-40 bg-background lg:hidden">
-        <div className="flex h-11 items-center justify-between gap-2 px-3">
+      {/* Single header for every screen size */}
+      <header className="sticky top-0 z-40 bg-background">
+        <div className="mx-auto flex h-11 max-w-3xl items-center justify-between gap-2 px-3 lg:h-14 lg:px-4">
           <div className="flex items-center gap-2">
             <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
               <SheetTrigger asChild>
@@ -225,54 +175,15 @@ const AppShell = () => {
         </div>
       </header>
 
-      {/* Desktop top bar */}
-      <header className="sticky top-0 z-30 hidden border-b border-border/60 bg-background/80 backdrop-blur-xl lg:block lg:pl-64">
-        <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-3">
-          <div className="flex min-w-0 items-center gap-2">
-            <BackButton />
-            <p className="truncate text-sm font-semibold text-foreground">{desktopTitle}</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Link
-              to="/app/search"
-              aria-label="Search"
-              className="flex h-10 w-10 items-center justify-center rounded-2xl bg-secondary text-secondary-foreground transition-smooth active:scale-95"
-            >
-              <Search className="h-4.5 w-4.5" />
-            </Link>
-            <Link
-              to="/app/messages"
-              aria-label="Message center"
-              className="relative flex h-10 w-10 items-center justify-center rounded-2xl bg-secondary text-secondary-foreground transition-smooth active:scale-95"
-            >
-              <Bell className="h-4.5 w-4.5" />
-              {unread > 0 && (
-                <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-destructive px-1 text-[9px] font-bold text-destructive-foreground">
-                  {unread > 9 ? '9+' : unread}
-                </span>
-              )}
-            </Link>
-            <Link
-              to="/app/settings"
-              aria-label="Profile"
-              className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-primary text-sm font-bold text-primary-foreground"
-            >
-              {initial}
-            </Link>
-          </div>
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-3xl px-4 pt-4 lg:pl-64">
+      <main className="mx-auto max-w-3xl px-4 pt-4">
         <Outlet />
       </main>
 
-      <div className="hidden pb-8 pt-6 lg:block lg:pl-64">
-        <SiteFooter />
-      </div>
-      <div className="pb-28 lg:hidden" />
+      <div className="pb-28" />
+
 
       <BottomNav />
+
     </div>
   );
 };

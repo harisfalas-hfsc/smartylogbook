@@ -6,9 +6,10 @@ const BottomNav = () => {
   const { pathname } = useLocation();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 safe-bottom lg:hidden">
-      <div className="mx-auto max-w-lg px-3 pb-3">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 safe-bottom">
+      <div className="mx-auto max-w-lg px-3 pb-3 lg:max-w-xl lg:pb-4">
         <div className="glass flex items-center justify-between rounded-3xl px-2 py-2 shadow-elevated">
+
           {NAV_TABS.map((tab) => {
             const active = pathname === tab.path;
             const isCapture = tab.path === '/app/capture';
