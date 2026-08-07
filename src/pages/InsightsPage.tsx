@@ -138,6 +138,11 @@ const InsightsPage = () => {
         </button>
       </header>
 
+      <AssistantAskBar
+        placeholder="Ask Smarty Assistant about your insights…"
+        hint="Same assistant, everywhere you can type."
+      />
+
       {memories.length === 0 ? (
         <div className="smarty-card p-10 text-center">
           <Sparkles className="mx-auto h-6 w-6 text-primary" />
@@ -146,11 +151,12 @@ const InsightsPage = () => {
         </div>
       ) : loading && !insights ? (
         <div className="smarty-card flex items-center justify-center gap-2 p-10 text-sm text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" /> Reading your logbook…
+          <Loader2 className="h-4 w-4 animate-spin" /> Smarty Assistant is reading your logbook…
         </div>
-      ) : error ? (
+      ) : error && !insights ? (
         <div className="smarty-card p-6 text-center text-sm text-muted-foreground">{error}</div>
       ) : insights ? (
+
         <>
           {insights.overview && (
             <section className="smarty-card animate-fade-up p-4 sm:p-5">
