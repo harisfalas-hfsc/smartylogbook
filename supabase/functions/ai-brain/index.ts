@@ -995,20 +995,23 @@ Deno.serve(async (req) => {
     }
 
     const cleaned = raw.replace(/```json/gi, "").replace(/```/g, "").trim();
-    let parsed: unknown;
-    try {
-      parsed = JSON.parse(cleaned);
-    } catch {
-      const match = cleaned.match(/\{[\s\S]*\}/);
-      parsed = match ? JSON.parse(match[0]) : null;
+    let parsed: unknown = null;
+    for (const candidate of [cleaned, cleaned.match(/\{[\s\S]*\}/)?.[0] ?? "", repairJson(cleaned)]) {
+      if (!candidate) continue;
+      try {
+        parsed = JSON.parse(candidate);
+        break;
+      } catch { /* try the next candidate */ }
     }
 
     if (!parsed) {
+      console.error("Could not parse AI response", mode, cleaned.slice(0, 400));
       return new Response(JSON.stringify({ error: "Could not parse AI response" }), {
         status: 502,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
 
     /* ---- the daily brief also lands in the Message Center ---- */
     if (mode === "brief" || mode === "coach") {
