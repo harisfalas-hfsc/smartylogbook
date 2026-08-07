@@ -113,7 +113,9 @@ const TimelinePage = () => {
   const groups = groupByDay(shown);
   const selectedMemory = selected ? memories.find((m) => m.id === selected.id) ?? selected : null;
 
-  const activeFilters = (module ? 1 : 0) + (from || to ? 1 : 0);
+  const activeFilters = (module ? 1 : 0) + (from || to ? 1 : 0) + (query ? 1 : 0);
+  const anyFilter = activeFilters > 0 || status !== 'all' || range !== 'all' || !!applied || !!ask;
+
 
   const weekCount = useMemo(() => {
     const cutoff = Date.now() - 7 * 86400000;
