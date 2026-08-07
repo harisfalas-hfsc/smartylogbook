@@ -121,7 +121,7 @@ const ContactPage = () => {
               an answer in their message center, starting with Smarty Assistant.
             </p>
             <Link
-              to="/plan"
+              to="/app/plan"
               className="mt-3 inline-flex items-center gap-2 rounded-2xl bg-gradient-primary px-4 py-2.5 text-sm font-bold text-primary-foreground shadow-glow transition-smooth active:scale-[0.98]"
             >
               <Lock className="h-4 w-4" /> View membership
