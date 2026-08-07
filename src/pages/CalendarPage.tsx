@@ -46,8 +46,10 @@ const buildGrid = (cursor: Date) => {
 };
 
 const CalendarPage = () => {
-  const { memories, loading } = useMemories();
-  const { reminders, create, toggleDone, remove } = useReminders();
+  const { memories, loading, remove: removeMemory, reclassify, update: updateMemory } = useMemories();
+  const {
+    reminders, create, toggleDone, remove, update: updateReminder, reschedule,
+  } = useReminders();
 
   const [cursor, setCursor] = useState(() => new Date());
   const [selected, setSelected] = useState<Date | null>(null);
@@ -55,6 +57,10 @@ const CalendarPage = () => {
   const [type, setType] = useState<ReminderType>('event');
   const [time, setTime] = useState('09:00');
   const [saving, setSaving] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<'all' | 'open' | 'done' | 'postponed'>('all');
+  const [openReminder, setOpenReminder] = useState<Reminder | null>(null);
+  const [openMemory, setOpenMemory] = useState<Memory | null>(null);
+
 
   const byDay = useMemo(() => {
     const map = new Map<string, { logged: typeof memories; scheduled: typeof reminders }>();
