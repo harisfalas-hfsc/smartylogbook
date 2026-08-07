@@ -179,54 +179,17 @@ const AppShell = () => {
         </div>
       </header>
 
-      {/* Desktop top bar */}
-      <header className="sticky top-0 z-30 hidden border-b border-border/60 bg-background/80 backdrop-blur-xl lg:block lg:pl-64">
-        <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-3">
-          <div className="flex min-w-0 items-center gap-2">
-            <BackButton />
-            <p className="truncate text-sm font-semibold text-foreground">{desktopTitle}</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Link
-              to="/app/search"
-              aria-label="Search"
-              className="flex h-10 w-10 items-center justify-center rounded-2xl bg-secondary text-secondary-foreground transition-smooth active:scale-95"
-            >
-              <Search className="h-4.5 w-4.5" />
-            </Link>
-            <Link
-              to="/app/messages"
-              aria-label="Message center"
-              className="relative flex h-10 w-10 items-center justify-center rounded-2xl bg-secondary text-secondary-foreground transition-smooth active:scale-95"
-            >
-              <Bell className="h-4.5 w-4.5" />
-              {unread > 0 && (
-                <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-destructive px-1 text-[9px] font-bold text-destructive-foreground">
-                  {unread > 9 ? '9+' : unread}
-                </span>
-              )}
-            </Link>
-            <Link
-              to="/app/settings"
-              aria-label="Profile"
-              className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-primary text-sm font-bold text-primary-foreground"
-            >
-              {initial}
-            </Link>
-          </div>
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-3xl px-4 pt-4 lg:pl-64">
+      <main className="mx-auto max-w-3xl px-4 pt-4">
         <Outlet />
       </main>
 
-      <div className="hidden pb-8 pt-6 lg:block lg:pl-64">
+      <div className="mx-auto hidden max-w-3xl px-4 pb-8 pt-6 lg:block">
         <SiteFooter />
       </div>
-      <div className="pb-28 lg:hidden" />
+      <div className="pb-28" />
 
       <BottomNav />
+
     </div>
   );
 };
