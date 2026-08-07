@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  AlertTriangle, ArrowRight, CalendarDays, ChevronRight, Loader2, Sparkles,
+  AlertTriangle, ArrowRight, CalendarDays, ChevronRight, History as HistoryIcon, LayoutGrid, Loader2, Sparkles,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useMemories, whenLabel, Memory } from '@/lib/memories';
@@ -97,22 +97,21 @@ const Dashboard = () => {
       {/* 1. Timeline, the hero of the home screen */}
       <section className="animate-fade-up">
         <div className="smarty-card overflow-hidden">
-          <div className="flex items-start justify-between gap-3 border-b border-border bg-primary/[0.04] px-4 py-3.5">
-            <div className="min-w-0">
-              <h2 className="text-base font-extrabold tracking-tight text-foreground">
-                Timeline
-              </h2>
-              <p className="mt-0.5 truncate text-[11px] text-muted-foreground">
+          <Link
+            to="/app/timeline"
+            className="flex items-center gap-3 border-b border-border bg-primary/[0.04] px-4 py-3.5 transition-smooth active:opacity-80"
+          >
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-primary/10 text-primary">
+              <HistoryIcon className="h-5 w-5" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-base font-extrabold tracking-tight text-foreground">Timeline</span>
+              <span className="block truncate text-[11px] text-muted-foreground">
                 {today.length ? 'Everything you logged today' : 'Your latest records, newest first'}
-              </p>
-            </div>
-            <Link
-              to="/app/timeline"
-              className="mt-0.5 inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-primary"
-            >
-              See all <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
-          </div>
+              </span>
+            </span>
+            <ArrowRight className="h-4 w-4 shrink-0 text-primary" />
+          </Link>
           {loading ? (
             <div className="grid h-28 place-items-center">
               <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
@@ -196,30 +195,42 @@ const Dashboard = () => {
         </div>
       </section>
 
-      {/* 3. Categories, two rows of the busiest, the rest live on See all */}
+      {/* 3. Categories, same card concept, tiles live inside */}
       <section className="animate-fade-up">
-        <div className="mb-2 flex items-center justify-between px-0.5">
-          <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">Categories</h2>
-          <Link to="/app/categories" className="inline-flex items-center gap-1 text-xs font-semibold text-primary">
-            See all <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
-        </div>
-        <div className="grid grid-cols-4 gap-2">
-          {topCategories.map((m) => (
-            <Link
-              key={m.id}
-              to={`/app/category/${m.id}`}
-              className="smarty-card flex flex-col items-center gap-1.5 px-1 py-3 transition-smooth active:scale-95"
-            >
-              <span className={`grid h-9 w-9 place-items-center rounded-2xl ${m.tint}`}>
-                <m.icon className={`h-4.5 w-4.5 ${m.color}`} />
+        <div className="smarty-card overflow-hidden">
+          <Link
+            to="/app/categories"
+            className="flex items-center gap-3 border-b border-border bg-primary/[0.04] px-4 py-3.5 transition-smooth active:opacity-80"
+          >
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-primary/10 text-primary">
+              <LayoutGrid className="h-5 w-5" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-base font-extrabold tracking-tight text-foreground">Categories</span>
+              <span className="block truncate text-[11px] text-muted-foreground">
+                Everything filed automatically, busiest first
               </span>
-              <span className="w-full truncate text-center text-[10px] font-bold text-foreground">{m.label}</span>
-              <span className="text-[9px] font-medium text-muted-foreground">{counts[m.id] ?? 0}</span>
-            </Link>
-          ))}
+            </span>
+            <ArrowRight className="h-4 w-4 shrink-0 text-primary" />
+          </Link>
+          <div className="grid grid-cols-4 gap-2 p-3">
+            {topCategories.map((m) => (
+              <Link
+                key={m.id}
+                to={`/app/category/${m.id}`}
+                className="flex flex-col items-center gap-1.5 rounded-2xl bg-secondary/50 px-1 py-3 transition-smooth active:scale-95"
+              >
+                <span className={`grid h-9 w-9 place-items-center rounded-2xl ${m.tint}`}>
+                  <m.icon className={`h-4.5 w-4.5 ${m.color}`} />
+                </span>
+                <span className="w-full truncate text-center text-[10px] font-bold text-foreground">{m.label}</span>
+                <span className="text-[9px] font-medium text-muted-foreground">{counts[m.id] ?? 0}</span>
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
+
 
       <MemoryDetailSheet
         memory={selectedMemory}

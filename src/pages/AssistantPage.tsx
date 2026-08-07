@@ -5,11 +5,8 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useMemories } from '@/lib/memories';
 import { usePreferences } from '@/lib/preferences';
-import { useDailyBrief } from '@/lib/assistant';
-import DailyBriefCard from '@/components/DailyBriefCard';
 import AssistantMemoryCard from '@/components/AssistantMemoryCard';
 import AssistantUpgrade from '@/components/AssistantUpgrade';
-import ConversationMeter from '@/components/ConversationMeter';
 import { useSubscription } from '@/lib/subscription';
 import { cn } from '@/lib/utils';
 
@@ -29,12 +26,11 @@ const readAsDataUrl = (file: File | Blob) =>
   });
 
 const AssistantPage = () => {
-  const { memories, loading, create, reload } = useMemories({ limit: 60 });
+  const { memories, create, reload } = useMemories({ limit: 60 });
   const { prefs } = usePreferences();
   const {
-    pricing, plan, active, allowance, used, canUseAssistant, renewsAt, renewNow, loading: subLoading, reload: reloadSub,
+    pricing, active, allowance, used, canUseAssistant, renewsAt, renewNow, loading: subLoading, reload: reloadSub,
   } = useSubscription();
-  const { brief, generating, regenerate } = useDailyBrief(memories, prefs, !loading && canUseAssistant);
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
@@ -279,30 +275,20 @@ const AssistantPage = () => {
         <AssistantUpgrade pricing={pricing} exhausted={active} allowance={allowance} renewsAt={renewsAt} onRenew={renewNow} />
       )}
 
-      {canUseAssistant && (
-        <ConversationMeter used={used} allowance={allowance} planName={plan?.name} renewsAt={renewsAt} />
-      )}
-
-      {canUseAssistant && (
-        <DailyBriefCard
-          brief={brief}
-          generating={generating}
-          onRegenerate={regenerate}
-          onAsk={(t) => setInput(t)}
-        />
-      )}
-
       {/* Composer — the main thing */}
       {canUseAssistant && (
       <div className="smarty-card space-y-3 border-2 border-primary/25 p-4 shadow-glow">
-        <div className="flex items-center gap-2">
-          <span className="grid h-8 w-8 place-items-center rounded-2xl bg-gradient-primary text-primary-foreground">
+        <div className="flex items-start gap-2">
+          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-2xl bg-gradient-primary text-primary-foreground">
             <Send className="h-4 w-4" />
           </span>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <p className="text-sm font-extrabold text-foreground">Ask Smarty Assistant</p>
             <p className="text-[11px] text-muted-foreground">Your captures, records, reminders and spending.</p>
           </div>
+          <span className="shrink-0 whitespace-nowrap rounded-full bg-secondary px-2.5 py-1 text-[10px] font-bold tabular-nums text-muted-foreground">
+            Balance {Math.max(0, allowance - used)}/{allowance}
+          </span>
         </div>
 
         {files.length > 0 && (
@@ -379,19 +365,25 @@ const AssistantPage = () => {
       {canUseAssistant && (
       <div className="space-y-3">
         {messages.length === 0 && (
-          <div className="grid gap-2 sm:grid-cols-2">
-            {quick.map((item) => (
-              <button
-                key={item.q}
-                onClick={() => setInput(item.q)}
-                className="smarty-card flex items-center gap-3 p-3 text-left transition-smooth active:scale-[0.98]"
-              >
-                <span className={cn('grid h-9 w-9 shrink-0 place-items-center rounded-2xl', item.tint)}>
-                  <item.icon className={cn('h-4.5 w-4.5', item.color)} />
-                </span>
-                <span className="min-w-0 flex-1 text-xs font-semibold text-foreground">{item.q}</span>
-              </button>
-            ))}
+          <div className="smarty-card overflow-hidden">
+            <div className="border-b border-border bg-primary/[0.04] px-4 py-3">
+              <p className="text-sm font-extrabold tracking-tight text-foreground">Examples</p>
+              <p className="mt-0.5 text-[11px] text-muted-foreground">Tap one to see how the assistant works.</p>
+            </div>
+            <div className="divide-y divide-border">
+              {quick.map((item) => (
+                <button
+                  key={item.q}
+                  onClick={() => setInput(item.q)}
+                  className="flex w-full items-center gap-3 px-4 py-3 text-left transition-smooth active:bg-secondary/60"
+                >
+                  <span className={cn('grid h-9 w-9 shrink-0 place-items-center rounded-2xl', item.tint)}>
+                    <item.icon className={cn('h-4.5 w-4.5', item.color)} />
+                  </span>
+                  <span className="min-w-0 flex-1 text-xs font-semibold text-foreground">{item.q}</span>
+                </button>
+              ))}
+            </div>
           </div>
         )}
 
