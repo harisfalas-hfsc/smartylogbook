@@ -101,8 +101,8 @@ const App = () => (
               <Route path="capture" element={<CapturePage />} />
               <Route path="assistant" element={<AssistantPage />} />
               <Route path="coach" element={<Navigate to="/app/assistant" replace />} />
-              <Route path="ai" element={<AiPage />} />
-              <Route path="search" element={<AiPage />} />
+              <Route path="ai" element={<Navigate to="/app/assistant" replace />} />
+              <Route path="search" element={<Navigate to="/app/timeline" replace />} />
               <Route path="insights" element={<InsightsPage />} />
               <Route path="categories" element={<ModulesPage />} />
               <Route path="modules" element={<Navigate to="/app/categories" replace />} />
