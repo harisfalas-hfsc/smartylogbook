@@ -97,22 +97,21 @@ const Dashboard = () => {
       {/* 1. Timeline, the hero of the home screen */}
       <section className="animate-fade-up">
         <div className="smarty-card overflow-hidden">
-          <div className="flex items-start justify-between gap-3 border-b border-border bg-primary/[0.04] px-4 py-3.5">
-            <div className="min-w-0">
-              <h2 className="text-base font-extrabold tracking-tight text-foreground">
-                Timeline
-              </h2>
-              <p className="mt-0.5 truncate text-[11px] text-muted-foreground">
+          <Link
+            to="/app/timeline"
+            className="flex items-center gap-3 border-b border-border bg-primary/[0.04] px-4 py-3.5 transition-smooth active:opacity-80"
+          >
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-primary/10 text-primary">
+              <History className="h-5 w-5" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-base font-extrabold tracking-tight text-foreground">Timeline</span>
+              <span className="block truncate text-[11px] text-muted-foreground">
                 {today.length ? 'Everything you logged today' : 'Your latest records, newest first'}
-              </p>
-            </div>
-            <Link
-              to="/app/timeline"
-              className="mt-0.5 inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-primary"
-            >
-              See all <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
-          </div>
+              </span>
+            </span>
+            <ArrowRight className="h-4 w-4 shrink-0 text-primary" />
+          </Link>
           {loading ? (
             <div className="grid h-28 place-items-center">
               <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
