@@ -3,7 +3,7 @@ import { Link, Navigate, Outlet, useLocation, useNavigate } from 'react-router-d
 import { Bell, CircleHelp, Info, LifeBuoy, LogOut, Menu, Search, ShieldCheck, Sparkles, Tag } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import BottomNav from '@/components/BottomNav';
-import SiteFooter from '@/components/SiteFooter';
+
 import Logo from '@/components/Logo';
 import BackButton, { resetNavDepth } from '@/components/BackButton';
 import { MORE_LINKS, NAV_TABS } from '@/lib/constants';
