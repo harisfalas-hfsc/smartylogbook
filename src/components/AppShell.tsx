@@ -56,55 +56,9 @@ const AppShell = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Desktop sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-border bg-card/60 px-4 py-6 lg:flex">
-        <div className="mb-8 flex items-center gap-2 px-2">
-          <Link
-            to="/app"
-            onClick={(e) => {
-              e.preventDefault();
-              navigate('/app', { replace: true });
-              resetNavDepth();
-            }}
-          >
-            <Logo />
-          </Link>
-        </div>
-        <nav className="flex flex-1 flex-col gap-1">
-          {desktopLinks.map((link) => (
-            <NavLink
-              key={link.path}
-              to={link.path}
-              end={link.path === '/app'}
-              className={({ isActive }) =>
-                cn(
-                  'flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium transition-smooth',
-                  isActive ? 'bg-secondary text-primary' : 'text-muted-foreground hover:bg-secondary/60'
-                )
-              }
-            >
-              <link.icon className="h-4.5 w-4.5" />
-              {link.label}
-            </NavLink>
-          ))}
-        </nav>
-        <Link
-          to="/app/capture"
-          className="mt-4 flex items-center justify-center gap-2 rounded-2xl bg-gradient-primary px-4 py-3 text-sm font-semibold text-primary-foreground shadow-glow transition-smooth hover:opacity-95"
-        >
-          <Sparkles className="h-4 w-4" /> Quick Capture
-        </Link>
-        <Link
-          to="/pricing"
-          className="mt-2 flex items-center justify-center gap-2 rounded-2xl border border-primary px-4 py-2.5 text-sm font-semibold text-primary"
-        >
-          <Tag className="h-4 w-4" /> View membership
-        </Link>
-      </aside>
-
-      {/* Mobile header, Smarty Wellness family style */}
-      <header className="sticky top-0 z-40 bg-background lg:hidden">
-        <div className="flex h-11 items-center justify-between gap-2 px-3">
+      {/* Single header for every screen size */}
+      <header className="sticky top-0 z-40 bg-background">
+        <div className="mx-auto flex h-11 max-w-3xl items-center justify-between gap-2 px-3 lg:h-14 lg:px-4">
           <div className="flex items-center gap-2">
             <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
               <SheetTrigger asChild>
