@@ -3,7 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-route
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { AuthProvider } from "@/contexts/AuthContext";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AppShell from "./components/AppShell";
 import PublicLayout from "./components/PublicLayout";
@@ -88,7 +88,7 @@ const App = () => (
           <AnalyticsTracker />
           <Routes>
             <Route element={<PublicLayout />}>
-              <Route path="/" element={<Landing />} />
+              <Route path="/" element={<HomeEntry />} />
               <Route path="/index" element={<Navigate to="/" replace />} />
               <Route path="/about" element={<AboutPage />} />
               <Route path="/how-it-works" element={<HowItWorksPage />} />
