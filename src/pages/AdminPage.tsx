@@ -74,6 +74,13 @@ const AdminPage = () => {
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pricing, setPricing] = useState<PricingConfig>(DEFAULT_PRICING);
+  // What Stripe will really charge, so the numbers below can never silently
+  // disagree with the card the customer is billed on.
+  const [stripePrice, setStripePrice] = useState<
+    { amount: number; currency: string; interval: string } | null | 'loading'
+  >('loading');
+  const [stripeError, setStripeError] = useState<string | null>(null);
+
   const [grantPlan, setGrantPlan] = useState<string>(DEFAULT_PRICING.plans[0]?.key ?? 'premium');
   const [newUser, setNewUser] = useState({ email: '', password: '', username: '', months: 0 });
 
