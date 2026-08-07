@@ -101,12 +101,22 @@ const AdminPage = () => {
       const plans = Array.isArray(cfg.plans) && cfg.plans.length ? cfg.plans : DEFAULT_PRICING.plans;
       setPricing({ ...DEFAULT_PRICING, ...cfg, plans });
       setGrantPlan((prev) => (plans.some((p) => p.key === prev) ? prev : plans[0]?.key ?? 'premium'));
+      adminApi<{ price: typeof stripePrice; error?: string }>('stripe_price', { environment: stripeEnvironment() })
+        .then((r) => {
+          setStripePrice((r.price as { amount: number; currency: string; interval: string } | null) ?? null);
+          setStripeError(r.error ?? null);
+        })
+        .catch((e) => {
+          setStripePrice(null);
+          setStripeError(e instanceof Error ? e.message : 'Stripe unavailable');
+        });
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load admin data');
     } finally {
       setLoading(false);
     }
   }, []);
+
 
   useEffect(() => {
     if (isAdmin) load();
