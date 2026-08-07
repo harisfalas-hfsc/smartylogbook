@@ -14,7 +14,7 @@ import { useCategories } from '@/lib/categories';
 import { Memory, titleOf } from '@/lib/memories';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { asStatus, isOverdue, shiftDays, STATUS_META } from '@/lib/status';
+import { asStatus, isActionableItem, isGalleryModule, isOverdue, shiftDays, STATUS_META } from '@/lib/status';
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
