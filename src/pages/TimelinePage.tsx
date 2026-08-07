@@ -32,9 +32,11 @@ const TimelinePage = () => {
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [status, setStatus] = useState<'all' | ItemStatus>('all');
   const [visible, setVisible] = useState(PAGE);
   const [selected, setSelected] = useState<Memory | null>(null);
   const sentinel = useRef<HTMLDivElement | null>(null);
+
 
   const runPlainLanguage = (raw: string) => {
     const parsed = parsePlainLanguage(raw);
