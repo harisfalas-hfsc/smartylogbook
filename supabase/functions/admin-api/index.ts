@@ -524,6 +524,49 @@ Deno.serve(async (req) => {
       return json({ ok: true, sent: rows.length });
     }
 
+    if (action === "support_reply") {
+      const ticketId = String(body?.ticketId ?? "");
+      const text = String(body?.body ?? "").trim();
+      if (!ticketId || !text) return json({ error: "Ticket and reply text are required" }, 400);
+
+      const { data: ticket } = await admin
+        .from("support_tickets")
+        .select("id,user_id,subject")
+        .eq("id", ticketId)
+        .maybeSingle();
+      if (!ticket) return json({ error: "Ticket not found" }, 404);
+
+      const { data: reply, error: replyErr } = await admin
+        .from("support_replies")
+        .insert({ ticket_id: ticketId, author: "admin", body: text.slice(0, 4000) })
+        .select("id,created_at")
+        .single();
+      if (replyErr) return json({ error: replyErr.message }, 400);
+
+      await admin
+        .from("support_tickets")
+        .update({ admin_reply: text.slice(0, 4000), replied_at: new Date().toISOString() })
+        .eq("id", ticketId);
+
+      // The customer reads the answer in their own message center.
+      if (ticket.user_id) {
+        await admin.from("messages").insert({
+          user_id: ticket.user_id,
+          kind: "assistant",
+          title: `Support: ${String(ticket.subject ?? "your message").slice(0, 100)}`,
+          body: text.slice(0, 4000),
+          level: "normal",
+          related_at: new Date().toISOString(),
+          action_label: "Open the conversation",
+          action_url: `/app/support/${ticketId}`,
+          dedupe_key: `support:${ticketId}:${reply.id}`,
+          metadata: { ticket_id: ticketId, author: "admin", sent_by: caller.id },
+        });
+      }
+
+      return json({ ok: true, reply });
+    }
+
     return json({ error: "Invalid action" }, 400);
 
   } catch (e) {
