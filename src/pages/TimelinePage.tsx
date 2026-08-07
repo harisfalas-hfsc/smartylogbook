@@ -83,12 +83,15 @@ const TimelinePage = () => {
       if (module && m.module !== module) return false;
       if (status !== 'all' && asStatus(m.status) !== status) return false;
       if (query) {
-        const hay = `${m.title} ${m.summary ?? ''} ${m.content ?? ''} ${m.ai_tags.join(' ')}`.toLowerCase();
+        const label = categories.find((c) => c.id === m.module)?.label ?? '';
+        const hay =
+          `${m.title} ${m.summary ?? ''} ${m.content ?? ''} ${m.ai_tags.join(' ')} ${m.module} ${label} ${m.kind ?? ''}`.toLowerCase();
         if (!hay.includes(query.toLowerCase())) return false;
       }
       return true;
     });
-  }, [memories, range, module, query, from, to, status]);
+  }, [memories, range, module, query, from, to, status, categories]);
+
 
   useEffect(() => {
     setVisible(PAGE);
@@ -110,7 +113,9 @@ const TimelinePage = () => {
   const groups = groupByDay(shown);
   const selectedMemory = selected ? memories.find((m) => m.id === selected.id) ?? selected : null;
 
-  const activeFilters = (module ? 1 : 0) + (from || to ? 1 : 0);
+  const activeFilters = (module ? 1 : 0) + (from || to ? 1 : 0) + (query ? 1 : 0);
+  const anyFilter = activeFilters > 0 || status !== 'all' || range !== 'all' || !!applied || !!ask;
+
 
   const weekCount = useMemo(() => {
     const cutoff = Date.now() - 7 * 86400000;
@@ -186,9 +191,9 @@ const TimelinePage = () => {
         )}
       </div>
 
-      {/* One control bar: segmented range + filters */}
+      {/* Row 1 — date range + filters */}
       <div className="animate-fade-up flex items-center gap-2">
-        <div className="flex min-w-0 flex-1 rounded-2xl bg-secondary p-1">
+        <div className="flex h-10 min-w-0 flex-1 rounded-2xl bg-secondary p-1">
           {RANGES.map((r) => (
             <button
               key={r.id}
@@ -198,7 +203,7 @@ const TimelinePage = () => {
                 setTo('');
               }}
               className={cn(
-                'min-w-0 flex-1 rounded-xl px-2 py-1.5 text-xs font-semibold transition-smooth',
+                'min-w-0 flex-1 rounded-xl px-2 text-xs font-semibold transition-smooth',
                 range === r.id ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground',
               )}
             >
@@ -223,42 +228,58 @@ const TimelinePage = () => {
         </button>
       </div>
 
-      {/* Status: open / completed / postponed — same model everywhere */}
-      <div className="animate-fade-up -mx-1 flex gap-1.5 overflow-x-auto px-1 pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {STATUS_FILTERS.map((f) => (
-          <button
-            key={f.id}
-            onClick={() => setStatus(f.id)}
-            className={cn(
-              'shrink-0 rounded-full border px-3 py-1.5 text-[11px] font-semibold transition-smooth active:scale-95',
-              status === f.id
-                ? 'border-primary bg-primary/10 text-primary'
-                : 'border-border bg-card text-muted-foreground',
-            )}
-          >
-            {f.label}
-          </button>
-        ))}
+      {/* Row 2 — status, identical bar; right slot clears everything */}
+      <div className="animate-fade-up flex items-center gap-2">
+        <div className="flex h-10 min-w-0 flex-1 rounded-2xl bg-secondary p-1">
+          {STATUS_FILTERS.map((f) => (
+            <button
+              key={f.id}
+              onClick={() => setStatus(f.id)}
+              className={cn(
+                'min-w-0 flex-1 truncate rounded-xl px-2 text-xs font-semibold transition-smooth',
+                status === f.id ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground',
+              )}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+        <button
+          onClick={clearAll}
+          disabled={!anyFilter}
+          aria-label="Clear all filters"
+          title="Clear all filters"
+          className={cn(
+            'flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border transition-smooth active:scale-95',
+            anyFilter
+              ? 'border-primary bg-primary/10 text-primary'
+              : 'border-border bg-card text-muted-foreground opacity-50',
+          )}
+        >
+          <X className="h-4 w-4" />
+        </button>
       </div>
 
-
-      {/* What it means → Insights */}
+      {/* Row 3 — same rhythm: what it means → Insights */}
       {memories.length > 0 && (
         <Link
           to="/app/insights"
-          className="animate-fade-up flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3 transition-smooth active:scale-[0.99]"
+          className="animate-fade-up flex items-center gap-2 transition-smooth active:scale-[0.99]"
         >
-          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl bg-primary/10">
-            <TrendingUp className="h-4 w-4 text-primary" />
-          </span>
-          <p className="min-w-0 flex-1 text-xs text-muted-foreground">
-            <span className="font-bold text-foreground">
-              {weekCount} {weekCount === 1 ? 'record' : 'records'} this week
+          <span className="flex h-10 min-w-0 flex-1 items-center rounded-2xl bg-secondary px-3">
+            <span className="min-w-0 flex-1 truncate text-xs font-semibold text-muted-foreground">
+              <span className="text-foreground">
+                {weekCount} {weekCount === 1 ? 'record' : 'records'} this week
+              </span>
+              {topCategory ? ` · mostly ${topCategory}` : ''} — see Insights
             </span>
-            {topCategory ? ` · mostly ${topCategory}` : ''} — see what it means in Insights
-          </p>
+          </span>
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-border bg-card text-muted-foreground">
+            <TrendingUp className="h-4 w-4" />
+          </span>
         </Link>
       )}
+
 
       {loading ? (
         <div className="smarty-card flex items-center justify-center p-10">
