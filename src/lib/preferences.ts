@@ -51,12 +51,23 @@ export const usePreferences = () => {
       .eq('user_id', user.id)
       .maybeSingle();
 
+    const browserTz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+
     if (data) {
       setPrefs(data as Preferences);
+      // Keep the stored timezone in step with the device, so scheduled
+      // messages always arrive at the right local hour after a move.
+      if ((data as Preferences).timezone !== browserTz) {
+        void supabase
+          .from('user_preferences')
+          .update({ timezone: browserTz })
+          .eq('user_id', user.id);
+        setPrefs({ ...(data as Preferences), timezone: browserTz });
+      }
     } else {
       const { data: created } = await supabase
         .from('user_preferences')
-        .insert({ user_id: user.id })
+        .insert({ user_id: user.id, timezone: browserTz })
         .select('*')
         .maybeSingle();
       setPrefs((created as Preferences) ?? null);
