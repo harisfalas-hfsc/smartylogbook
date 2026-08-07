@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { Loader2, Search, SlidersHorizontal, Sparkles, Trash2, TrendingUp, X } from 'lucide-react';
 import { groupByDay, useMemories, Memory } from '@/lib/memories';
 import MemoryCard from '@/components/MemoryCard';
+import AssistantAskBar from '@/components/AssistantAskBar';
+
 import MemoryDetailSheet from '@/components/MemoryDetailSheet';
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
