@@ -60,6 +60,19 @@ const Thread = ({ ticket }: { ticket: SupportTicket }) => {
         ))}
       </div>
 
+      {!loading && !hasAssistant && (
+        <button
+          onClick={ask}
+          disabled={asking}
+          className="inline-flex items-center gap-1.5 rounded-2xl border border-primary/30 bg-primary/5 px-3 py-1.5 text-[12px] font-bold text-primary disabled:opacity-50"
+        >
+          {asking ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+          Ask Smarty Assistant to answer
+        </button>
+      )}
+
+
+
       <div className="rounded-2xl border border-border p-2">
         <textarea
           value={draft}
