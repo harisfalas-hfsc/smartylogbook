@@ -451,26 +451,21 @@ const AdminPage = () => {
                 <p className="text-sm font-bold text-foreground">What this tab does</p>
                 <ul className="mt-2 space-y-1.5 text-[12px] leading-relaxed text-muted-foreground">
                   <li>
-                    <strong className="text-foreground">Cost model</strong>, what one Smarty Assistant conversation
-                    actually costs you in AI usage. Change these numbers only if model prices change.
+                    Two numbers only: the <strong className="text-foreground">price</strong> members pay and how many{' '}
+                    <strong className="text-foreground">conversations</strong> they get each month.
                   </li>
                   <li>
-                    <strong className="text-foreground">Plans</strong>, the price customers pay and how many
-                    conversations they get each month. Leave “allowance override” empty to let the target margin decide
-                    it automatically, or type a fixed number (currently 300).
+                    Saving here changes the app immediately: the public pricing page, the plan page, the upgrade screen
+                    and the conversation meter all read these numbers. Nothing is hardcoded.
                   </li>
                   <li>
-                    Whatever you save here is what the public pricing page, the plan page and the conversation meter
-                    show, nothing is hardcoded.
-                  </li>
-                  <li>
-                    <strong className="text-foreground">Important:</strong> this tab does not change what Stripe
-                    charges. The real charge lives on the Stripe price <code>{PREMIUM_PRICE_ID}</code>, shown below. If
-                    the two disagree, customers see one price and pay another, so change the Stripe price first, then
-                    match it here.
+                    <strong className="text-foreground">It does not change what Stripe charges.</strong> The real charge
+                    lives on the Stripe price <code>{PREMIUM_PRICE_ID}</code>, shown below. Change the price in Stripe
+                    first, then match it here, otherwise members see one price and pay another.
                   </li>
                 </ul>
               </div>
+
 
               <div className="smarty-card p-4">
                 <p className="text-sm font-bold text-foreground">What Stripe actually charges</p>
