@@ -146,7 +146,7 @@ const AppShell = () => {
           </div>
           <div className="flex items-center gap-2">
             <Link
-              to="/app/search"
+              to="/app/timeline"
               aria-label="Search"
               className="inline-flex h-8 w-8 items-center justify-center rounded-full border-2 border-primary bg-background text-primary"
             >
