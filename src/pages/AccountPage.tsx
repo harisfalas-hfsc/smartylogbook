@@ -198,9 +198,9 @@ const AccountPage = () => {
           <Download className="h-4 w-4 text-primary" /> Download your data
         </h2>
         <p className="text-xs text-muted-foreground">
-          A machine-readable JSON file with every entry, preference and reminder, plus
-          time-limited download links for every document, photo and receipt you uploaded
-          (right to data portability, Art. 20 GDPR).
+          A ZIP archive with every entry, preference and reminder as JSON and spreadsheet files,
+          plus a <span className="font-semibold">files</span> folder holding the original photos,
+          receipts and documents you uploaded (right to data portability, Art. 20 GDPR).
         </p>
         <button
           onClick={exportData}
