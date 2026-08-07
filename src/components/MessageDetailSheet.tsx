@@ -51,7 +51,7 @@ const MessageDetailSheet = ({
         </DialogHeader>
 
 
-        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-4">
+        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-4 sm:px-6 sm:py-6">
           <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-semibold text-secondary-foreground">
               {style.label}
