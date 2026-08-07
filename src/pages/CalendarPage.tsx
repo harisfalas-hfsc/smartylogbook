@@ -77,6 +77,15 @@ const CalendarPage = () => {
   const todayKey = dayKey(new Date());
   const selectedKey = selected ? dayKey(selected) : null;
   const dayData = selectedKey ? byDay.get(selectedKey) : undefined;
+  const dayScheduled = (dayData?.scheduled ?? []).filter(
+    (r) => statusFilter === 'all' || asStatus(r.status ?? (r.done ? 'done' : 'open')) === statusFilter
+  );
+  const dayLogged = (dayData?.logged ?? []).filter(
+    (m) => statusFilter === 'all' || asStatus(m.status) === statusFilter
+  );
+  const activeReminder = openReminder ? reminders.find((r) => r.id === openReminder.id) ?? openReminder : null;
+  const activeMemory = openMemory ? memories.find((m) => m.id === openMemory.id) ?? openMemory : null;
+
 
   const shift = (delta: number) =>
     setCursor((c) => new Date(c.getFullYear(), c.getMonth() + delta, 1));
