@@ -54,11 +54,14 @@ const ModuleDetailPage = () => {
   /** In a gallery, anything without its own album still belongs to its month. */
   const albumFor = (m: Memory) => albumOf(m) ?? (isMedia ? monthAlbum(m.occurred_at) : null);
 
+  /** A gallery counts files, every other category counts records. */
+  const countOf = (m: Memory) => (isMedia ? Math.max(1, filesOf(m).length) : 1);
+
   const albums = useMemo(() => {
     const map = new Map<string, number>();
     for (const m of memories) {
       const a = albumFor(m);
-      if (a) map.set(a, (map.get(a) ?? 0) + 1);
+      if (a) map.set(a, (map.get(a) ?? 0) + countOf(m));
     }
     return [...map.entries()]
       .map(([name, count]) => ({ name, count }))
@@ -70,6 +73,12 @@ const ModuleDetailPage = () => {
     () => (album ? memories.filter((m) => albumFor(m) === album) : memories),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [memories, album, isMedia]
+  );
+
+  const itemCount = useMemo(
+    () => visible.reduce((n, m) => n + countOf(m), 0),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [visible, isMedia]
   );
 
   const groups = useMemo(() => {
