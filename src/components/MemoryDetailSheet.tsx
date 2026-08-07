@@ -1,6 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar as CalendarIcon, Check, FileText, Link2, MapPin, Pencil, Save, Sparkles, Trash2 } from 'lucide-react';
+import {
+  Calendar as CalendarIcon, Check, FileText, Link2, Loader2, MapPin, Paperclip, Pencil,
+  RotateCcw, Save, Sparkles, Trash2,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Input } from '@/components/ui/input';
@@ -9,6 +12,9 @@ import { kindIcon } from '@/lib/constants';
 import { albumOf, formatBytes, formatDuration, durationOf, isImageMemory, isVideoMemory, useSignedUrl } from '@/lib/media';
 import { useCategories } from '@/lib/categories';
 import { Memory, titleOf } from '@/lib/memories';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { asStatus, isOverdue, shiftDays, STATUS_META } from '@/lib/status';
 import { cn } from '@/lib/utils';
 
 interface Props {
@@ -27,6 +33,7 @@ const toLocalInput = (iso: string) => {
   const off = d.getTimezoneOffset();
   return new Date(d.getTime() - off * 60000).toISOString().slice(0, 16);
 };
+
 
 const MemoryDetailSheet = ({
   memory, open, onOpenChange, allMemories = [], onOpenMemory, onSave, onMove, onDelete,
