@@ -102,7 +102,7 @@ const Dashboard = () => {
             className="flex items-center gap-3 border-b border-border bg-primary/[0.04] px-4 py-3.5 transition-smooth active:opacity-80"
           >
             <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-primary/10 text-primary">
-              <History className="h-5 w-5" />
+              <HistoryIcon className="h-5 w-5" />
             </span>
             <span className="min-w-0 flex-1">
               <span className="block text-base font-extrabold tracking-tight text-foreground">Timeline</span>
