@@ -496,79 +496,69 @@ const AdminPage = () => {
                 )}
               </div>
 
-
-              <div className="smarty-card p-4">
-
-                <p className="flex items-center gap-2 text-sm font-bold text-foreground">
-                  <SlidersHorizontal className="h-4 w-4 text-primary" /> Cost model
-                </p>
-                <p className="mt-1 text-[11px] text-muted-foreground">
-                  Allowances are derived from these numbers so every plan keeps the target margin.
-                  One conversation currently costs {euro(conversationCost(pricing))}.
-                </p>
-                <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                  {([
-                    ['targetMargin', 'Target margin (0-1)', 0.01],
-                    ['inputPricePerMTokensUsd', 'Input $ / 1M tokens', 0.01],
-                    ['outputPricePerMTokensUsd', 'Output $ / 1M tokens', 0.01],
-                    ['avgInputTokensPerConversation', 'Avg input tokens', 500],
-                    ['avgOutputTokensPerConversation', 'Avg output tokens', 100],
-                    ['overhead', 'Overhead factor', 0.05],
-                    ['usdToEur', 'USD → EUR', 0.01],
-                    ['conversationWindowMinutes', 'Conversation window (min)', 5],
-                  ] as const).map(([key, label, step]) => (
-                    <label key={key} className="block">
-                      <span className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">{label}</span>
-                      <input
-                        type="number"
-                        step={step}
-                        value={pricing[key] as number}
-                        onChange={(e) => setPricing((prev) => ({ ...prev, [key]: Number(e.target.value) }))}
-                        className="mt-1 w-full rounded-2xl border border-border bg-card px-3 py-2 text-sm font-semibold text-foreground outline-none"
-                      />
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              <div className="grid gap-3 md:grid-cols-3">
-                {pricing.plans.map((plan, i) => (
-                  <div key={plan.key} className="smarty-card p-4">
-                    <input
-                      value={plan.name}
-                      onChange={(e) => updatePlan(i, { name: e.target.value })}
-                      className="w-full bg-transparent text-sm font-bold text-foreground outline-none"
-                    />
-                    <label className="mt-3 block">
-                      <span className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">Price € / month</span>
-                      <input
-                        type="number"
-                        step={0.5}
-                        value={plan.price}
-                        onChange={(e) => updatePlan(i, { price: Number(e.target.value) })}
-                        className="mt-1 w-full rounded-2xl border border-border bg-card px-3 py-2 text-sm font-semibold text-foreground outline-none"
-                      />
-                    </label>
-                    <label className="mt-2 block">
-                      <span className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">Allowance override</span>
-                      <input
-                        type="number"
-                        placeholder="auto"
-                        value={plan.allowanceOverride ?? ''}
-                        onChange={(e) => updatePlan(i, { allowanceOverride: e.target.value === '' ? null : Number(e.target.value) })}
-                        className="mt-1 w-full rounded-2xl border border-border bg-card px-3 py-2 text-sm font-semibold text-foreground outline-none"
-                      />
-                    </label>
-                    <div className="mt-3 rounded-2xl bg-primary/5 p-3">
-                      <p className="text-lg font-extrabold text-primary">{planAllowance(pricing, plan)}</p>
-                      <p className="text-[11px] text-muted-foreground">
-                        conversations · margin {(planMargin(pricing, plan) * 100).toFixed(0)}% · AI cost{' '}
-                        {euro(planAllowance(pricing, plan) * conversationCost(pricing))}
-                      </p>
+              <div className="grid gap-3 md:grid-cols-2">
+                {pricing.plans.map((plan, i) => {
+                  const allowance = planAllowance(pricing, plan);
+                  const aiCost = allowance * conversationCost(pricing);
+                  return (
+                    <div key={plan.key} className="smarty-card p-4">
+                      <label className="block">
+                        <span className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
+                          Plan name, as members see it
+                        </span>
+                        <input
+                          value={plan.name}
+                          onChange={(e) => updatePlan(i, { name: e.target.value })}
+                          className="mt-1 w-full rounded-2xl border border-border bg-card px-3 py-2 text-sm font-bold text-foreground outline-none"
+                        />
+                      </label>
+                      <label className="mt-3 block">
+                        <span className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
+                          Price € per month
+                        </span>
+                        <input
+                          type="number"
+                          step={0.5}
+                          value={plan.price}
+                          onChange={(e) => updatePlan(i, { price: Number(e.target.value) })}
+                          className="mt-1 w-full rounded-2xl border border-border bg-card px-3 py-2 text-sm font-semibold text-foreground outline-none"
+                        />
+                        <span className="mt-1 block text-[11px] text-muted-foreground">
+                          Shown on the pricing page and the upgrade screen. Must match Stripe above.
+                        </span>
+                      </label>
+                      <label className="mt-3 block">
+                        <span className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
+                          Conversations included each month
+                        </span>
+                        <input
+                          type="number"
+                          step={10}
+                          min={1}
+                          value={plan.allowanceOverride ?? allowance}
+                          onChange={(e) =>
+                            updatePlan(i, { allowanceOverride: e.target.value === '' ? null : Number(e.target.value) })
+                          }
+                          className="mt-1 w-full rounded-2xl border border-border bg-card px-3 py-2 text-sm font-semibold text-foreground outline-none"
+                        />
+                        <span className="mt-1 block text-[11px] text-muted-foreground">
+                          This is the number members see everywhere, and the limit the Assistant enforces. Save it and
+                          the pricing page, plan page and conversation meter change at once.
+                        </span>
+                      </label>
+                      <div className="mt-3 rounded-2xl bg-primary/5 p-3">
+                        <p className="text-[11px] leading-relaxed text-muted-foreground">
+                          At full use, {allowance} conversations cost you about{' '}
+                          <strong className="text-foreground">{euro(aiCost)}</strong> in AI, so you keep{' '}
+                          <strong className="text-foreground">{euro(Math.max(0, plan.price - aiCost))}</strong> of every{' '}
+                          {euro(plan.price)}, a {(planMargin(pricing, plan) * 100).toFixed(0)}% margin.
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
+
 
               <button
                 disabled={busy !== null}
