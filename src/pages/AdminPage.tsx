@@ -12,6 +12,8 @@ import { cn } from '@/lib/utils';
 import {
   DEFAULT_PRICING, PlanConfig, PricingConfig, conversationCost, planAllowance, planMargin,
 } from '@/lib/pricing';
+import { PREMIUM_PRICE_ID, getStripeEnvironment } from '@/lib/stripe';
+
 import AdminJobsTab from '@/components/admin/AdminJobsTab';
 import AdminMessagesTab from '@/components/admin/AdminMessagesTab';
 import AdminSupportTab from '@/components/admin/AdminSupportTab';
