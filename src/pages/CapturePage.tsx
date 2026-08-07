@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Brain, Camera, FileText, FolderTree, Link2, Loader2, Mic, Paperclip, SlidersHorizontal, Sparkles, Square, X } from 'lucide-react';
+import { Brain, Camera, FileText, FolderTree, Link2, Loader2, Mic, Paperclip, Send, SlidersHorizontal, Sparkles, Square, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -489,18 +489,28 @@ const CapturePage = () => {
       <header className="animate-fade-up">
         <h1 className="text-2xl font-extrabold tracking-tight text-foreground">Quick Capture</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Type, speak or snap it. The AI reads it, files it and connects it to what you already have, you never pick a category.
+          Type, speak or snap it. Smarty Assistant reads it, files it and connects it to what you already have, you never pick a category.
         </p>
       </header>
 
       <div className="smarty-card animate-fade-up p-4">
+        <div className="mb-3 flex items-center gap-2">
+          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-2xl bg-gradient-primary text-primary-foreground">
+            <Send className="h-4 w-4" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-extrabold text-foreground">Tell Smarty Assistant</p>
+            <p className="text-[11px] text-muted-foreground">It understands and files it for you.</p>
+          </div>
+        </div>
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="What just happened?"
+          placeholder="Tell Smarty Assistant what just happened…"
           rows={5}
           className="w-full resize-none bg-transparent text-[15px] leading-relaxed text-foreground outline-none placeholder:text-muted-foreground"
         />
+
 
         {preview && (
           <div className="relative mt-3 overflow-hidden rounded-2xl border border-border">

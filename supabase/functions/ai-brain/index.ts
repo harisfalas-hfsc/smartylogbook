@@ -209,8 +209,63 @@ for (const mode of ["classify", "chat", "brief", "coach", "search", "insights", 
 
 
 
+/**
+ * Salvage a JSON object that was cut off mid-generation: drop the dangling tail,
+ * close any open string and balance the remaining brackets.
+ */
+function repairJson(text: string): string {
+  const start = text.indexOf("{");
+  if (start < 0) return "";
+  let s = text.slice(start);
+  // Cut a trailing incomplete token (e.g. `"tit`) back to the last complete value.
+  const stack: string[] = [];
+  let inString = false;
+  let escaped = false;
+  let lastSafe = -1;
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i];
+    if (inString) {
+      if (escaped) escaped = false;
+      else if (c === "\\") escaped = true;
+      else if (c === '"') inString = false;
+      continue;
+    }
+    if (c === '"') inString = true;
+    else if (c === "{" || c === "[") stack.push(c === "{" ? "}" : "]");
+    else if (c === "}" || c === "]") stack.pop();
+    if (!inString && (c === "}" || c === "]" || c === '"' || /[0-9a-z]/i.test(c))) lastSafe = i;
+  }
+  if (inString) {
+    // reopen-safe: truncate to before the unterminated string
+    const cut = s.lastIndexOf('"', lastSafe);
+    s = s.slice(0, cut > 0 ? cut : lastSafe + 1);
+  } else {
+    s = s.slice(0, lastSafe + 1);
+  }
+  s = s.replace(/,\s*$/, "");
+  // Recompute open brackets on the truncated text.
+  const open: string[] = [];
+  inString = false;
+  escaped = false;
+  for (const c of s) {
+    if (inString) {
+      if (escaped) escaped = false;
+      else if (c === "\\") escaped = true;
+      else if (c === '"') inString = false;
+      continue;
+    }
+    if (c === '"') inString = true;
+    else if (c === "{") open.push("}");
+    else if (c === "[") open.push("]");
+    else if (c === "}" || c === "]") open.pop();
+  }
+  if (inString) s += '"';
+  return s + open.reverse().join("");
+}
+
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+
 
 /** Text that represents a memory for semantic search. */
 const memoryText = (m: Record<string, unknown>) =>
@@ -906,12 +961,25 @@ Deno.serve(async (req) => {
           { role: "user", content: userContent },
         ]);
 
-    const maxTokens = mode === "chat" || mode === "search" ? 900 : 2000;
+    const maxTokens = mode === "chat" || mode === "search"
+      ? 900
+      : mode === "insights" || mode === "train"
+        ? 4000
+        : 2000;
+    // Modes that must return JSON get the gateway's JSON mode so the reply can never
+    // come back wrapped in prose or markdown.
+    const jsonMode = ["classify", "extract", "insights", "train", "brief", "coach"].includes(mode);
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ model: MODEL, messages, max_tokens: maxTokens }),
+      body: JSON.stringify({
+        model: MODEL,
+        messages,
+        max_tokens: maxTokens,
+        ...(jsonMode ? { response_format: { type: "json_object" } } : {}),
+      }),
     });
+
 
     if (response.status === 429) {
       return new Response(JSON.stringify({ error: "Rate limit reached, please try again shortly." }), {
@@ -995,20 +1063,23 @@ Deno.serve(async (req) => {
     }
 
     const cleaned = raw.replace(/```json/gi, "").replace(/```/g, "").trim();
-    let parsed: unknown;
-    try {
-      parsed = JSON.parse(cleaned);
-    } catch {
-      const match = cleaned.match(/\{[\s\S]*\}/);
-      parsed = match ? JSON.parse(match[0]) : null;
+    let parsed: unknown = null;
+    for (const candidate of [cleaned, cleaned.match(/\{[\s\S]*\}/)?.[0] ?? "", repairJson(cleaned)]) {
+      if (!candidate) continue;
+      try {
+        parsed = JSON.parse(candidate);
+        break;
+      } catch { /* try the next candidate */ }
     }
 
     if (!parsed) {
+      console.error("Could not parse AI response", mode, cleaned.slice(0, 400));
       return new Response(JSON.stringify({ error: "Could not parse AI response" }), {
         status: 502,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
 
     /* ---- the daily brief also lands in the Message Center ---- */
     if (mode === "brief" || mode === "coach") {

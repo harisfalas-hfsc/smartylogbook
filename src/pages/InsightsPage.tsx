@@ -19,6 +19,8 @@ import { useFacts } from '@/lib/facts';
 import { useMoney } from '@/lib/money';
 import { MODULES, getModule } from '@/lib/constants';
 import TrendsSection from '@/components/TrendsSection';
+import AssistantAskBar from '@/components/AssistantAskBar';
+
 import MoneySection from '@/components/MoneySection';
 
 interface Insights {
@@ -56,13 +58,22 @@ const Card = ({
 
 const subCard = 'smarty-sub rounded-2xl border-2 border-primary/25 bg-secondary/40 p-3.5';
 
+const CACHE_KEY = 'smarty.insights.v1';
+
 const InsightsPage = () => {
   const { memories, loading: memLoading } = useMemories({ limit: 200 });
   const { trends } = useFacts({ limit: 300 });
   const { items: moneyItems } = useMoney();
   const hasNumbers = trends.length > 0;
   const hasMoney = moneyItems.length > 0;
-  const [insights, setInsights] = useState<Insights | null>(null);
+  const [insights, setInsights] = useState<Insights | null>(() => {
+    try {
+      const raw = localStorage.getItem(CACHE_KEY);
+      return raw ? (JSON.parse(raw).insights as Insights) : null;
+    } catch {
+      return null;
+    }
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -70,10 +81,11 @@ const InsightsPage = () => {
     if (memories.length === 0) return;
     setLoading(true);
     setError(null);
+    // Only the most recent slice is sent: it keeps the analysis fast and current.
     const { data, error: fnError } = await supabase.functions.invoke('ai-brain', {
       body: {
         mode: 'insights',
-        memories: memories.map((m) => ({
+        memories: memories.slice(0, 80).map((m) => ({
           title: m.title, summary: m.summary, module: m.module, kind: m.kind,
           amount: m.amount, mood: m.mood, tags: m.ai_tags, occurred_at: m.occurred_at,
         })),
@@ -81,16 +93,30 @@ const InsightsPage = () => {
     });
     setLoading(false);
     if (fnError || data?.error) {
-      setError(data?.error ?? 'Could not analyse right now. Please try again.');
+      setError(data?.error ?? 'Smarty Assistant could not finish the analysis. Tap refresh to try again.');
       return;
     }
     setInsights(data as Insights);
+    try {
+      localStorage.setItem(CACHE_KEY, JSON.stringify({ insights: data, count: memories.length, at: Date.now() }));
+    } catch { /* cache is best-effort */ }
   };
 
   useEffect(() => {
-    if (!memLoading && memories.length > 0 && !insights) analyse();
+    if (memLoading || memories.length === 0) return;
+    // Cached insights render instantly; re-analyse only when the logbook changed
+    // or the cache is older than a day.
+    let cached: { count?: number; at?: number } | null = null;
+    try {
+      const raw = localStorage.getItem(CACHE_KEY);
+      cached = raw ? JSON.parse(raw) : null;
+    } catch { /* ignore */ }
+    const fresh =
+      cached && cached.count === memories.length && Date.now() - (cached.at ?? 0) < 86400000;
+    if (!fresh) analyse();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [memLoading, memories.length]);
+
 
   const total = MODULES.reduce((n, m) => n + memories.filter((x) => x.module === m.id).length, 0);
 
@@ -114,6 +140,11 @@ const InsightsPage = () => {
         </button>
       </header>
 
+      <AssistantAskBar
+        placeholder="Ask Smarty Assistant about your insights…"
+        hint="Same assistant, everywhere you can type."
+      />
+
       {memories.length === 0 ? (
         <div className="smarty-card p-10 text-center">
           <Sparkles className="mx-auto h-6 w-6 text-primary" />
@@ -122,11 +153,12 @@ const InsightsPage = () => {
         </div>
       ) : loading && !insights ? (
         <div className="smarty-card flex items-center justify-center gap-2 p-10 text-sm text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" /> Reading your logbook…
+          <Loader2 className="h-4 w-4 animate-spin" /> Smarty Assistant is reading your logbook…
         </div>
-      ) : error ? (
+      ) : error && !insights ? (
         <div className="smarty-card p-6 text-center text-sm text-muted-foreground">{error}</div>
       ) : insights ? (
+
         <>
           {insights.overview && (
             <section className="smarty-card animate-fade-up p-4 sm:p-5">
