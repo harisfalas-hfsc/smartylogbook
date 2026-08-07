@@ -21,6 +21,10 @@ const MemoryCard = ({ memory, onDelete, onMove, onOpen }: Props) => {
   const { categories, getCategory } = useCategories();
   const module = getCategory(memory.module);
   const Icon = kindIcon(memory.kind);
+  const status = asStatus(memory.status);
+  const statusMeta = STATUS_META[status];
+  const overdue = isOverdue(memory.due_at, status);
+
 
   return (
     <article
