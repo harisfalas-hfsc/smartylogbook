@@ -187,6 +187,33 @@ Deno.serve(async (req) => {
       return json({ config: data?.config ?? {} });
     }
 
+    /**
+     * What Stripe will actually charge. The pricing table only drives what the
+     * app *shows*; the real charge lives on the Stripe price with lookup key
+     * `premium_monthly`. The admin panel compares the two so they cannot drift.
+     */
+    if (action === "stripe_price") {
+      const env = String(body?.environment ?? "sandbox") === "live" ? "live" : "sandbox";
+      try {
+        const stripe = createStripeClient(env);
+        const prices = await stripe.prices.list({ lookup_keys: ["premium_monthly"], limit: 1 });
+        const p = prices.data[0];
+        if (!p) return json({ price: null, environment: env, error: "No Stripe price with lookup key premium_monthly" });
+        return json({
+          price: {
+            amount: (p.unit_amount ?? 0) / 100,
+            currency: (p.currency ?? "eur").toUpperCase(),
+            interval: p.recurring?.interval ?? "one-off",
+          },
+          environment: env,
+        });
+      } catch (e) {
+        return json({ price: null, environment: env, error: e instanceof Error ? e.message : "Stripe unavailable" });
+      }
+    }
+
+
+
     if (action === "save_pricing") {
       const config = body?.config;
       if (!config || typeof config !== "object") return json({ error: "Invalid config" }, 400);
