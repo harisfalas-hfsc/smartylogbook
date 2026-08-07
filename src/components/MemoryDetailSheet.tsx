@@ -238,7 +238,10 @@ const MemoryDetailSheet = ({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="max-h-[92vh] overflow-y-auto rounded-t-3xl border-border p-0">
+      <SheetContent
+        side="bottom"
+        className="max-h-[92vh] overflow-y-auto rounded-t-3xl border-border p-0 [&>button:last-of-type]:hidden sm:mx-auto sm:max-w-2xl sm:rounded-b-3xl"
+      >
         <SheetHeader className="sticky top-0 z-10 space-y-0 border-b border-border bg-background/95 px-4 py-3 backdrop-blur-xl">
           <div className="flex items-center gap-3">
             <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ${module.tint}`}>
