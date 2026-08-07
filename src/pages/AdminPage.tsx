@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import {
-  ArrowLeft, BadgeCheck, ChevronRight, CreditCard, Crown, LifeBuoy, Loader2, Megaphone, RefreshCw, Save, Search, ShieldCheck, SlidersHorizontal, Timer, TrendingUp, UserPlus, Users, XCircle,
+  ArrowLeft, BadgeCheck, ChevronRight, CreditCard, Crown, LifeBuoy, Loader2, Megaphone, RefreshCw, Search, ShieldCheck, Timer, TrendingUp, UserPlus, Users, XCircle,
 } from 'lucide-react';
 
 import { toast } from 'sonner';
@@ -10,15 +10,14 @@ import {
 } from '@/lib/admin';
 import { cn } from '@/lib/utils';
 import {
-  DEFAULT_PRICING, PlanConfig, PricingConfig, conversationCost, planAllowance, planMargin,
+  DEFAULT_PRICING, PricingConfig,
 } from '@/lib/pricing';
-import { PREMIUM_PRICE_ID, getStripeEnvironment } from '@/lib/stripe';
 
 import AdminJobsTab from '@/components/admin/AdminJobsTab';
 import AdminMessagesTab from '@/components/admin/AdminMessagesTab';
 import AdminSupportTab from '@/components/admin/AdminSupportTab';
 
-const TABS = ['Revenue', 'Customers', 'Subscriptions', 'Payments', 'Pricing', 'Jobs', 'Messages', 'Support'] as const;
+const TABS = ['Revenue', 'Customers', 'Subscriptions', 'Payments', 'Jobs', 'Messages', 'Support'] as const;
 type Tab = (typeof TABS)[number];
 
 const TAB_META: Record<Tab, { icon: typeof Users; blurb: string; tint: string }> = {
@@ -26,7 +25,6 @@ const TAB_META: Record<Tab, { icon: typeof Users; blurb: string; tint: string }>
   Customers: { icon: Users, blurb: 'Every account, create, grant, revoke', tint: 'from-primary/15 to-primary/5 text-primary' },
   Subscriptions: { icon: Crown, blurb: 'Active, granted and canceled plans', tint: 'from-amber-500/15 to-amber-500/5 text-amber-600' },
   Payments: { icon: CreditCard, blurb: 'Recent transactions and their status', tint: 'from-sky-500/15 to-sky-500/5 text-sky-600' },
-  Pricing: { icon: SlidersHorizontal, blurb: 'Price and conversations included', tint: 'from-violet-500/15 to-violet-500/5 text-violet-600' },
   Jobs: { icon: Timer, blurb: 'Scheduled automations and their runs', tint: 'from-rose-500/15 to-rose-500/5 text-rose-600' },
   Messages: { icon: Megaphone, blurb: 'Everything sent, edit or broadcast', tint: 'from-cyan-500/15 to-cyan-500/5 text-cyan-600' },
   Support: { icon: LifeBuoy, blurb: 'Customer messages from the contact page', tint: 'from-orange-500/15 to-orange-500/5 text-orange-600' },
@@ -76,12 +74,6 @@ const AdminPage = () => {
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pricing, setPricing] = useState<PricingConfig>(DEFAULT_PRICING);
-  // What Stripe will really charge, so the numbers below can never silently
-  // disagree with the card the customer is billed on.
-  const [stripePrice, setStripePrice] = useState<
-    { amount: number; currency: string; interval: string } | null | 'loading'
-  >('loading');
-  const [stripeError, setStripeError] = useState<string | null>(null);
 
   const [grantPlan, setGrantPlan] = useState<string>(DEFAULT_PRICING.plans[0]?.key ?? 'premium');
   const [newUser, setNewUser] = useState({ email: '', password: '', username: '', months: 0 });
@@ -103,15 +95,6 @@ const AdminPage = () => {
       const plans = Array.isArray(cfg.plans) && cfg.plans.length ? cfg.plans : DEFAULT_PRICING.plans;
       setPricing({ ...DEFAULT_PRICING, ...cfg, plans });
       setGrantPlan((prev) => (plans.some((p) => p.key === prev) ? prev : plans[0]?.key ?? 'premium'));
-      adminApi<{ price: typeof stripePrice; error?: string }>('stripe_price', { environment: getStripeEnvironment() })
-        .then((r) => {
-          setStripePrice((r.price as { amount: number; currency: string; interval: string } | null) ?? null);
-          setStripeError(r.error ?? null);
-        })
-        .catch((e) => {
-          setStripePrice(null);
-          setStripeError(e instanceof Error ? e.message : 'Stripe unavailable');
-        });
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load admin data');
     } finally {
@@ -148,12 +131,6 @@ const AdminPage = () => {
 
   const filtered = users.filter((u) => u.email.toLowerCase().includes(search.trim().toLowerCase()));
   const subscribers = users.filter((u) => u.plan === 'premium' || u.subscription_status === 'canceled');
-
-  const updatePlan = (i: number, patch: Partial<PlanConfig>) =>
-    setPricing((prev) => ({
-      ...prev,
-      plans: prev.plans.map((p, idx) => (idx === i ? { ...p, ...patch } : p)),
-    }));
 
   const UserRow = ({ u }: { u: AdminUser }) => (
     <div className="smarty-card p-4">
@@ -220,7 +197,6 @@ const AdminPage = () => {
       case 'Customers': return String(stats.totalUsers);
       case 'Subscriptions': return String(stats.activeSubscriptions);
       case 'Payments': return String(stats.paymentsCount);
-      case 'Pricing': return euro(pricing.plans[0]?.price ?? 9.99);
       default: return '';
     }
   };
