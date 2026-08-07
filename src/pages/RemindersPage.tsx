@@ -60,10 +60,19 @@ const RemindersPage = () => {
 
   const row = (r: (typeof reminders)[number]) => {
     const Icon = reminderIcon(r.type);
+    const st = asStatus(r.status ?? (r.done ? 'done' : 'open'));
+    const meta = STATUS_META[st];
     return (
-      <div key={r.id} className="flex items-center gap-3 px-3 py-3">
+      <div
+        key={r.id}
+        role="button"
+        tabIndex={0}
+        onClick={() => setOpen(r)}
+        onKeyDown={(e) => { if (e.key === 'Enter') setOpen(r); }}
+        className="flex cursor-pointer items-center gap-3 px-3 py-3 transition-smooth active:scale-[0.99]"
+      >
         <button
-          onClick={() => toggleDone(r.id, !r.done)}
+          onClick={(e) => { e.stopPropagation(); toggleDone(r.id, !r.done); }}
           aria-label={r.done ? 'Mark as pending' : 'Mark as done'}
           className={cn(
             'flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-smooth active:scale-95',
@@ -76,13 +85,20 @@ const RemindersPage = () => {
           <p className={cn('truncate text-sm font-semibold text-foreground', r.done && 'line-through opacity-60')}>
             {r.title}
           </p>
-          <p className="text-[11px] text-muted-foreground">
+          <p className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
             {new Date(r.due_at).toLocaleString([], { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
             {r.amount ? ` · ${r.amount}` : ''}
+            {isOverdue(r.due_at, st) && <span className="font-semibold text-destructive">Overdue</span>}
+            {r.attachment_url && <Paperclip className="h-3 w-3" />}
           </p>
         </div>
+        {st !== 'open' && (
+          <span className={cn('shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold', meta.badge)}>
+            {meta.label}
+          </span>
+        )}
         <button
-          onClick={() => remove(r.id)}
+          onClick={(e) => { e.stopPropagation(); remove(r.id); }}
           aria-label="Delete reminder"
           className="flex h-8 w-8 items-center justify-center rounded-xl text-muted-foreground transition-smooth active:scale-95"
         >
@@ -91,6 +107,7 @@ const RemindersPage = () => {
       </div>
     );
   };
+
 
   return (
     <div className="space-y-5">
