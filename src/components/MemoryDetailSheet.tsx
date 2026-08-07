@@ -44,8 +44,12 @@ const MemoryDetailSheet = ({
   const [draft, setDraft] = useState<Partial<Memory>>({});
   const [tagsText, setTagsText] = useState('');
   const [saving, setSaving] = useState(false);
+  const [changingStatus, setChangingStatus] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [album, setAlbum] = useState('');
+  const [localStatus, setLocalStatus] = useState<'open' | 'done' | 'postponed'>('open');
+  const [localDueAt, setLocalDueAt] = useState<string | null>(null);
+  const [localCompletedAt, setLocalCompletedAt] = useState<string | null>(null);
   const fileInput = useRef<HTMLInputElement | null>(null);
   const attachment = useSignedUrl(memory?.attachment_url);
   const { categories, getCategory } = useCategories();
@@ -63,24 +67,33 @@ const MemoryDetailSheet = ({
     });
     setTagsText((memory.ai_tags ?? []).join(', '));
     setAlbum(albumOf(memory) ?? '');
+    setLocalStatus(asStatus(memory.status));
+    setLocalDueAt(memory.due_at ?? null);
+    setLocalCompletedAt(memory.completed_at ?? null);
   }, [memory]);
 
   if (!memory) return null;
   const module = getCategory(memory.module);
   const Icon = kindIcon(memory.kind);
   const related = allMemories.filter((m) => memory.related_ids?.includes(m.id));
-  const status = asStatus(memory.status);
+  const status = localStatus;
   const statusMeta = STATUS_META[status];
-  const overdue = isOverdue(memory.due_at, status);
+  const overdue = isOverdue(localDueAt, status);
 
   const setStatus = async (next: 'open' | 'done' | 'postponed', dueAt?: string) => {
-    if (!onSave) return;
+    if (!onSave || changingStatus) return;
+    setChangingStatus(true);
+    const completedAt = next === 'done' ? new Date().toISOString() : null;
     const res = await onSave(memory.id, {
       status: next,
-      completed_at: next === 'done' ? new Date().toISOString() : null,
+      completed_at: completedAt,
       ...(dueAt ? { due_at: dueAt } : {}),
     });
+    setChangingStatus(false);
     if (res && 'error' in res && res.error) return toast.error('Could not update this record');
+    setLocalStatus(next);
+    setLocalCompletedAt(completedAt);
+    if (dueAt) setLocalDueAt(dueAt);
     toast.success(
       next === 'done' ? 'Marked as completed' : next === 'postponed' ? 'Postponed' : 'Reopened'
     );
@@ -167,27 +180,36 @@ const MemoryDetailSheet = ({
 
         <div className="space-y-5 px-4 pb-10 pt-4">
           {onSave && (
-            <div className="space-y-2">
+            <div className={cn(
+              'space-y-3 rounded-2xl border p-4 transition-colors',
+              status === 'done' && 'border-success/30 bg-success/10',
+              status === 'postponed' && 'border-warning/30 bg-warning/10',
+              status === 'open' && 'border-border bg-secondary/50'
+            )}>
               <div className="flex flex-wrap items-center gap-2">
-                <span className={cn('rounded-full px-2.5 py-1 text-[10px] font-bold', statusMeta.badge)}>
+                <span className={cn('rounded-full px-3 py-1.5 text-xs font-extrabold', statusMeta.badge)}>
                   {statusMeta.label}
                 </span>
-                {memory.due_at && (
+                {localDueAt && (
                   <span className={cn('text-[11px] font-medium', overdue ? 'text-destructive' : 'text-muted-foreground')}>
-                    Due {new Date(memory.due_at).toLocaleString([], { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                    Due {new Date(localDueAt).toLocaleString([], { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                     {overdue ? ' · overdue' : ''}
                   </span>
                 )}
-                {status === 'done' && memory.completed_at && (
+                {status === 'done' && localCompletedAt && (
                   <span className="text-[11px] text-muted-foreground">
-                    on {new Date(memory.completed_at).toLocaleDateString([], { day: 'numeric', month: 'short' })}
+                    on {new Date(localCompletedAt).toLocaleDateString([], { day: 'numeric', month: 'short' })}
                   </span>
                 )}
               </div>
+              <p className="text-xs font-medium text-foreground">
+                {status === 'done' ? 'This record is completed.' : status === 'postponed' ? `Moved to ${localDueAt ? new Date(localDueAt).toLocaleString([], { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'a later date'}.` : 'This record still needs attention.'}
+              </p>
               <div className="flex flex-wrap gap-2">
                 <button
                   type="button"
                   onClick={() => setStatus(status === 'done' ? 'open' : 'done')}
+                  disabled={changingStatus}
                   className={cn(
                     'inline-flex items-center gap-1.5 rounded-2xl px-3.5 py-2 text-xs font-bold transition-smooth active:scale-95',
                     status === 'done'
@@ -201,14 +223,16 @@ const MemoryDetailSheet = ({
                 </button>
                 <button
                   type="button"
-                  onClick={() => setStatus('postponed', shiftDays(memory.due_at ?? memory.occurred_at, 1))}
+                  onClick={() => setStatus('postponed', shiftDays(localDueAt ?? memory.occurred_at, 1))}
+                  disabled={changingStatus}
                   className="rounded-2xl border border-border bg-card px-3.5 py-2 text-xs font-semibold text-foreground transition-smooth active:scale-95"
                 >
                   Postpone 1 day
                 </button>
                 <button
                   type="button"
-                  onClick={() => setStatus('postponed', shiftDays(memory.due_at ?? memory.occurred_at, 7))}
+                  onClick={() => setStatus('postponed', shiftDays(localDueAt ?? memory.occurred_at, 7))}
+                  disabled={changingStatus}
                   className="rounded-2xl border border-border bg-card px-3.5 py-2 text-xs font-semibold text-foreground transition-smooth active:scale-95"
                 >
                   Next week
@@ -218,7 +242,8 @@ const MemoryDetailSheet = ({
           )}
 
           {editing ? (
-            <div className="space-y-3">
+            <div className="space-y-3 rounded-2xl border-2 border-primary/30 bg-primary/5 p-4">
+              <p className="text-sm font-extrabold text-foreground">Edit record details</p>
               <div>
                 <label className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">Title</label>
                 <Input value={draft.title ?? ''} onChange={(e) => setDraft({ ...draft, title: e.target.value })} className="mt-1" />
