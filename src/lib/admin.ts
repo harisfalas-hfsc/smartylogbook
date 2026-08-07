@@ -208,3 +208,78 @@ export const SCHEDULE_PRESETS: { label: string; value: string }[] = [
   { label: 'Daily 20:00 UTC', value: '0 20 * * *' },
   { label: 'Weekly Monday 08:00 UTC', value: '0 8 * * 1' },
 ];
+
+/**
+ * Plain-language catalogue of every message kind the app can produce.
+ * `source` says which automation writes it, so the Messages tab and the Jobs
+ * tab describe the same thing in the same words.
+ */
+export interface KindInfo {
+  label: string;
+  what: string;
+  source: string;
+  /** Job template id that produces this kind, when it is automated. */
+  job?: string;
+}
+
+export const KIND_INFO: Record<string, KindInfo> = {
+  tip: {
+    label: 'Daily tip',
+    what: 'One short hint on how to use Smarty Logbook, written by Smarty Assistant.',
+    source: 'Automation “Daily assistant tip”, 6 a.m. in each member’s own timezone.',
+    job: 'daily_tip',
+  },
+  insight: {
+    label: 'Daily insight',
+    what: 'What is due today, what is coming tomorrow, what was missed, and memories from previous years.',
+    source: 'Automation “Daily insight message”.',
+    job: 'daily_insights',
+  },
+  recap: {
+    label: 'Weekly recap',
+    what: 'What was logged, completed and missed last week, and what is scheduled next week.',
+    source: 'Automation “Weekly recap message”, Monday mornings.',
+    job: 'weekly_recap',
+  },
+  brief: {
+    label: 'Daily brief',
+    what: 'The Assistant’s morning brief shown on the home screen.',
+    source: 'Smarty Assistant, when the member opens the app.',
+  },
+  welcome: {
+    label: 'Welcome',
+    what: 'The first message a new member receives after signing up.',
+    source: 'Sent once, automatically, at sign-up.',
+  },
+  announcement: {
+    label: 'Announcement',
+    what: 'A message you wrote yourself and sent from this tab.',
+    source: 'You, from “Send an announcement”.',
+  },
+  assistant: {
+    label: 'Assistant',
+    what: 'A follow-up the Assistant decided to send about something the member captured.',
+    source: 'Smarty Assistant.',
+  },
+  calendar: { label: 'Calendar', what: 'A reminder about something scheduled.', source: 'Automation “Proactive scan”.', job: 'proactive_scan' },
+  event: { label: 'Event', what: 'A reminder about an upcoming event.', source: 'Automation “Proactive scan”.', job: 'proactive_scan' },
+  task: { label: 'Task', what: 'A reminder about a task that is due or was missed.', source: 'Automation “Proactive scan”.', job: 'proactive_scan' },
+  bill: { label: 'Bill', what: 'A reminder about a payment or subscription that is due.', source: 'Automation “Proactive scan”.', job: 'proactive_scan' },
+  health: { label: 'Health', what: 'A nudge about a check-up or a reading that is out of date.', source: 'Automation “Proactive scan”.', job: 'proactive_scan' },
+  document: { label: 'Document', what: 'A warning that a document is expiring.', source: 'Automation “Proactive scan”.', job: 'proactive_scan' },
+  plan: { label: 'Your plan', what: 'A notice about renewal, cancellation or membership status.', source: 'Automation “Proactive scan”.', job: 'proactive_scan' },
+  info: { label: 'Update', what: 'A general notification.', source: 'The app.' },
+};
+
+export const kindInfo = (kind?: string | null): KindInfo =>
+  KIND_INFO[kind ?? ''] ?? { label: kind ?? 'Update', what: 'A notification sent to the member.', source: 'The app.' };
+
+/** Message kinds a scheduled job produces, for the Jobs tab. */
+export const jobKinds = (job: CronJob): string[] => {
+  const c = `${job.jobname} ${job.command}`.toLowerCase();
+  if (c.includes('daily-tip')) return ['tip'];
+  if (c.includes('"mode":"recap"') || c.includes('weekly-recap')) return ['recap'];
+  if (c.includes('daily-insights')) return ['insight'];
+  if (c.includes('proactive-scan')) return ['task', 'bill', 'health', 'document', 'plan', 'calendar'];
+  return [];
+};
