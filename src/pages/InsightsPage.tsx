@@ -19,6 +19,8 @@ import { useFacts } from '@/lib/facts';
 import { useMoney } from '@/lib/money';
 import { MODULES, getModule } from '@/lib/constants';
 import TrendsSection from '@/components/TrendsSection';
+import AssistantAskBar from '@/components/AssistantAskBar';
+
 import MoneySection from '@/components/MoneySection';
 
 interface Insights {
