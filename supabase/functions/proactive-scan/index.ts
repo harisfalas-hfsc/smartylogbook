@@ -109,8 +109,14 @@ Deno.serve(async (req) => {
   const staleAlertIds = (existingReminderAlerts ?? [])
     .filter((a) => !activeReminderKeys.has(String(a.dedupe_key)))
     .map((a) => a.id);
+  const staleReminderKeys = (existingReminderAlerts ?? [])
+    .filter((a) => !activeReminderKeys.has(String(a.dedupe_key)))
+    .map((a) => `scan:${String(a.dedupe_key)}`);
   if (staleAlertIds.length) {
     await db.from("proactive_alerts").update({ dismissed: true, seen: true }).in("id", staleAlertIds);
+  }
+  if (staleReminderKeys.length) {
+    await db.from("messages").delete().in("dedupe_key", staleReminderKeys);
   }
 
   /* ---- recurring money items, same cadence ---- */
