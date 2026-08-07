@@ -463,8 +463,44 @@ const AdminPage = () => {
                     Whatever you save here is what the public pricing page, the plan page and the conversation meter
                     show, nothing is hardcoded.
                   </li>
+                  <li>
+                    <strong className="text-foreground">Important:</strong> this tab does not change what Stripe
+                    charges. The real charge lives on the Stripe price <code>{PREMIUM_PRICE_ID}</code>, shown below. If
+                    the two disagree, customers see one price and pay another, so change the Stripe price first, then
+                    match it here.
+                  </li>
                 </ul>
               </div>
+
+              <div className="smarty-card p-4">
+                <p className="text-sm font-bold text-foreground">What Stripe actually charges</p>
+                {stripePrice === 'loading' ? (
+                  <p className="mt-1 text-[12px] text-muted-foreground">Checking Stripe…</p>
+                ) : stripePrice ? (
+                  <>
+                    <p className="mt-1 text-2xl font-extrabold text-foreground">
+                      {stripePrice.currency === 'EUR' ? euro(stripePrice.amount) : `${stripePrice.amount} ${stripePrice.currency}`}
+                      <span className="ml-1 text-sm font-semibold text-muted-foreground">
+                        / {stripePrice.interval}
+                      </span>
+                    </p>
+                    <p className="text-[11px] text-muted-foreground">
+                      Live from Stripe, price <code>{PREMIUM_PRICE_ID}</code>, {getStripeEnvironment()} mode.
+                    </p>
+                    {Math.abs((pricing.plans[0]?.price ?? 0) - stripePrice.amount) > 0.001 && (
+                      <p className="mt-2 rounded-2xl bg-destructive/10 px-3 py-2 text-[12px] font-semibold text-destructive">
+                        Mismatch: the app advertises {euro(pricing.plans[0]?.price ?? 0)} but Stripe bills{' '}
+                        {euro(stripePrice.amount)}. Fix one of them.
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  <p className="mt-1 text-[12px] text-muted-foreground">
+                    Could not read the Stripe price. {stripeError}
+                  </p>
+                )}
+              </div>
+
 
               <div className="smarty-card p-4">
 
