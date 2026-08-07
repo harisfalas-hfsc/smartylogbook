@@ -139,6 +139,11 @@ export const useSubscription = () => {
    * the billing cycle (and the conversation allowance) restarts from today.
    */
   const renewNow = async () => {
+    if (user && isAdmin && !isActive(sub)) {
+      resetAdminCycle(user.id);
+      await load();
+      return { error: null };
+    }
     const { data, error } = await supabase.functions.invoke('account', { body: { action: 'renew' } });
     await load();
     if (error) return { error: error.message };
