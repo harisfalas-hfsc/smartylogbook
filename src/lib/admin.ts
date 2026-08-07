@@ -185,29 +185,62 @@ export const describeJob = (job: CronJob) => {
 };
 
 
-/** Human-readable cron expression, e.g. "10 * * * *" → "every hour at :10". */
+const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+/** The same UTC clock time expressed in the admin's own timezone. */
+const localEquivalent = (hour: number, minute: number) => {
+  const d = new Date();
+  d.setUTCHours(hour, minute, 0, 0);
+  return d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false });
+};
+
+/**
+ * Plain-English cron expression, with the admin's local time in brackets so
+ * nobody has to translate UTC in their head.
+ * e.g. "5 * * * *" → "Every hour, at 5 minutes past the hour".
+ */
 export const describeSchedule = (expr: string) => {
   const parts = expr.trim().split(/\s+/);
   if (parts.length !== 5) return expr;
   const [min, hour, dom, mon, dow] = parts;
-  if (min === '*' && hour === '*') return 'every minute';
-  if (hour === '*' && dom === '*' && mon === '*' && dow === '*')
-    return `every hour at :${min.padStart(2, '0')}`;
-  if (dom === '*' && mon === '*' && dow === '*')
-    return `every day at ${hour.padStart(2, '0')}:${min.padStart(2, '0')} UTC`;
-  if (dom === '*' && mon === '*')
-    return `weekly (day ${dow}) at ${hour.padStart(2, '0')}:${min.padStart(2, '0')} UTC`;
-  return expr;
+
+  const everyN = /^\*\/(\d+)$/.exec(min);
+  if (everyN && hour === '*') {
+    const n = Number(everyN[1]);
+    return `Every ${n} minutes, around the clock`;
+  }
+  if (min === '*' && hour === '*') return 'Every minute, around the clock';
+  if (hour === '*' && dom === '*' && mon === '*' && dow === '*') {
+    const m = Number(min) || 0;
+    return m === 0
+      ? 'Every hour, on the hour'
+      : `Every hour, at ${m} minute${m === 1 ? '' : 's'} past the hour`;
+  }
+
+  const h = Number(hour);
+  const m = Number(min);
+  if (!Number.isFinite(h) || !Number.isFinite(m)) return expr;
+  const clock = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+  const local = localEquivalent(h, m);
+  const when = `${clock} UTC (${local} your time)`;
+
+  if (dom === '*' && mon === '*' && dow === '*') return `Every day at ${when}`;
+  if (dom === '*' && mon === '*') {
+    const day = DAY_NAMES[Number(dow) % 7] ?? `day ${dow}`;
+    return `Every ${day} at ${when}`;
+  }
+  return `On day ${dom} of the month at ${when}`;
 };
 
 export const SCHEDULE_PRESETS: { label: string; value: string }[] = [
-  { label: 'Every 15 minutes', value: '*/15 * * * *' },
-  { label: 'Every 30 minutes', value: '*/30 * * * *' },
-  { label: 'Hourly at :10', value: '10 * * * *' },
-  { label: 'Daily 07:00 UTC', value: '0 7 * * *' },
-  { label: 'Daily 20:00 UTC', value: '0 20 * * *' },
-  { label: 'Weekly Monday 08:00 UTC', value: '0 8 * * 1' },
+  { label: 'Every 15 minutes, around the clock', value: '*/15 * * * *' },
+  { label: 'Every 30 minutes, around the clock', value: '*/30 * * * *' },
+  { label: 'Every hour, at 10 minutes past the hour', value: '10 * * * *' },
+  { label: 'Once a day, 07:00 UTC', value: '0 7 * * *' },
+  { label: 'Once a day, 20:00 UTC', value: '0 20 * * *' },
+  { label: 'Once a week, Monday 08:00 UTC', value: '0 8 * * 1' },
 ];
+
 
 /**
  * Plain-language catalogue of every message kind the app can produce.
