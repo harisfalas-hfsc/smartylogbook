@@ -99,7 +99,10 @@ const InsightsPage = () => {
       <header className="flex items-start justify-between gap-3 animate-fade-up">
         <div>
           <h1 className="text-2xl font-extrabold tracking-tight text-foreground">Insights</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Plain-language summaries, no scores, no ratings.</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            What it all means. For the raw records, open your{' '}
+            <Link to="/app/timeline" className="font-semibold text-primary">timeline</Link>.
+          </p>
         </div>
         <button
           onClick={analyse}
