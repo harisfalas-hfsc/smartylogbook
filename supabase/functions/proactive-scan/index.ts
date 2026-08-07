@@ -238,6 +238,27 @@ Deno.serve(async (req) => {
     console.error("subscription alerts failed", e);
   }
 
+  /* ---- Smarty Assistant decides what actually deserves to reach the user ---- */
+  if (alerts.length) {
+    const judged = await assistantDecide(
+      alerts.map((a, i) => ({
+        ref: String(i),
+        kind: a.kind,
+        title: a.title,
+        body: a.detail,
+        level: a.severity,
+        facts: { due_at: a.due_at, dedupe_key: a.dedupe_key },
+      })),
+      `Proactive scan on ${day(new Date())}. Decide which alerts to raise.`,
+    );
+    const kept = judged.map((j) => {
+      const src = alerts[Number(j.ref)];
+      return { ...src, title: j.title, detail: j.body, severity: j.level };
+    });
+    alerts.length = 0;
+    alerts.push(...kept);
+  }
+
   let inserted = 0;
   if (alerts.length) {
     const { data, error } = await db
