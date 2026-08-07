@@ -33,6 +33,8 @@ const AdminMessagesTab = () => {
   const [busy, setBusy] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [kindFilter, setKindFilter] = useState<string>('');
+  const [unreadOnly, setUnreadOnly] = useState(false);
+
   const [editing, setEditing] = useState<string | null>(null);
   const [draft, setDraft] = useState({ title: '', body: '' });
   const [broadcast, setBroadcast] = useState({ title: '', body: '', audience: 'all', level: 'normal' });
