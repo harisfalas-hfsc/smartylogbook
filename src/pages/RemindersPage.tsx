@@ -1,7 +1,9 @@
 import { useMemo, useState } from 'react';
-import { Bell, CalendarClock, Check, Loader2, Plus, Trash2 } from 'lucide-react';
+import { Bell, CalendarClock, Check, Loader2, Paperclip, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { REMINDER_TYPES, ReminderType, reminderIcon, requestNotificationPermission, useReminders } from '@/lib/reminders';
+import { REMINDER_TYPES, Reminder, ReminderType, reminderIcon, requestNotificationPermission, useReminders } from '@/lib/reminders';
+import { asStatus, isOverdue, STATUS_META } from '@/lib/status';
+import ReminderDetailSheet from '@/components/ReminderDetailSheet';
 import { cn } from '@/lib/utils';
 
 const defaultDue = () => {
@@ -11,12 +13,15 @@ const defaultDue = () => {
 };
 
 const RemindersPage = () => {
-  const { reminders, loading, create, toggleDone, remove } = useReminders();
+  const { reminders, loading, create, toggleDone, remove, update, reschedule } = useReminders();
   const [title, setTitle] = useState('');
   const [type, setType] = useState<ReminderType>('task');
   const [dueAt, setDueAt] = useState(defaultDue);
   const [amount, setAmount] = useState('');
   const [saving, setSaving] = useState(false);
+  const [open, setOpen] = useState<Reminder | null>(null);
+
+  const active = open ? reminders.find((r) => r.id === open.id) ?? open : null;
 
   const { upcoming, overdue, completed } = useMemo(() => {
     const now = Date.now();
@@ -26,6 +31,7 @@ const RemindersPage = () => {
       completed: reminders.filter((r) => r.done),
     };
   }, [reminders]);
+
 
   const add = async () => {
     if (!title.trim()) {
