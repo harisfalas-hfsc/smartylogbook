@@ -7,15 +7,19 @@ import {
   ChevronRight,
   Check,
   Loader2,
+  Paperclip,
   Plus,
-  Trash2,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useMemories, whenLabel } from '@/lib/memories';
-import { REMINDER_TYPES, ReminderType, reminderIcon, requestNotificationPermission, useReminders } from '@/lib/reminders';
+import { Memory, useMemories, whenLabel } from '@/lib/memories';
+import { REMINDER_TYPES, Reminder, ReminderType, reminderIcon, requestNotificationPermission, useReminders } from '@/lib/reminders';
 import { getModule, kindIcon } from '@/lib/constants';
+import { asStatus, isOverdue, STATUS_FILTERS, STATUS_META } from '@/lib/status';
+import MemoryDetailSheet from '@/components/MemoryDetailSheet';
+import ReminderDetailSheet from '@/components/ReminderDetailSheet';
 import { cn } from '@/lib/utils';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+
 
 const WEEKDAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
