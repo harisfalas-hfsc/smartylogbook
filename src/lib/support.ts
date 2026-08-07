@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
+import { hasPremium } from '@/lib/subscription';
+
 
 export const SUPPORT_EMAIL = 'smartylogbook@outlook.com';
 
@@ -53,6 +55,13 @@ export const submitTicket = async (
 
   const { data: session } = await supabase.auth.getUser();
   const userId = session.user?.id ?? null;
+
+  // Support conversations are a Smarty Premium benefit.
+  if (!userId) return { error: new Error('Please sign in to write to support') };
+  if (!(await hasPremium(userId))) {
+    return { error: new Error('Support conversations are part of Smarty Premium') };
+  }
+
 
   let attachment_url: string | null = null;
   let attachment_name: string | null = null;
@@ -219,7 +228,16 @@ export const useTicketThread = (ticketId: string | null) => {
     return { error };
   };
 
-  return { replies, loading, reload: load, sendAsCustomer, sendAsAdmin };
+  /** Asks Smarty Assistant to write the first-line answer on this ticket. */
+  const askAssistant = async () => {
+    if (!ticketId) return { error: new Error('No conversation') };
+    const { error } = await supabase.functions.invoke('support-assistant', { body: { ticketId } });
+    if (!error) await load();
+    return { error };
+  };
+
+  return { replies, loading, reload: load, sendAsCustomer, sendAsAdmin, askAssistant };
+
 };
 
 /** One ticket the signed-in customer owns, with its conversation. */

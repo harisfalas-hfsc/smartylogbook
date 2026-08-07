@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Check, ExternalLink, Loader2, Mail, RefreshCw, Send, Trash2 } from 'lucide-react';
+import { Check, ExternalLink, Loader2, Mail, RefreshCw, Send, Sparkles, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { AUTHOR_LABEL, SupportTicket, useSupportTickets, useTicketThread } from '@/lib/support';
@@ -8,9 +8,20 @@ const fmt = (d: string) => new Date(d).toLocaleString(undefined, { day: '2-digit
 
 /** The whole conversation on one ticket, plus the in-app reply box. */
 const Thread = ({ ticket }: { ticket: SupportTicket }) => {
-  const { replies, loading, sendAsAdmin } = useTicketThread(ticket.id);
+  const { replies, loading, sendAsAdmin, askAssistant } = useTicketThread(ticket.id);
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
+  const [asking, setAsking] = useState(false);
+  const hasAssistant = replies.some((r) => r.author === 'assistant');
+
+  const ask = async () => {
+    setAsking(true);
+    const { error } = await askAssistant();
+    setAsking(false);
+    if (error) toast.error(error.message);
+    else toast.success('Smarty Assistant answered');
+  };
+
 
   const send = async () => {
     setSending(true);
@@ -48,6 +59,19 @@ const Thread = ({ ticket }: { ticket: SupportTicket }) => {
           </div>
         ))}
       </div>
+
+      {!loading && !hasAssistant && (
+        <button
+          onClick={ask}
+          disabled={asking}
+          className="inline-flex items-center gap-1.5 rounded-2xl border border-primary/30 bg-primary/5 px-3 py-1.5 text-[12px] font-bold text-primary disabled:opacity-50"
+        >
+          {asking ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+          Ask Smarty Assistant to answer
+        </button>
+      )}
+
+
 
       <div className="rounded-2xl border border-border p-2">
         <textarea
