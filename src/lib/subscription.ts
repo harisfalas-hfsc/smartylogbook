@@ -171,8 +171,12 @@ export const useSubscription = () => {
     allowance,
     used,
     remaining,
-    canUseAssistant: active && remaining > 0,
-    renewsAt: sub?.current_period_end ?? null,
+    canUseAssistant: active && (remaining > 0 || isAdmin),
+    renewsAt:
+      sub?.current_period_end ??
+      (isAdmin && cycleStart
+        ? new Date(new Date(cycleStart).setMonth(cycleStart.getMonth() + 1)).toISOString()
+        : null),
     renewNow,
     cancelAtPeriodEnd: Boolean(sub?.cancel_at_period_end),
     cancelPlan: () => setCancellation(true),
