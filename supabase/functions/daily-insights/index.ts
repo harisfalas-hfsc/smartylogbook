@@ -186,11 +186,33 @@ Deno.serve(async (req) => {
     }
   }
 
-  let written = 0;
+  /* ---- Smarty Assistant writes and approves every brief ---- */
+  let finalRows = rows;
   if (rows.length) {
+    const judged = await assistantDecide(
+      rows.map((r, i) => ({
+        ref: String(i),
+        kind: String(r.kind),
+        title: String(r.title),
+        body: String(r.body ?? ""),
+        level: String(r.level ?? "normal"),
+        facts: { date: todayKey, mode },
+      })),
+      `Daily ${mode} brief for ${todayKey}. Only send if there is something worth saying.`,
+    );
+    finalRows = judged.map((j) => ({
+      ...rows[Number(j.ref)],
+      title: j.title,
+      body: j.body,
+      level: j.level,
+    }));
+  }
+
+  let written = 0;
+  if (finalRows.length) {
     const { data, error } = await db
       .from("messages")
-      .upsert(rows, { onConflict: "user_id,dedupe_key", ignoreDuplicates: true })
+      .upsert(finalRows, { onConflict: "user_id,dedupe_key", ignoreDuplicates: true })
       .select("id");
     if (error) {
       console.error("daily-insights insert failed", error);
