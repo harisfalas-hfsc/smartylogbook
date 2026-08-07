@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Clock, Loader2, Pause, Play, Plus, RefreshCw, Save, Timer, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { CronJob, JOB_TEMPLATES, SCHEDULE_PRESETS, adminApi, describeJob, describeSchedule } from '@/lib/admin';
+import { CronJob, JOB_TEMPLATES, SCHEDULE_PRESETS, adminApi, describeJob, describeSchedule, jobKinds, kindInfo } from '@/lib/admin';
 import { cn } from '@/lib/utils';
 
 const fmtTime = (d?: string | null) =>
