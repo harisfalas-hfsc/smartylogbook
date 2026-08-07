@@ -7,7 +7,7 @@ import { useMemories, Memory } from '@/lib/memories';
 import MemoryCard from '@/components/MemoryCard';
 import MediaTile from '@/components/MediaTile';
 import MemoryDetailSheet from '@/components/MemoryDetailSheet';
-import { albumOf, albumsOf } from '@/lib/media';
+import { albumOf, filesOf, monthAlbum } from '@/lib/media';
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
@@ -51,16 +51,40 @@ const ModuleDetailPage = () => {
   const [icon, setIcon] = useState(own?.icon ?? 'folder');
   const [saving, setSaving] = useState(false);
 
-  const albums = useMemo(() => albumsOf(memories), [memories]);
+  /** In a gallery, anything without its own album still belongs to its month. */
+  const albumFor = (m: Memory) => albumOf(m) ?? (isMedia ? monthAlbum(m.occurred_at) : null);
+
+  /** A gallery counts files, every other category counts records. */
+  const countOf = (m: Memory) => (isMedia ? Math.max(1, filesOf(m).length) : 1);
+
+  const albums = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const m of memories) {
+      const a = albumFor(m);
+      if (a) map.set(a, (map.get(a) ?? 0) + countOf(m));
+    }
+    return [...map.entries()]
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [memories, isMedia]);
+
   const visible = useMemo(
-    () => (album ? memories.filter((m) => albumOf(m) === album) : memories),
-    [memories, album]
+    () => (album ? memories.filter((m) => albumFor(m) === album) : memories),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [memories, album, isMedia]
+  );
+
+  const itemCount = useMemo(
+    () => visible.reduce((n, m) => n + countOf(m), 0),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [visible, isMedia]
   );
 
   const groups = useMemo(() => {
     const out: { key: string; items: Memory[] }[] = [];
     for (const m of visible) {
-      const key = groupKey(m, group);
+      const key = group === 'album' ? albumFor(m) ?? 'No album' : groupKey(m, group);
       const existing = out.find((g) => g.key === key);
       if (existing) existing.items.push(m);
       else out.push({ key, items: [m] });
@@ -108,7 +132,10 @@ const ModuleDetailPage = () => {
         <div className="min-w-0 flex-1">
           <h1 className="text-xl font-extrabold tracking-tight text-foreground">{module.label}</h1>
           <p className="truncate text-xs text-muted-foreground">
-            {visible.length} {visible.length === 1 ? 'record' : 'records'} , {module.description}
+            {isMedia
+              ? `${itemCount} ${itemCount === 1 ? (module.id === 'videos' ? 'video' : 'photo') : module.id === 'videos' ? 'videos' : 'photos'}`
+              : `${visible.length} ${visible.length === 1 ? 'record' : 'records'}`}
+            {' · '}{module.description}
           </p>
         </div>
         {own ? (
@@ -174,9 +201,9 @@ const ModuleDetailPage = () => {
           Albums in {module.label}
         </p>
         <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
-          Albums are subfolders inside this category. Open any record, tap Edit and type an album name
-          (for example "Blood tests" or "Greece trip") to file it here. You can also ask Smarty Assistant
-          to do it for you.
+          {isMedia
+            ? 'Albums are subfolders inside this gallery. Everything is filed by month automatically. Open any item, tap Edit and type your own album name (for example "Greece trip") to group it your way.'
+            : 'Albums are subfolders inside this category. Open any record, tap Edit and type an album name (for example "Blood tests") to file it here. You can also ask Smarty Assistant to do it for you.'}
         </p>
         {albums.length > 0 ? (
           <div className="mt-2.5 flex flex-wrap gap-1.5">
@@ -233,11 +260,20 @@ const ModuleDetailPage = () => {
           {groups.map((g) => (
             <section key={g.key}>
               <p className="mb-2.5 text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
-                {g.key} <span className="text-muted-foreground/60">{g.items.length}</span>
+                {g.key}{' '}
+                <span className="text-muted-foreground/60">
+                  {isMedia ? g.items.reduce((n, m) => n + Math.max(1, filesOf(m).length), 0) : g.items.length}
+                </span>
               </p>
               {view === 'grid' ? (
                 <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
-                  {g.items.map((m) => <MediaTile key={m.id} memory={m} onOpen={setSelected} />)}
+                  {g.items.flatMap((m) => {
+                    const files = filesOf(m);
+                    if (!files.length) return [<MediaTile key={m.id} memory={m} onOpen={setSelected} />];
+                    return files.map((f) => (
+                      <MediaTile key={`${m.id}-${f.path}`} memory={m} file={f} onOpen={setSelected} />
+                    ));
+                  })}
                 </div>
               ) : (
                 <div className="space-y-2.5">

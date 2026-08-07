@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Calendar as CalendarIcon, Check, FileText, Link2, Loader2, MapPin, Paperclip, Pencil,
-  Plus, RotateCcw, Save, Sparkles, Trash2,
+  Plus, RotateCcw, Save, Sparkles, Trash2, X,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
@@ -14,7 +14,7 @@ import { useCategories } from '@/lib/categories';
 import { Memory, titleOf } from '@/lib/memories';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { asStatus, isOverdue, shiftDays, STATUS_META } from '@/lib/status';
+import { asStatus, isActionableItem, isGalleryModule, isOverdue, shiftDays, STATUS_META } from '@/lib/status';
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
@@ -151,6 +151,8 @@ const MemoryDetailSheet = ({
   const status = localStatus;
   const statusMeta = STATUS_META[status];
   const overdue = isOverdue(localDueAt, status);
+  const gallery = isGalleryModule(localModule);
+  const actionable = isActionableItem({ ...memory, module: localModule, status: localStatus, due_at: localDueAt });
 
   const setStatus = async (next: 'open' | 'done' | 'postponed', dueAt?: string) => {
     if (!onSave || changingStatus) return;
@@ -236,7 +238,10 @@ const MemoryDetailSheet = ({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="max-h-[92vh] overflow-y-auto rounded-t-3xl border-border p-0">
+      <SheetContent
+        side="bottom"
+        className="max-h-[92vh] overflow-y-auto rounded-t-3xl border-border p-0 [&>button:last-of-type]:hidden sm:mx-auto sm:max-w-2xl sm:rounded-b-3xl"
+      >
         <SheetHeader className="sticky top-0 z-10 space-y-0 border-b border-border bg-background/95 px-4 py-3 backdrop-blur-xl">
           <div className="flex items-center gap-3">
             <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ${module.tint}`}>
@@ -271,11 +276,19 @@ const MemoryDetailSheet = ({
                 </button>
               )
             )}
+            <button
+              type="button"
+              onClick={() => onOpenChange(false)}
+              aria-label="Close"
+              className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-border bg-card text-muted-foreground transition-smooth hover:bg-secondary active:scale-95"
+            >
+              <X className="h-4 w-4" />
+            </button>
           </div>
         </SheetHeader>
 
         <div className="space-y-5 px-4 pb-10 pt-4">
-          {onSave && (
+          {onSave && actionable && (
             <div className={cn(
               'space-y-3 rounded-2xl border p-4 transition-colors',
               status === 'done' && 'border-success/30 bg-success/10',
@@ -420,16 +433,18 @@ const MemoryDetailSheet = ({
                   <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">{memory.content}</p>
                 </div>
               )}
-              <button
-                type="button"
-                onClick={() => {
-                  onOpenChange(false);
-                  navigate(`/app/assistant?ask=${encodeURIComponent(`About my entry "${memory.title}": `)}`);
-                }}
-                className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-3.5 py-2 text-xs font-semibold text-primary"
-              >
-                <Sparkles className="h-3.5 w-3.5" /> Ask Smarty Assistant about this
-              </button>
+              {!gallery && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onOpenChange(false);
+                    navigate(`/app/assistant?ask=${encodeURIComponent(`About my entry "${memory.title}": `)}`);
+                  }}
+                  className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-3.5 py-2 text-xs font-semibold text-primary"
+                >
+                  <Sparkles className="h-3.5 w-3.5" /> Ask Smarty Assistant about this
+                </button>
+              )}
               {localAttachments.length > 0 && (
                 <div className="space-y-2">
                   <p className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">Attachments</p>
