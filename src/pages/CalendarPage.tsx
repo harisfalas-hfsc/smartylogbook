@@ -416,7 +416,37 @@ const CalendarPage = () => {
           </div>
         </SheetContent>
       </Sheet>
+
+      <ReminderDetailSheet
+        reminder={activeReminder}
+        open={!!openReminder}
+        onOpenChange={(o) => !o && setOpenReminder(null)}
+        onUpdate={updateReminder}
+        onToggleDone={toggleDone}
+        onReschedule={reschedule}
+        onDelete={async (id) => {
+          const res = await remove(id);
+          setOpenReminder(null);
+          return res;
+        }}
+      />
+
+      <MemoryDetailSheet
+        memory={activeMemory}
+        open={!!openMemory}
+        onOpenChange={(o) => !o && setOpenMemory(null)}
+        allMemories={memories}
+        onOpenMemory={(m) => setOpenMemory(m)}
+        onSave={updateMemory}
+        onMove={reclassify}
+        onDelete={async (id) => {
+          const res = await removeMemory(id);
+          setOpenMemory(null);
+          return res;
+        }}
+      />
     </div>
+
   );
 };
 
