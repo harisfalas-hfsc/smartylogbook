@@ -25,7 +25,7 @@ import ResetPasswordPage from "./pages/ResetPasswordPage";
 import Dashboard from "./pages/Dashboard";
 import TimelinePage from "./pages/TimelinePage";
 import CapturePage from "./pages/CapturePage";
-import AiPage from "./pages/AiPage";
+
 import AssistantPage from "./pages/AssistantPage";
 import InsightsPage from "./pages/InsightsPage";
 import ModulesPage from "./pages/ModulesPage";
