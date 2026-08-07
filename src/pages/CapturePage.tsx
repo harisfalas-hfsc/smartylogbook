@@ -443,11 +443,7 @@ const CapturePage = () => {
               ...(duration != null ? { duration_seconds: Math.round(duration) } : {}),
             }
           : {}),
-        album:
-          album.trim() ||
-          (file
-            ? new Date(occurredAt ?? new Date().toISOString()).toLocaleDateString([], { month: 'long', year: 'numeric' })
-            : null),
+        album: album.trim() || null,
       },
     });
     setSaving(false);
