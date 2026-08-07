@@ -284,16 +284,96 @@ const AssistantPage = () => {
       )}
 
       {canUseAssistant && (
-        <>
-          <DailyBriefCard
-            brief={brief}
-            generating={generating}
-            onRegenerate={regenerate}
-            onAsk={(t) => setInput(t)}
-          />
+        <DailyBriefCard
+          brief={brief}
+          generating={generating}
+          onRegenerate={regenerate}
+          onAsk={(t) => setInput(t)}
+        />
+      )}
 
-          <AssistantMemoryCard />
-        </>
+      {/* Composer — the main thing */}
+      {canUseAssistant && (
+      <div className="smarty-card space-y-3 border-2 border-primary/25 p-4 shadow-glow">
+        <div className="flex items-center gap-2">
+          <span className="grid h-8 w-8 place-items-center rounded-2xl bg-gradient-primary text-primary-foreground">
+            <Send className="h-4 w-4" />
+          </span>
+          <div className="min-w-0">
+            <p className="text-sm font-extrabold text-foreground">Ask Smarty Assistant</p>
+            <p className="text-[11px] text-muted-foreground">Your captures, records, reminders and spending.</p>
+          </div>
+        </div>
+
+        {files.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {files.map((f, i) => (
+              <div key={i} className="relative">
+                {f.file.type.startsWith('image/') ? (
+                  <img src={f.url} alt={f.file.name} className="h-16 w-16 rounded-xl object-cover" />
+                ) : (
+                  <div className="flex h-16 items-center rounded-xl bg-secondary px-3 text-xs font-medium">
+                    {f.file.name.slice(0, 18)}
+                  </div>
+                )}
+                <button
+                  onClick={() => setFiles((prev) => prev.filter((_, idx) => idx !== i))}
+                  aria-label="Remove attachment"
+                  className="absolute -right-1.5 -top-1.5 grid h-6 w-6 place-items-center rounded-full bg-foreground text-background"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <textarea
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          rows={3}
+          placeholder="Ask about your captures, records, reminders or spending…"
+          className="w-full resize-none rounded-2xl bg-secondary/60 p-3 text-sm text-foreground outline-none placeholder:text-muted-foreground"
+        />
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={toggleVoice}
+            aria-label="Voice"
+            className={cn(
+              'flex h-10 w-10 items-center justify-center rounded-2xl transition-smooth active:scale-95',
+              recording ? 'bg-destructive text-destructive-foreground' : 'bg-secondary text-secondary-foreground'
+            )}
+          >
+            {transcribing ? <Loader2 className="h-4.5 w-4.5 animate-spin" /> : recording ? <Square className="h-4 w-4" /> : <Mic className="h-4.5 w-4.5" />}
+          </button>
+          <button
+            onClick={() => cameraInput.current?.click()}
+            aria-label="Camera"
+            className="flex h-10 w-10 items-center justify-center rounded-2xl bg-secondary text-secondary-foreground transition-smooth active:scale-95"
+          >
+            <Camera className="h-4.5 w-4.5" />
+          </button>
+          <button
+            onClick={() => fileInput.current?.click()}
+            aria-label="Attach file"
+            className="flex h-10 w-10 items-center justify-center rounded-2xl bg-secondary text-secondary-foreground transition-smooth active:scale-95"
+          >
+            <Paperclip className="h-4.5 w-4.5" />
+          </button>
+          <button
+            onClick={send}
+            disabled={thinking || (!input.trim() && files.length === 0)}
+            aria-label="Send"
+            className="ml-auto flex h-10 items-center gap-2 rounded-2xl bg-gradient-primary px-5 text-sm font-semibold text-primary-foreground shadow-glow transition-smooth active:scale-95 disabled:opacity-50"
+          >
+            <Send className="h-4 w-4" /> Ask
+          </button>
+        </div>
+
+        <input ref={cameraInput} type="file" accept="image/*" capture="environment" className="hidden" onChange={onPick} />
+        <input ref={fileInput} type="file" accept="image/*,application/pdf" multiple className="hidden" onChange={onPick} />
+      </div>
       )}
 
       {canUseAssistant && (
@@ -351,81 +431,7 @@ const AssistantPage = () => {
       </div>
       )}
 
-      {/* Composer */}
-      {canUseAssistant && (
-      <div className="sticky bottom-24 z-20 md:bottom-4">
-        <div className="smarty-card space-y-3 p-3">
-          {files.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {files.map((f, i) => (
-                <div key={i} className="relative">
-                  {f.file.type.startsWith('image/') ? (
-                    <img src={f.url} alt={f.file.name} className="h-16 w-16 rounded-xl object-cover" />
-                  ) : (
-                    <div className="flex h-16 items-center rounded-xl bg-secondary px-3 text-xs font-medium">
-                      {f.file.name.slice(0, 18)}
-                    </div>
-                  )}
-                  <button
-                    onClick={() => setFiles((prev) => prev.filter((_, idx) => idx !== i))}
-                    aria-label="Remove attachment"
-                    className="absolute -right-1.5 -top-1.5 grid h-6 w-6 place-items-center rounded-full bg-foreground text-background"
-                  >
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-
-          <textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            rows={2}
-            placeholder="Ask about your captures, records, reminders or spending…"
-            className="w-full resize-none bg-transparent px-1 text-sm text-foreground outline-none placeholder:text-muted-foreground"
-          />
-
-          <div className="flex items-center gap-2">
-            <button
-              onClick={toggleVoice}
-              aria-label="Voice"
-              className={cn(
-                'flex h-10 w-10 items-center justify-center rounded-2xl transition-smooth active:scale-95',
-                recording ? 'bg-destructive text-destructive-foreground' : 'bg-secondary text-secondary-foreground'
-              )}
-            >
-              {transcribing ? <Loader2 className="h-4.5 w-4.5 animate-spin" /> : recording ? <Square className="h-4 w-4" /> : <Mic className="h-4.5 w-4.5" />}
-            </button>
-            <button
-              onClick={() => cameraInput.current?.click()}
-              aria-label="Camera"
-              className="flex h-10 w-10 items-center justify-center rounded-2xl bg-secondary text-secondary-foreground transition-smooth active:scale-95"
-            >
-              <Camera className="h-4.5 w-4.5" />
-            </button>
-            <button
-              onClick={() => fileInput.current?.click()}
-              aria-label="Attach file"
-              className="flex h-10 w-10 items-center justify-center rounded-2xl bg-secondary text-secondary-foreground transition-smooth active:scale-95"
-            >
-              <Paperclip className="h-4.5 w-4.5" />
-            </button>
-            <button
-              onClick={send}
-              disabled={thinking || (!input.trim() && files.length === 0)}
-              aria-label="Send"
-              className="ml-auto flex h-10 items-center gap-2 rounded-2xl bg-gradient-primary px-4 text-sm font-semibold text-primary-foreground shadow-glow transition-smooth active:scale-95 disabled:opacity-50"
-            >
-              <Send className="h-4 w-4" /> Ask
-            </button>
-          </div>
-
-          <input ref={cameraInput} type="file" accept="image/*" capture="environment" className="hidden" onChange={onPick} />
-          <input ref={fileInput} type="file" accept="image/*,application/pdf" multiple className="hidden" onChange={onPick} />
-        </div>
-      </div>
-      )}
+      {canUseAssistant && <AssistantMemoryCard />}
     </div>
   );
 };
