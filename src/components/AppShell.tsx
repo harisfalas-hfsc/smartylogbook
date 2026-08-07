@@ -14,7 +14,7 @@ import { usePreferences } from '@/lib/preferences';
 import { useNotificationEngine } from '@/lib/reminders';
 import { useMemoryIndex } from '@/lib/semantic';
 import { useUnreadMessages } from '@/lib/messages';
-import { useCategories } from '@/lib/categories';
+
 
 const AppShell = () => {
   const { pathname } = useLocation();
