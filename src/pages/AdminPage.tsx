@@ -101,7 +101,7 @@ const AdminPage = () => {
       const plans = Array.isArray(cfg.plans) && cfg.plans.length ? cfg.plans : DEFAULT_PRICING.plans;
       setPricing({ ...DEFAULT_PRICING, ...cfg, plans });
       setGrantPlan((prev) => (plans.some((p) => p.key === prev) ? prev : plans[0]?.key ?? 'premium'));
-      adminApi<{ price: typeof stripePrice; error?: string }>('stripe_price', { environment: stripeEnvironment() })
+      adminApi<{ price: typeof stripePrice; error?: string }>('stripe_price', { environment: getStripeEnvironment() })
         .then((r) => {
           setStripePrice((r.price as { amount: number; currency: string; interval: string } | null) ?? null);
           setStripeError(r.error ?? null);
