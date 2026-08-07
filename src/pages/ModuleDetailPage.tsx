@@ -75,7 +75,7 @@ const ModuleDetailPage = () => {
   const groups = useMemo(() => {
     const out: { key: string; items: Memory[] }[] = [];
     for (const m of visible) {
-      const key = groupKey(m, group);
+      const key = group === 'album' ? albumFor(m) ?? 'No album' : groupKey(m, group);
       const existing = out.find((g) => g.key === key);
       if (existing) existing.items.push(m);
       else out.push({ key, items: [m] });
