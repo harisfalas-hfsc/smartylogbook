@@ -60,7 +60,9 @@ const TimelinePage = () => {
     setRange('all');
     setFrom('');
     setTo('');
+    setStatus('all');
   };
+
 
   const filtered = useMemo(() => {
     const days = RANGES.find((r) => r.id === range)?.days ?? 0;
