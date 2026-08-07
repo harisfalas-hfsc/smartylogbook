@@ -276,11 +276,19 @@ const MemoryDetailSheet = ({
                 </button>
               )
             )}
+            <button
+              type="button"
+              onClick={() => onOpenChange(false)}
+              aria-label="Close"
+              className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-border bg-card text-muted-foreground transition-smooth hover:bg-secondary active:scale-95"
+            >
+              <X className="h-4 w-4" />
+            </button>
           </div>
         </SheetHeader>
 
         <div className="space-y-5 px-4 pb-10 pt-4">
-          {onSave && (
+          {onSave && actionable && (
             <div className={cn(
               'space-y-3 rounded-2xl border p-4 transition-colors',
               status === 'done' && 'border-success/30 bg-success/10',
