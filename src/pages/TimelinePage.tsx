@@ -148,29 +148,15 @@ const TimelinePage = () => {
         </Link>
       </header>
 
-      {/* Hero: plain-language ask */}
-      <div className="animate-fade-up space-y-2">
-        <div className="smarty-card flex items-center gap-2 border-2 border-primary/25 px-4 py-3.5 focus-within:border-primary/60">
-          <Search className="h-4 w-4 shrink-0 text-primary" />
-          <input
-            value={ask}
-            onChange={(e) => setAsk(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && runPlainLanguage(ask)}
-            placeholder="Show me my expenses last month…"
-            className="min-w-0 flex-1 bg-transparent text-sm font-medium text-foreground outline-none placeholder:font-normal placeholder:text-muted-foreground"
-          />
-          {ask ? (
-            <button onClick={clearAll} aria-label="Clear search" className="text-muted-foreground">
-              <X className="h-4 w-4" />
-            </button>
-          ) : null}
-          <button
-            onClick={() => runPlainLanguage(ask)}
-            className="shrink-0 rounded-xl bg-gradient-primary px-3 py-1.5 text-[11px] font-bold text-primary-foreground"
-          >
-            Show
-          </button>
-        </div>
+      {/* One Smarty Assistant bar — filters here, or hands the question to the Assistant */}
+      <div className="space-y-2">
+        <AssistantAskBar
+          value={ask}
+          onChange={setAsk}
+          onSubmit={(q) => runPlainLanguage(q)}
+          placeholder="Ask Smarty Assistant, e.g. my expenses last month…"
+          hint={applied ? undefined : 'Anything your timeline cannot filter goes straight to Smarty Assistant.'}
+        />
         {applied ? (
           <p className="px-1 text-[11px] font-semibold text-primary">{applied}</p>
         ) : (
@@ -190,6 +176,7 @@ const TimelinePage = () => {
           </div>
         )}
       </div>
+
 
       {/* Row 1 — date range + filters */}
       <div className="animate-fade-up flex items-center gap-2">
