@@ -101,19 +101,34 @@ Deno.serve(async (req) => {
 
     if (action === "export") {
 
-      const tables = ["profiles", "memories", "user_preferences", "coach_cards", "reminders", "user_roles", "account_requests"];
+      const tables = [
+        "profiles", "memories", "user_preferences", "coach_cards", "reminders", "user_roles",
+        "account_requests", "facts", "money_items", "messages", "ai_conversations",
+        "proactive_alerts", "assistant_profiles", "classification_corrections", "subscriptions",
+        "payments", "support_tickets",
+      ];
       const data: Record<string, unknown> = {};
       for (const t of tables) {
         const { data: rows } = await admin.from(t).select("*").eq("user_id", user.id);
         data[t] = rows ?? [];
       }
 
-      const files: { path: string; size?: number; url: string | null }[] = [];
-      const { data: objects } = await admin.storage.from("captures").list(user.id, { limit: 1000 });
-      for (const o of objects ?? []) {
-        const path = `${user.id}/${o.name}`;
-        const { data: signed } = await admin.storage.from("captures").createSignedUrl(path, 60 * 60);
-        files.push({ path, size: (o as { metadata?: { size?: number } }).metadata?.size, url: signed?.signedUrl ?? null });
+      /* Every uploaded original (photos, receipts, PDFs) gets a signed link so
+       * the app can package them into a single ZIP archive for the member. */
+      const files: { path: string; name: string; size?: number; url: string | null }[] = [];
+      for (const bucket of ["captures", "support"]) {
+        const { data: objects } = await admin.storage.from(bucket).list(user.id, { limit: 1000 });
+        for (const o of objects ?? []) {
+          if (!o.name || o.name === ".emptyFolderPlaceholder") continue;
+          const path = `${user.id}/${o.name}`;
+          const { data: signed } = await admin.storage.from(bucket).createSignedUrl(path, 60 * 60);
+          files.push({
+            path: `${bucket}/${o.name}`,
+            name: o.name,
+            size: (o as { metadata?: { size?: number } }).metadata?.size,
+            url: signed?.signedUrl ?? null,
+          });
+        }
       }
 
       await admin.from("account_requests").insert({ user_id: user.id, kind: "export" });
@@ -125,6 +140,7 @@ Deno.serve(async (req) => {
         files,
       });
     }
+
 
     if (action === "delete") {
       if (confirm !== "DELETE") return json({ error: "Confirmation required" }, 400);
