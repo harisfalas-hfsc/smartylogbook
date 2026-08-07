@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import {
-  ArrowLeft, BadgeCheck, ChevronRight, CreditCard, Crown, LifeBuoy, Loader2, Megaphone, RefreshCw, Save, Search, ShieldCheck, SlidersHorizontal, Timer, TrendingUp, UserPlus, Users, XCircle,
+  ArrowLeft, BadgeCheck, ChevronRight, CreditCard, Crown, LifeBuoy, Loader2, Megaphone, RefreshCw, Search, ShieldCheck, Timer, TrendingUp, UserPlus, Users, XCircle,
 } from 'lucide-react';
 
 import { toast } from 'sonner';
@@ -10,15 +10,14 @@ import {
 } from '@/lib/admin';
 import { cn } from '@/lib/utils';
 import {
-  DEFAULT_PRICING, PlanConfig, PricingConfig, conversationCost, planAllowance, planMargin,
+  DEFAULT_PRICING, PricingConfig,
 } from '@/lib/pricing';
-import { PREMIUM_PRICE_ID, getStripeEnvironment } from '@/lib/stripe';
 
 import AdminJobsTab from '@/components/admin/AdminJobsTab';
 import AdminMessagesTab from '@/components/admin/AdminMessagesTab';
 import AdminSupportTab from '@/components/admin/AdminSupportTab';
 
-const TABS = ['Revenue', 'Customers', 'Subscriptions', 'Payments', 'Pricing', 'Jobs', 'Messages', 'Support'] as const;
+const TABS = ['Revenue', 'Customers', 'Subscriptions', 'Payments', 'Jobs', 'Messages', 'Support'] as const;
 type Tab = (typeof TABS)[number];
 
 const TAB_META: Record<Tab, { icon: typeof Users; blurb: string; tint: string }> = {
@@ -26,7 +25,6 @@ const TAB_META: Record<Tab, { icon: typeof Users; blurb: string; tint: string }>
   Customers: { icon: Users, blurb: 'Every account, create, grant, revoke', tint: 'from-primary/15 to-primary/5 text-primary' },
   Subscriptions: { icon: Crown, blurb: 'Active, granted and canceled plans', tint: 'from-amber-500/15 to-amber-500/5 text-amber-600' },
   Payments: { icon: CreditCard, blurb: 'Recent transactions and their status', tint: 'from-sky-500/15 to-sky-500/5 text-sky-600' },
-  Pricing: { icon: SlidersHorizontal, blurb: 'Price and conversations included', tint: 'from-violet-500/15 to-violet-500/5 text-violet-600' },
   Jobs: { icon: Timer, blurb: 'Scheduled automations and their runs', tint: 'from-rose-500/15 to-rose-500/5 text-rose-600' },
   Messages: { icon: Megaphone, blurb: 'Everything sent, edit or broadcast', tint: 'from-cyan-500/15 to-cyan-500/5 text-cyan-600' },
   Support: { icon: LifeBuoy, blurb: 'Customer messages from the contact page', tint: 'from-orange-500/15 to-orange-500/5 text-orange-600' },
@@ -76,12 +74,6 @@ const AdminPage = () => {
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pricing, setPricing] = useState<PricingConfig>(DEFAULT_PRICING);
-  // What Stripe will really charge, so the numbers below can never silently
-  // disagree with the card the customer is billed on.
-  const [stripePrice, setStripePrice] = useState<
-    { amount: number; currency: string; interval: string } | null | 'loading'
-  >('loading');
-  const [stripeError, setStripeError] = useState<string | null>(null);
 
   const [grantPlan, setGrantPlan] = useState<string>(DEFAULT_PRICING.plans[0]?.key ?? 'premium');
   const [newUser, setNewUser] = useState({ email: '', password: '', username: '', months: 0 });
@@ -103,15 +95,6 @@ const AdminPage = () => {
       const plans = Array.isArray(cfg.plans) && cfg.plans.length ? cfg.plans : DEFAULT_PRICING.plans;
       setPricing({ ...DEFAULT_PRICING, ...cfg, plans });
       setGrantPlan((prev) => (plans.some((p) => p.key === prev) ? prev : plans[0]?.key ?? 'premium'));
-      adminApi<{ price: typeof stripePrice; error?: string }>('stripe_price', { environment: getStripeEnvironment() })
-        .then((r) => {
-          setStripePrice((r.price as { amount: number; currency: string; interval: string } | null) ?? null);
-          setStripeError(r.error ?? null);
-        })
-        .catch((e) => {
-          setStripePrice(null);
-          setStripeError(e instanceof Error ? e.message : 'Stripe unavailable');
-        });
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load admin data');
     } finally {
@@ -148,12 +131,6 @@ const AdminPage = () => {
 
   const filtered = users.filter((u) => u.email.toLowerCase().includes(search.trim().toLowerCase()));
   const subscribers = users.filter((u) => u.plan === 'premium' || u.subscription_status === 'canceled');
-
-  const updatePlan = (i: number, patch: Partial<PlanConfig>) =>
-    setPricing((prev) => ({
-      ...prev,
-      plans: prev.plans.map((p, idx) => (idx === i ? { ...p, ...patch } : p)),
-    }));
 
   const UserRow = ({ u }: { u: AdminUser }) => (
     <div className="smarty-card p-4">
@@ -220,7 +197,6 @@ const AdminPage = () => {
       case 'Customers': return String(stats.totalUsers);
       case 'Subscriptions': return String(stats.activeSubscriptions);
       case 'Payments': return String(stats.paymentsCount);
-      case 'Pricing': return euro(pricing.plans[0]?.price ?? 9.99);
       default: return '';
     }
   };
@@ -445,130 +421,6 @@ const AdminPage = () => {
           {tab === 'Support' && <AdminSupportTab />}
 
 
-          {tab === 'Pricing' && (
-            <div className="space-y-4">
-              <div className="smarty-card border-primary/40 p-4">
-                <p className="text-sm font-bold text-foreground">What this tab does</p>
-                <ul className="mt-2 space-y-1.5 text-[12px] leading-relaxed text-muted-foreground">
-                  <li>
-                    Two numbers only: the <strong className="text-foreground">price</strong> members pay and how many{' '}
-                    <strong className="text-foreground">conversations</strong> they get each month.
-                  </li>
-                  <li>
-                    Saving here changes the app immediately: the public pricing page, the plan page, the upgrade screen
-                    and the conversation meter all read these numbers. Nothing is hardcoded.
-                  </li>
-                  <li>
-                    <strong className="text-foreground">It does not change what Stripe charges.</strong> The real charge
-                    lives on the Stripe price <code>{PREMIUM_PRICE_ID}</code>, shown below. Change the price in Stripe
-                    first, then match it here, otherwise members see one price and pay another.
-                  </li>
-                </ul>
-              </div>
-
-
-              <div className="smarty-card p-4">
-                <p className="text-sm font-bold text-foreground">What Stripe actually charges</p>
-                {stripePrice === 'loading' ? (
-                  <p className="mt-1 text-[12px] text-muted-foreground">Checking Stripe…</p>
-                ) : stripePrice ? (
-                  <>
-                    <p className="mt-1 text-2xl font-extrabold text-foreground">
-                      {stripePrice.currency === 'EUR' ? euro(stripePrice.amount) : `${stripePrice.amount} ${stripePrice.currency}`}
-                      <span className="ml-1 text-sm font-semibold text-muted-foreground">
-                        / {stripePrice.interval}
-                      </span>
-                    </p>
-                    <p className="text-[11px] text-muted-foreground">
-                      Live from Stripe, price <code>{PREMIUM_PRICE_ID}</code>, {getStripeEnvironment()} mode.
-                    </p>
-                    {Math.abs((pricing.plans[0]?.price ?? 0) - stripePrice.amount) > 0.001 && (
-                      <p className="mt-2 rounded-2xl bg-destructive/10 px-3 py-2 text-[12px] font-semibold text-destructive">
-                        Mismatch: the app advertises {euro(pricing.plans[0]?.price ?? 0)} but Stripe bills{' '}
-                        {euro(stripePrice.amount)}. Fix one of them.
-                      </p>
-                    )}
-                  </>
-                ) : (
-                  <p className="mt-1 text-[12px] text-muted-foreground">
-                    Could not read the Stripe price. {stripeError}
-                  </p>
-                )}
-              </div>
-
-              <div className="grid gap-3 md:grid-cols-2">
-                {pricing.plans.map((plan, i) => {
-                  const allowance = planAllowance(pricing, plan);
-                  const aiCost = allowance * conversationCost(pricing);
-                  return (
-                    <div key={plan.key} className="smarty-card p-4">
-                      <label className="block">
-                        <span className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
-                          Plan name, as members see it
-                        </span>
-                        <input
-                          value={plan.name}
-                          onChange={(e) => updatePlan(i, { name: e.target.value })}
-                          className="mt-1 w-full rounded-2xl border border-border bg-card px-3 py-2 text-sm font-bold text-foreground outline-none"
-                        />
-                      </label>
-                      <label className="mt-3 block">
-                        <span className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
-                          Price € per month
-                        </span>
-                        <input
-                          type="number"
-                          step={0.5}
-                          value={plan.price}
-                          onChange={(e) => updatePlan(i, { price: Number(e.target.value) })}
-                          className="mt-1 w-full rounded-2xl border border-border bg-card px-3 py-2 text-sm font-semibold text-foreground outline-none"
-                        />
-                        <span className="mt-1 block text-[11px] text-muted-foreground">
-                          Shown on the pricing page and the upgrade screen. Must match Stripe above.
-                        </span>
-                      </label>
-                      <label className="mt-3 block">
-                        <span className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
-                          Conversations included each month
-                        </span>
-                        <input
-                          type="number"
-                          step={10}
-                          min={1}
-                          value={plan.allowanceOverride ?? allowance}
-                          onChange={(e) =>
-                            updatePlan(i, { allowanceOverride: e.target.value === '' ? null : Number(e.target.value) })
-                          }
-                          className="mt-1 w-full rounded-2xl border border-border bg-card px-3 py-2 text-sm font-semibold text-foreground outline-none"
-                        />
-                        <span className="mt-1 block text-[11px] text-muted-foreground">
-                          This is the number members see everywhere, and the limit the Assistant enforces. Save it and
-                          the pricing page, plan page and conversation meter change at once.
-                        </span>
-                      </label>
-                      <div className="mt-3 rounded-2xl bg-primary/5 p-3">
-                        <p className="text-[11px] leading-relaxed text-muted-foreground">
-                          At full use, {allowance} conversations cost you about{' '}
-                          <strong className="text-foreground">{euro(aiCost)}</strong> in AI, so you keep{' '}
-                          <strong className="text-foreground">{euro(Math.max(0, plan.price - aiCost))}</strong> of every{' '}
-                          {euro(plan.price)}, a {(planMargin(pricing, plan) * 100).toFixed(0)}% margin.
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-
-              <button
-                disabled={busy !== null}
-                onClick={() => act('save-pricing', () => adminApi('save_pricing', { config: pricing }), 'Pricing updated')}
-                className="inline-flex items-center gap-2 rounded-2xl bg-gradient-primary px-5 py-3 text-sm font-bold text-primary-foreground shadow-glow transition-smooth active:scale-95 disabled:opacity-50"
-              >
-                <Save className="h-4 w-4" /> Save pricing
-              </button>
-            </div>
-          )}
         </>
       )}
     </div>
