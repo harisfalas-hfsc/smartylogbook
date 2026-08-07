@@ -417,13 +417,31 @@ Deno.serve(async (req) => {
         );
       const byKind = new Map<string, number>();
       for (const m of data ?? []) byKind.set(m.kind ?? "other", (byKind.get(m.kind ?? "other") ?? 0) + 1);
+
+      // Recipient counts, so "Send an announcement" can say exactly who gets it.
+      const { data: subsForCount } = await admin.from("subscriptions").select("*");
+      const subCountMap = new Map((subsForCount ?? []).map((s) => [s.user_id, s as Sub]));
+      let premiumCount = 0;
+      for (const u of users) {
+        if (effective(subCountMap.get(u.id)).plan === "premium") premiumCount += 1;
+      }
       return json({
         messages: rows,
         total: (data ?? []).length,
         unread: (data ?? []).filter((m) => !m.read_at).length,
         byKind: [...byKind.entries()].map(([kind, count]) => ({ kind, count })).sort((a, b) => b.count - a.count),
+        audience: { all: users.length, premium: premiumCount, free: users.length - premiumCount },
       });
     }
+
+    if (action === "delete_messages_by_kind") {
+      const kind = String(body?.kind ?? "").trim();
+      if (!kind) return json({ error: "Invalid kind" }, 400);
+      const { error } = await admin.from("messages").delete().eq("kind", kind);
+      if (error) return json({ error: error.message }, 400);
+      return json({ ok: true });
+    }
+
 
     if (action === "update_message") {
       const id = String(body?.id ?? "");
