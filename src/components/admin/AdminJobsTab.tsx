@@ -105,6 +105,29 @@ const AdminJobsTab = () => {
 
               <p className="text-[12px] leading-relaxed text-muted-foreground">{describeJob(job)}</p>
 
+              {jobKinds(job).length > 0 && (
+                <div className="rounded-2xl bg-primary/5 p-3">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                    Messages it writes
+                  </p>
+                  <div className="mt-1.5 flex flex-wrap gap-1.5">
+                    {jobKinds(job).map((k) => (
+                      <span
+                        key={k}
+                        className="rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-primary"
+                      >
+                        {kindInfo(k).label}
+                      </span>
+                    ))}
+                  </div>
+                  <p className="mt-1.5 text-[11px] leading-relaxed text-muted-foreground">
+                    {kindInfo(jobKinds(job)[0]).what} You can read, edit or delete everything it has already sent in the
+                    Messages tab.
+                  </p>
+                </div>
+              )}
+
+
               <div className="grid grid-cols-2 gap-2">
                 <div className="rounded-2xl bg-secondary/60 p-3">
                   <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Frequency</p>
