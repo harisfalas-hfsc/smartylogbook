@@ -79,17 +79,19 @@ const TimelinePage = () => {
       if (toTs && ts > toTs) return false;
       if (cutoff && ts < cutoff) return false;
       if (module && m.module !== module) return false;
+      if (status !== 'all' && asStatus(m.status) !== status) return false;
       if (query) {
         const hay = `${m.title} ${m.summary ?? ''} ${m.content ?? ''} ${m.ai_tags.join(' ')}`.toLowerCase();
         if (!hay.includes(query.toLowerCase())) return false;
       }
       return true;
     });
-  }, [memories, range, module, query, from, to]);
+  }, [memories, range, module, query, from, to, status]);
 
   useEffect(() => {
     setVisible(PAGE);
-  }, [range, module, query, from, to]);
+  }, [range, module, query, from, to, status]);
+
 
   // Infinite scroll
   useEffect(() => {
