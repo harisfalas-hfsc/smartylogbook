@@ -74,7 +74,7 @@ const MessageDetailSheet = ({
           </div>
 
           {message.body && (
-            <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">{message.body}</p>
+            <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground sm:text-base sm:leading-7">{message.body}</p>
           )}
 
           {message.related_at && (
