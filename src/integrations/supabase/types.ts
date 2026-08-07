@@ -368,10 +368,12 @@ export type Database = {
           ai_tags: string[]
           amount: number | null
           attachment_url: string | null
+          completed_at: string | null
           content: string | null
           created_at: string
           currency: string | null
           deleted_at: string | null
+          due_at: string | null
           embedded_at: string | null
           embedding: string | null
           id: string
@@ -383,6 +385,7 @@ export type Database = {
           occurred_at: string
           related_ids: string[]
           relation_note: string | null
+          status: string
           summary: string | null
           title: string
           updated_at: string
@@ -392,10 +395,12 @@ export type Database = {
           ai_tags?: string[]
           amount?: number | null
           attachment_url?: string | null
+          completed_at?: string | null
           content?: string | null
           created_at?: string
           currency?: string | null
           deleted_at?: string | null
+          due_at?: string | null
           embedded_at?: string | null
           embedding?: string | null
           id?: string
@@ -407,6 +412,7 @@ export type Database = {
           occurred_at?: string
           related_ids?: string[]
           relation_note?: string | null
+          status?: string
           summary?: string | null
           title: string
           updated_at?: string
@@ -416,10 +422,12 @@ export type Database = {
           ai_tags?: string[]
           amount?: number | null
           attachment_url?: string | null
+          completed_at?: string | null
           content?: string | null
           created_at?: string
           currency?: string | null
           deleted_at?: string | null
+          due_at?: string | null
           embedded_at?: string | null
           embedding?: string | null
           id?: string
@@ -431,6 +439,7 @@ export type Database = {
           occurred_at?: string
           related_ids?: string[]
           relation_note?: string | null
+          status?: string
           summary?: string | null
           title?: string
           updated_at?: string
@@ -695,13 +704,18 @@ export type Database = {
       reminders: {
         Row: {
           amount: number | null
+          attachment_name: string | null
+          attachment_url: string | null
+          completed_at: string | null
           created_at: string
           done: boolean
           due_at: string
           id: string
           module: string | null
+          notes: string | null
           notified_at: string | null
           repeat_rule: string | null
+          status: string
           title: string
           type: string
           updated_at: string
@@ -709,13 +723,18 @@ export type Database = {
         }
         Insert: {
           amount?: number | null
+          attachment_name?: string | null
+          attachment_url?: string | null
+          completed_at?: string | null
           created_at?: string
           done?: boolean
           due_at: string
           id?: string
           module?: string | null
+          notes?: string | null
           notified_at?: string | null
           repeat_rule?: string | null
+          status?: string
           title: string
           type?: string
           updated_at?: string
@@ -723,13 +742,18 @@ export type Database = {
         }
         Update: {
           amount?: number | null
+          attachment_name?: string | null
+          attachment_url?: string | null
+          completed_at?: string | null
           created_at?: string
           done?: boolean
           due_at?: string
           id?: string
           module?: string | null
+          notes?: string | null
           notified_at?: string | null
           repeat_rule?: string | null
+          status?: string
           title?: string
           type?: string
           updated_at?: string

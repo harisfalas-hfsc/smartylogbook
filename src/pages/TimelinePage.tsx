@@ -8,6 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { useCategories } from '@/lib/categories';
 import { describeQuery, parsePlainLanguage } from '@/lib/nlSearch';
+import { asStatus, ItemStatus, STATUS_FILTERS } from '@/lib/status';
+
 import { cn } from '@/lib/utils';
 
 const RANGES = [
@@ -32,9 +34,11 @@ const TimelinePage = () => {
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [status, setStatus] = useState<'all' | ItemStatus>('all');
   const [visible, setVisible] = useState(PAGE);
   const [selected, setSelected] = useState<Memory | null>(null);
   const sentinel = useRef<HTMLDivElement | null>(null);
+
 
   const runPlainLanguage = (raw: string) => {
     const parsed = parsePlainLanguage(raw);
@@ -56,7 +60,9 @@ const TimelinePage = () => {
     setRange('all');
     setFrom('');
     setTo('');
+    setStatus('all');
   };
+
 
   const filtered = useMemo(() => {
     const days = RANGES.find((r) => r.id === range)?.days ?? 0;
@@ -75,17 +81,19 @@ const TimelinePage = () => {
       if (toTs && ts > toTs) return false;
       if (cutoff && ts < cutoff) return false;
       if (module && m.module !== module) return false;
+      if (status !== 'all' && asStatus(m.status) !== status) return false;
       if (query) {
         const hay = `${m.title} ${m.summary ?? ''} ${m.content ?? ''} ${m.ai_tags.join(' ')}`.toLowerCase();
         if (!hay.includes(query.toLowerCase())) return false;
       }
       return true;
     });
-  }, [memories, range, module, query, from, to]);
+  }, [memories, range, module, query, from, to, status]);
 
   useEffect(() => {
     setVisible(PAGE);
-  }, [range, module, query, from, to]);
+  }, [range, module, query, from, to, status]);
+
 
   // Infinite scroll
   useEffect(() => {
@@ -213,6 +221,25 @@ const TimelinePage = () => {
           )}
         </button>
       </div>
+
+      {/* Status: open / completed / postponed — same model everywhere */}
+      <div className="animate-fade-up -mx-1 flex gap-1.5 overflow-x-auto px-1 pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {STATUS_FILTERS.map((f) => (
+          <button
+            key={f.id}
+            onClick={() => setStatus(f.id)}
+            className={cn(
+              'shrink-0 rounded-full border px-3 py-1.5 text-[11px] font-semibold transition-smooth active:scale-95',
+              status === f.id
+                ? 'border-primary bg-primary/10 text-primary'
+                : 'border-border bg-card text-muted-foreground',
+            )}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
+
 
       {/* What it means → Insights */}
       {memories.length > 0 && (

@@ -7,15 +7,19 @@ import {
   ChevronRight,
   Check,
   Loader2,
+  Paperclip,
   Plus,
-  Trash2,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useMemories, whenLabel } from '@/lib/memories';
-import { REMINDER_TYPES, ReminderType, reminderIcon, requestNotificationPermission, useReminders } from '@/lib/reminders';
+import { Memory, useMemories, whenLabel } from '@/lib/memories';
+import { REMINDER_TYPES, Reminder, ReminderType, reminderIcon, requestNotificationPermission, useReminders } from '@/lib/reminders';
 import { getModule, kindIcon } from '@/lib/constants';
+import { asStatus, isOverdue, STATUS_FILTERS, STATUS_META } from '@/lib/status';
+import MemoryDetailSheet from '@/components/MemoryDetailSheet';
+import ReminderDetailSheet from '@/components/ReminderDetailSheet';
 import { cn } from '@/lib/utils';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+
 
 const WEEKDAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
@@ -42,8 +46,10 @@ const buildGrid = (cursor: Date) => {
 };
 
 const CalendarPage = () => {
-  const { memories, loading } = useMemories();
-  const { reminders, create, toggleDone, remove } = useReminders();
+  const { memories, loading, remove: removeMemory, reclassify, update: updateMemory } = useMemories();
+  const {
+    reminders, create, toggleDone, remove, update: updateReminder, reschedule,
+  } = useReminders();
 
   const [cursor, setCursor] = useState(() => new Date());
   const [selected, setSelected] = useState<Date | null>(null);
@@ -51,6 +57,10 @@ const CalendarPage = () => {
   const [type, setType] = useState<ReminderType>('event');
   const [time, setTime] = useState('09:00');
   const [saving, setSaving] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<'all' | 'open' | 'done' | 'postponed'>('all');
+  const [openReminder, setOpenReminder] = useState<Reminder | null>(null);
+  const [openMemory, setOpenMemory] = useState<Memory | null>(null);
+
 
   const byDay = useMemo(() => {
     const map = new Map<string, { logged: typeof memories; scheduled: typeof reminders }>();
@@ -67,6 +77,15 @@ const CalendarPage = () => {
   const todayKey = dayKey(new Date());
   const selectedKey = selected ? dayKey(selected) : null;
   const dayData = selectedKey ? byDay.get(selectedKey) : undefined;
+  const dayScheduled = (dayData?.scheduled ?? []).filter(
+    (r) => statusFilter === 'all' || asStatus(r.status ?? (r.done ? 'done' : 'open')) === statusFilter
+  );
+  const dayLogged = (dayData?.logged ?? []).filter(
+    (m) => statusFilter === 'all' || asStatus(m.status) === statusFilter
+  );
+  const activeReminder = openReminder ? reminders.find((r) => r.id === openReminder.id) ?? openReminder : null;
+  const activeMemory = openMemory ? memories.find((m) => m.id === openMemory.id) ?? openMemory : null;
+
 
   const shift = (delta: number) =>
     setCursor((c) => new Date(c.getFullYear(), c.getMonth() + delta, 1));
@@ -239,42 +258,70 @@ const CalendarPage = () => {
           </SheetHeader>
 
           <div className="mt-3 space-y-4">
+            <div className="flex flex-wrap gap-1.5">
+              {STATUS_FILTERS.map((f) => (
+                <button
+                  key={f.id}
+                  type="button"
+                  onClick={() => setStatusFilter(f.id)}
+                  className={cn(
+                    'rounded-full border px-3 py-1.5 text-[11px] font-semibold transition-smooth active:scale-95',
+                    statusFilter === f.id
+                      ? 'border-primary bg-primary/10 text-primary'
+                      : 'border-border bg-card text-muted-foreground'
+                  )}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+
             <div>
               <p className="mb-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Scheduled</p>
               <div className="smarty-card divide-y divide-border/60">
-                {(dayData?.scheduled.length ?? 0) === 0 ? (
+                {dayScheduled.length === 0 ? (
                   <p className="px-3 py-4 text-center text-xs text-muted-foreground">Nothing scheduled this day.</p>
                 ) : (
-                  dayData!.scheduled.map((r) => {
+                  dayScheduled.map((r) => {
                     const Icon = reminderIcon(r.type);
+                    const st = asStatus(r.status ?? (r.done ? 'done' : 'open'));
+                    const meta = STATUS_META[st];
                     return (
-                      <div key={r.id} className="flex items-center gap-3 px-3 py-3">
-                        <button
-                          type="button"
+                      <button
+                        key={r.id}
+                        type="button"
+                        onClick={() => setOpenReminder(r)}
+                        className="flex w-full items-center gap-3 px-3 py-3 text-left transition-smooth active:scale-[0.99]"
+                      >
+                        <span
+                          role="button"
+                          tabIndex={0}
                           aria-label={r.done ? 'Mark as pending' : 'Mark as done'}
-                          onClick={() => toggleDone(r.id, !r.done)}
+                          onClick={(e) => { e.stopPropagation(); toggleDone(r.id, !r.done); }}
+                          onKeyDown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); toggleDone(r.id, !r.done); } }}
                           className={cn(
                             'grid h-7 w-7 shrink-0 place-items-center rounded-full border transition-smooth active:scale-95',
                             r.done ? 'border-primary bg-primary text-primary-foreground' : 'border-border text-muted-foreground'
                           )}
                         >
                           {r.done ? <Check className="h-3.5 w-3.5" /> : <Icon className="h-3.5 w-3.5" />}
-                        </button>
+                        </span>
                         <div className="min-w-0 flex-1">
                           <p className={cn('truncate text-sm font-semibold text-foreground', r.done && 'line-through opacity-60')}>
                             {r.title}
                           </p>
-                          <p className="text-[11px] text-muted-foreground">{timeOf(r.due_at)}</p>
+                          <p className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                            {timeOf(r.due_at)}
+                            {isOverdue(r.due_at, st) && <span className="font-semibold text-destructive">Overdue</span>}
+                            {r.attachment_url && <Paperclip className="h-3 w-3" />}
+                          </p>
                         </div>
-                        <button
-                          type="button"
-                          aria-label="Delete"
-                          onClick={() => remove(r.id)}
-                          className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-muted-foreground transition-smooth active:scale-95"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
-                      </div>
+                        {st !== 'open' && (
+                          <span className={cn('shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold', meta.badge)}>
+                            {meta.label}
+                          </span>
+                        )}
+                      </button>
                     );
                   })
                 )}
@@ -284,31 +331,42 @@ const CalendarPage = () => {
             <div>
               <p className="mb-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Logged</p>
               <div className="smarty-card divide-y divide-border/60">
-                {(dayData?.logged.length ?? 0) === 0 ? (
+                {dayLogged.length === 0 ? (
                   <p className="px-3 py-4 text-center text-xs text-muted-foreground">Nothing logged this day.</p>
                 ) : (
-                  dayData!.logged.map((m) => {
+                  dayLogged.map((m) => {
                     const mod = getModule(m.module);
                     const Icon = kindIcon(m.kind);
+                    const st = asStatus(m.status);
+                    const meta = STATUS_META[st];
                     return (
-                      <Link
+                      <button
                         key={m.id}
-                        to={`/app/timeline?memory=${m.id}`}
-                        className="flex items-center gap-3 px-3 py-3"
+                        type="button"
+                        onClick={() => setOpenMemory(m)}
+                        className="flex w-full items-center gap-3 px-3 py-3 text-left transition-smooth active:scale-[0.99]"
                       >
                         <span className={cn('grid h-8 w-8 shrink-0 place-items-center rounded-2xl', mod.tint)}>
                           <Icon className={cn('h-4 w-4', mod.color)} />
                         </span>
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-semibold text-foreground">{m.title}</p>
+                          <p className={cn('truncate text-sm font-semibold text-foreground', st === 'done' && 'line-through opacity-60')}>
+                            {m.title}
+                          </p>
                           <p className="text-[11px] text-muted-foreground">{mod.label} · {whenLabel(m)}</p>
                         </div>
-                      </Link>
+                        {st !== 'open' && (
+                          <span className={cn('shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold', meta.badge)}>
+                            {meta.label}
+                          </span>
+                        )}
+                      </button>
                     );
                   })
                 )}
               </div>
             </div>
+
 
             <div className="smarty-card space-y-2.5 p-3">
               <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
@@ -358,7 +416,37 @@ const CalendarPage = () => {
           </div>
         </SheetContent>
       </Sheet>
+
+      <ReminderDetailSheet
+        reminder={activeReminder}
+        open={!!openReminder}
+        onOpenChange={(o) => !o && setOpenReminder(null)}
+        onUpdate={updateReminder}
+        onToggleDone={toggleDone}
+        onReschedule={reschedule}
+        onDelete={async (id) => {
+          const res = await remove(id);
+          setOpenReminder(null);
+          return res;
+        }}
+      />
+
+      <MemoryDetailSheet
+        memory={activeMemory}
+        open={!!openMemory}
+        onOpenChange={(o) => !o && setOpenMemory(null)}
+        allMemories={memories}
+        onOpenMemory={(m) => setOpenMemory(m)}
+        onSave={updateMemory}
+        onMove={reclassify}
+        onDelete={async (id) => {
+          const res = await removeMemory(id);
+          setOpenMemory(null);
+          return res;
+        }}
+      />
     </div>
+
   );
 };
 

@@ -1,6 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar as CalendarIcon, Check, FileText, Link2, MapPin, Pencil, Save, Sparkles, Trash2 } from 'lucide-react';
+import {
+  Calendar as CalendarIcon, Check, FileText, Link2, Loader2, MapPin, Paperclip, Pencil,
+  RotateCcw, Save, Sparkles, Trash2,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Input } from '@/components/ui/input';
@@ -9,6 +12,9 @@ import { kindIcon } from '@/lib/constants';
 import { albumOf, formatBytes, formatDuration, durationOf, isImageMemory, isVideoMemory, useSignedUrl } from '@/lib/media';
 import { useCategories } from '@/lib/categories';
 import { Memory, titleOf } from '@/lib/memories';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { asStatus, isOverdue, shiftDays, STATUS_META } from '@/lib/status';
 import { cn } from '@/lib/utils';
 
 interface Props {
@@ -28,15 +34,19 @@ const toLocalInput = (iso: string) => {
   return new Date(d.getTime() - off * 60000).toISOString().slice(0, 16);
 };
 
+
 const MemoryDetailSheet = ({
   memory, open, onOpenChange, allMemories = [], onOpenMemory, onSave, onMove, onDelete,
 }: Props) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState<Partial<Memory>>({});
   const [tagsText, setTagsText] = useState('');
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [album, setAlbum] = useState('');
+  const fileInput = useRef<HTMLInputElement | null>(null);
   const attachment = useSignedUrl(memory?.attachment_url);
   const { categories, getCategory } = useCategories();
 
@@ -59,6 +69,44 @@ const MemoryDetailSheet = ({
   const module = getCategory(memory.module);
   const Icon = kindIcon(memory.kind);
   const related = allMemories.filter((m) => memory.related_ids?.includes(m.id));
+  const status = asStatus(memory.status);
+  const statusMeta = STATUS_META[status];
+  const overdue = isOverdue(memory.due_at, status);
+
+  const setStatus = async (next: 'open' | 'done' | 'postponed', dueAt?: string) => {
+    if (!onSave) return;
+    const res = await onSave(memory.id, {
+      status: next,
+      completed_at: next === 'done' ? new Date().toISOString() : null,
+      ...(dueAt ? { due_at: dueAt } : {}),
+    });
+    if (res && 'error' in res && res.error) return toast.error('Could not update this record');
+    toast.success(
+      next === 'done' ? 'Marked as completed' : next === 'postponed' ? 'Postponed' : 'Reopened'
+    );
+  };
+
+  const uploadFile = async (file: File) => {
+    if (!user || !onSave) return;
+    setUploading(true);
+    const ext = file.name.split('.').pop() ?? 'dat';
+    const path = `${user.id}/${Date.now()}.${ext}`;
+    const { error: uploadError } = await supabase.storage.from('captures').upload(path, file, {
+      contentType: file.type,
+    });
+    if (uploadError) {
+      setUploading(false);
+      return toast.error(uploadError.message);
+    }
+    const res = await onSave(memory.id, {
+      attachment_url: path,
+      metadata: { ...(memory.metadata ?? {}), file_name: file.name, file_type: file.type, file_size: file.size },
+    });
+    setUploading(false);
+    if (res && 'error' in res && res.error) return toast.error('Could not attach the file');
+    toast.success('File attached');
+  };
+
 
   const save = async () => {
     if (!onSave) return;
@@ -118,6 +166,57 @@ const MemoryDetailSheet = ({
         </SheetHeader>
 
         <div className="space-y-5 px-4 pb-10 pt-4">
+          {onSave && (
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className={cn('rounded-full px-2.5 py-1 text-[10px] font-bold', statusMeta.badge)}>
+                  {statusMeta.label}
+                </span>
+                {memory.due_at && (
+                  <span className={cn('text-[11px] font-medium', overdue ? 'text-destructive' : 'text-muted-foreground')}>
+                    Due {new Date(memory.due_at).toLocaleString([], { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                    {overdue ? ' · overdue' : ''}
+                  </span>
+                )}
+                {status === 'done' && memory.completed_at && (
+                  <span className="text-[11px] text-muted-foreground">
+                    on {new Date(memory.completed_at).toLocaleDateString([], { day: 'numeric', month: 'short' })}
+                  </span>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => setStatus(status === 'done' ? 'open' : 'done')}
+                  className={cn(
+                    'inline-flex items-center gap-1.5 rounded-2xl px-3.5 py-2 text-xs font-bold transition-smooth active:scale-95',
+                    status === 'done'
+                      ? 'border border-border bg-card text-muted-foreground'
+                      : 'bg-gradient-primary text-primary-foreground'
+                  )}
+                >
+                  {status === 'done'
+                    ? <><RotateCcw className="h-3.5 w-3.5" /> Reopen</>
+                    : <><Check className="h-3.5 w-3.5" /> Mark as done</>}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStatus('postponed', shiftDays(memory.due_at ?? memory.occurred_at, 1))}
+                  className="rounded-2xl border border-border bg-card px-3.5 py-2 text-xs font-semibold text-foreground transition-smooth active:scale-95"
+                >
+                  Postpone 1 day
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStatus('postponed', shiftDays(memory.due_at ?? memory.occurred_at, 7))}
+                  className="rounded-2xl border border-border bg-card px-3.5 py-2 text-xs font-semibold text-foreground transition-smooth active:scale-95"
+                >
+                  Next week
+                </button>
+              </div>
+            </div>
+          )}
+
           {editing ? (
             <div className="space-y-3">
               <div>
@@ -248,6 +347,31 @@ const MemoryDetailSheet = ({
                   {durationOf(memory) != null ? ` , ${formatDuration(durationOf(memory)!)}` : ''}
                 </p>
               )}
+
+              {onSave && (
+                <div>
+                  <input
+                    ref={fileInput}
+                    type="file"
+                    className="hidden"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) void uploadFile(f);
+                      e.target.value = '';
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => fileInput.current?.click()}
+                    disabled={uploading}
+                    className="inline-flex items-center gap-1.5 rounded-2xl border border-border bg-card px-3.5 py-2 text-xs font-semibold text-foreground transition-smooth active:scale-95 disabled:opacity-60"
+                  >
+                    {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Paperclip className="h-3.5 w-3.5" />}
+                    {memory.attachment_url ? 'Replace file' : 'Attach a file'}
+                  </button>
+                </div>
+              )}
+
               {memory.ai_tags?.length ? (
                 <div className="flex flex-wrap gap-1.5">
                   {memory.ai_tags.map((t) => (
