@@ -149,7 +149,11 @@ Deno.serve(async (req) => {
       try {
         const res = await fetch(GATEWAY, {
           method: "POST",
-          headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "Lovable-API-Key": key,
+            "X-Lovable-AIG-SDK": "fetch",
+          },
           body: JSON.stringify({
             model: "google/gemini-3.6-flash",
             messages: [
@@ -171,9 +175,11 @@ Reply with JSON only: {"title":"...","body":"..."}`,
                 }),
               },
             ],
+            response_format: { type: "json_object" },
             max_tokens: 300,
           }),
         });
+        if (!res.ok) console.error("daily-tip gateway error", res.status, await res.text());
         if (res.ok) {
           const data = await res.json();
           const raw = String(data?.choices?.[0]?.message?.content ?? "");
