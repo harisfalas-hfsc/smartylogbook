@@ -22,6 +22,11 @@ export interface Reminder {
   repeat_rule: string | null;
   notified_at: string | null;
   done: boolean;
+  notes?: string | null;
+  attachment_url?: string | null;
+  attachment_name?: string | null;
+  status?: string | null;
+  completed_at?: string | null;
 }
 
 export const REMINDER_TYPES: { id: ReminderType; label: string; icon: typeof Bell }[] = [
