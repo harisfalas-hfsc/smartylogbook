@@ -166,6 +166,57 @@ const MemoryDetailSheet = ({
         </SheetHeader>
 
         <div className="space-y-5 px-4 pb-10 pt-4">
+          {onSave && (
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className={cn('rounded-full px-2.5 py-1 text-[10px] font-bold', statusMeta.badge)}>
+                  {statusMeta.label}
+                </span>
+                {memory.due_at && (
+                  <span className={cn('text-[11px] font-medium', overdue ? 'text-destructive' : 'text-muted-foreground')}>
+                    Due {new Date(memory.due_at).toLocaleString([], { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                    {overdue ? ' · overdue' : ''}
+                  </span>
+                )}
+                {status === 'done' && memory.completed_at && (
+                  <span className="text-[11px] text-muted-foreground">
+                    on {new Date(memory.completed_at).toLocaleDateString([], { day: 'numeric', month: 'short' })}
+                  </span>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => setStatus(status === 'done' ? 'open' : 'done')}
+                  className={cn(
+                    'inline-flex items-center gap-1.5 rounded-2xl px-3.5 py-2 text-xs font-bold transition-smooth active:scale-95',
+                    status === 'done'
+                      ? 'border border-border bg-card text-muted-foreground'
+                      : 'bg-gradient-primary text-primary-foreground'
+                  )}
+                >
+                  {status === 'done'
+                    ? <><RotateCcw className="h-3.5 w-3.5" /> Reopen</>
+                    : <><Check className="h-3.5 w-3.5" /> Mark as done</>}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStatus('postponed', shiftDays(memory.due_at ?? memory.occurred_at, 1))}
+                  className="rounded-2xl border border-border bg-card px-3.5 py-2 text-xs font-semibold text-foreground transition-smooth active:scale-95"
+                >
+                  Postpone 1 day
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStatus('postponed', shiftDays(memory.due_at ?? memory.occurred_at, 7))}
+                  className="rounded-2xl border border-border bg-card px-3.5 py-2 text-xs font-semibold text-foreground transition-smooth active:scale-95"
+                >
+                  Next week
+                </button>
+              </div>
+            </div>
+          )}
+
           {editing ? (
             <div className="space-y-3">
               <div>
