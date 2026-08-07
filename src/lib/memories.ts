@@ -91,7 +91,7 @@ export const useMemories = (options?: { module?: string; limit?: number }) => {
   /** Manual edit of a record by the user. */
   const update = async (id: string, patch: Partial<Memory>) => {
     const allowed: Record<string, unknown> = {};
-    for (const key of ['title', 'summary', 'content', 'module', 'kind', 'ai_tags', 'amount', 'currency', 'location', 'occurred_at', 'metadata'] as const) {
+    for (const key of ['title', 'summary', 'content', 'module', 'kind', 'ai_tags', 'amount', 'currency', 'location', 'occurred_at', 'metadata', 'status', 'completed_at', 'due_at', 'attachment_url'] as const) {
       if (key in patch) allowed[key] = patch[key] ?? null;
     }
     if (!Object.keys(allowed).length) return { error: null };
@@ -102,6 +102,20 @@ export const useMemories = (options?: { module?: string; limit?: number }) => {
     }
     return { error };
   };
+
+  /** Same progress model everywhere: open, completed or postponed. */
+  const setStatus = async (id: string, status: ItemStatus, dueAt?: string | null) =>
+    update(id, {
+      status,
+      completed_at: status === 'done' ? new Date().toISOString() : null,
+      ...(dueAt !== undefined ? { due_at: dueAt } : {}),
+    });
+
+  /** Postpone / reschedule a record to a new date. */
+  const reschedule = async (id: string, dueAt: string) =>
+    update(id, { status: 'postponed', due_at: dueAt, completed_at: null });
+
+
 
   /** User moves an entry to another category, and the assistant learns from it. */
   const reclassify = async (memory: Memory, toModule: string, note?: string) => {
