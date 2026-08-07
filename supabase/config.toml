@@ -15,6 +15,9 @@ verify_jwt = false
 [functions.daily-insights]
 verify_jwt = false
 
+[functions.daily-tip]
+verify_jwt = false
+
 [functions.create-checkout]
 verify_jwt = false
 

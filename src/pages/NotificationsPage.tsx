@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 
 const NOTIFY_ROWS = [
   { key: 'notify_coach', label: 'Daily assistant brief', sub: 'One morning recommendation' },
+  { key: 'notify_daily_tip', label: 'Daily tip from Smarty Assistant', sub: 'One hint every day at 6 a.m. your local time' },
   { key: 'notify_tasks', label: 'Tasks & to-dos', sub: 'Context-aware task reminders' },
   { key: 'notify_bills', label: 'Bills & payments', sub: 'Before a payment is due' },
   { key: 'notify_health', label: 'Health check-ins', sub: 'Medication, appointments, symptoms' },

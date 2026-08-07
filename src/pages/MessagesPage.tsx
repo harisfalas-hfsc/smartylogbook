@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import {
   Archive, ArchiveRestore, CheckCheck, ChevronDown, Inbox, Loader2, Mail, MailOpen,
   MoreVertical, Trash2, X,
@@ -58,6 +58,7 @@ const MessagesPage = () => {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [confirm, setConfirm] = useState<{ ids: string[]; all?: boolean } | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
+  const [params, setParams] = useSearchParams();
 
   const {
     messages, loading, unread, markRead, markAllRead, setRead, archive, unarchive, setArchived,
@@ -144,6 +145,16 @@ const MessagesPage = () => {
   };
 
   const opened = useMemo(() => messages.find((m) => m.id === openId) ?? null, [messages, openId]);
+
+  /* Deep link: /app/messages?m=<id> opens that message straight away. */
+  useEffect(() => {
+    const target = params.get('m');
+    if (!target || loading) return;
+    const match = messages.find((m) => m.id === target);
+    if (match) openMessage(match);
+    params.delete('m');
+    setParams(params, { replace: true });
+  }, [params, loading, messages]);
 
 
 

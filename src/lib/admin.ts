@@ -148,6 +148,14 @@ export const JOB_TEMPLATES: JobTemplate[] = [
     suggestedSchedule: '5 * * * *',
   },
   {
+    id: 'daily_tip',
+    label: 'Daily assistant tip (6 a.m. local time)',
+    description:
+      'Every day at 6 a.m. in each person\'s own timezone, Smarty Assistant sends one short hint, suggestion or piece of advice on how to use Smarty Logbook to make their life easier. It never repeats a tip it has already sent.',
+    suggestedName: 'smarty-daily-tip',
+    suggestedSchedule: '0 * * * *',
+  },
+  {
     id: 'weekly_recap',
     label: 'Weekly recap message',
     description:
@@ -168,9 +176,10 @@ export const JOB_TEMPLATES: JobTemplate[] = [
 export const describeJob = (job: CronJob) => {
   const c = `${job.jobname} ${job.command}`.toLowerCase();
   if (c.includes('proactive-scan')) return JOB_TEMPLATES[0].description;
-  if (c.includes('"mode":"recap"') || c.includes('weekly-recap')) return JOB_TEMPLATES[2].description;
+  if (c.includes('"mode":"recap"') || c.includes('weekly-recap')) return JOB_TEMPLATES[3].description;
+  if (c.includes('daily-tip')) return JOB_TEMPLATES[2].description;
   if (c.includes('daily-insights')) return JOB_TEMPLATES[1].description;
-  if (c.includes('purge_expired_trash')) return JOB_TEMPLATES[3].description;
+  if (c.includes('purge_expired_trash')) return JOB_TEMPLATES[4].description;
   if (c.includes('ai-brain')) return 'Runs a Smarty Assistant background task.';
   return 'Runs a scheduled database or function task.';
 };

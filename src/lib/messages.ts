@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
-  Bell, BrainCog, CalendarClock, CreditCard, FileText, HeartPulse, Megaphone, Receipt, Sparkles,
+  Bell, BrainCog, CalendarClock, CreditCard, FileText, HeartPulse, Lightbulb, Megaphone, Receipt, Sparkles,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -28,6 +28,7 @@ export const MESSAGE_KINDS: Record<string, { label: string; icon: typeof Bell; t
   brief: { label: 'Daily brief', icon: BrainCog, tint: 'bg-primary/10', color: 'text-primary' },
   insight: { label: 'Daily insight', icon: Sparkles, tint: 'bg-primary/10', color: 'text-primary' },
   recap: { label: 'Weekly recap', icon: BrainCog, tint: 'bg-primary/10', color: 'text-primary' },
+  tip: { label: 'Daily tip', icon: Lightbulb, tint: 'bg-primary/10', color: 'text-primary' },
   assistant: { label: 'Assistant', icon: BrainCog, tint: 'bg-primary/10', color: 'text-primary' },
   announcement: { label: 'Announcement', icon: Megaphone, tint: 'bg-primary/10', color: 'text-primary' },
   calendar: { label: 'Calendar', icon: CalendarClock, tint: 'bg-mod-business/10', color: 'text-mod-business' },

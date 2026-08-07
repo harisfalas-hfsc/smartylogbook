@@ -6,6 +6,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { useMemories, whenLabel, Memory } from '@/lib/memories';
 import { useProactiveAlerts } from '@/lib/alerts';
+import { useMessages, messageStyle } from '@/lib/messages';
 import { useCategories } from '@/lib/categories';
 import { useReminders, reminderIcon } from '@/lib/reminders';
 import MemoryDetailSheet from '@/components/MemoryDetailSheet';
@@ -23,6 +24,10 @@ const Dashboard = () => {
   const { memories, loading, reclassify, update, remove } = useMemories({ limit: 60 });
   const [selectedMemory, setSelectedMemory] = useState<Memory | null>(null);
   const { alerts } = useProactiveAlerts();
+  const { messages } = useMessages();
+
+  // Newest unread message from Smarty Assistant, shown as a bar above Timeline.
+  const latestMessage = useMemo(() => messages.find((m) => !m.read_at) ?? null, [messages]);
   const { categories } = useCategories();
   const { reminders } = useReminders();
 
@@ -93,6 +98,29 @@ const Dashboard = () => {
           <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
         </Link>
       )}
+
+      {/* Unread message from Smarty Assistant, above the timeline */}
+      {latestMessage && (() => {
+        const style = messageStyle(latestMessage.kind);
+        const Icon = style.icon;
+        return (
+          <Link
+            to={`/app/messages?m=${latestMessage.id}`}
+            className="smarty-card flex animate-fade-up items-center gap-3 border-primary/30 bg-primary/[0.04] p-3.5 transition-smooth active:opacity-80"
+          >
+            <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl ${style.tint}`}>
+              <Icon className={`h-4.5 w-4.5 ${style.color}`} />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-sm font-bold text-foreground">{latestMessage.title}</span>
+              <span className="block truncate text-[11px] text-muted-foreground">
+                {latestMessage.body ?? style.label}
+              </span>
+            </span>
+            <ChevronRight className="h-4 w-4 shrink-0 text-primary" />
+          </Link>
+        );
+      })()}
 
       {/* 1. Timeline, the hero of the home screen */}
       <section className="animate-fade-up">
