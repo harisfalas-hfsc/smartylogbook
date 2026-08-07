@@ -54,6 +54,13 @@ export const submitTicket = async (
   const { data: session } = await supabase.auth.getUser();
   const userId = session.user?.id ?? null;
 
+  // Support conversations are a Smarty Premium benefit.
+  if (!userId) return { error: new Error('Please sign in to write to support') };
+  if (!(await hasPremium(userId))) {
+    return { error: new Error('Support conversations are part of Smarty Premium') };
+  }
+
+
   let attachment_url: string | null = null;
   let attachment_name: string | null = null;
   if (input.file) {
