@@ -75,10 +75,14 @@ const AdminJobsTab = () => {
           <Timer className="h-4 w-4 text-primary" /> Automations
         </p>
         <p className="mt-1 text-[12px] leading-relaxed text-muted-foreground">
-          These are the background jobs that keep the app alive without anyone pressing a button.
-          Change when a job runs, pause it, run it right now, or add a new one. Times are UTC.
+          These are the background jobs that keep the app alive without anyone pressing a button. Every automated
+          message your members receive is produced by one of these jobs, and each card below says exactly which message
+          type it writes, so you can match it with the <strong className="text-foreground">Messages</strong> tab.
+          Change when a job runs, pause it, run it right now, or add a new one. Times are UTC, except the daily tip,
+          which uses each member’s own timezone.
         </p>
       </div>
+
 
       <div className="grid gap-3 xl:grid-cols-2">
         {jobs.map((job) => {
