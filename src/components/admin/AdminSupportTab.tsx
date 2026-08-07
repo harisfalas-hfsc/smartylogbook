@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Check, ExternalLink, Loader2, Mail, RefreshCw, Send, Trash2 } from 'lucide-react';
+import { Check, ExternalLink, Loader2, Mail, RefreshCw, Send, Sparkles, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { AUTHOR_LABEL, SupportTicket, useSupportTickets, useTicketThread } from '@/lib/support';
