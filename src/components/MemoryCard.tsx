@@ -40,7 +40,9 @@ const MemoryCard = ({ memory, onDelete, onMove, onOpen }: Props) => {
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
-            <p className="truncate text-sm font-semibold text-foreground">{titleOf(memory)}</p>
+            <p className={`truncate text-sm font-semibold text-foreground${status === 'done' ? ' line-through opacity-60' : ''}`}>
+              {titleOf(memory)}
+            </p>
             <span className="shrink-0 text-[11px] font-medium tabular-nums text-muted-foreground">
               {whenLabel(memory)}
             </span>
@@ -49,6 +51,17 @@ const MemoryCard = ({ memory, onDelete, onMove, onOpen }: Props) => {
             <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted-foreground">{memory.summary}</p>
           )}
           <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+            {status !== 'open' && (
+              <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${statusMeta.badge}`}>
+                {statusMeta.label}
+              </span>
+            )}
+            {overdue && (
+              <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-[10px] font-bold text-destructive">
+                Overdue
+              </span>
+            )}
+
             {onMove ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
