@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Clock, Loader2, Pause, Play, Plus, RefreshCw, Save, Timer, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { CronJob, JOB_TEMPLATES, SCHEDULE_PRESETS, adminApi, describeJob, describeSchedule } from '@/lib/admin';
+import { CronJob, JOB_TEMPLATES, SCHEDULE_PRESETS, adminApi, describeJob, describeSchedule, jobKinds, kindInfo } from '@/lib/admin';
 import { cn } from '@/lib/utils';
 
 const fmtTime = (d?: string | null) =>
@@ -75,10 +75,14 @@ const AdminJobsTab = () => {
           <Timer className="h-4 w-4 text-primary" /> Automations
         </p>
         <p className="mt-1 text-[12px] leading-relaxed text-muted-foreground">
-          These are the background jobs that keep the app alive without anyone pressing a button.
-          Change when a job runs, pause it, run it right now, or add a new one. Times are UTC.
+          These are the background jobs that keep the app alive without anyone pressing a button. Every automated
+          message your members receive is produced by one of these jobs, and each card below says exactly which message
+          type it writes, so you can match it with the <strong className="text-foreground">Messages</strong> tab.
+          Change when a job runs, pause it, run it right now, or add a new one. Times are UTC, except the daily tip,
+          which uses each member’s own timezone.
         </p>
       </div>
+
 
       <div className="grid gap-3 xl:grid-cols-2">
         {jobs.map((job) => {
@@ -100,6 +104,29 @@ const AdminJobsTab = () => {
               </div>
 
               <p className="text-[12px] leading-relaxed text-muted-foreground">{describeJob(job)}</p>
+
+              {jobKinds(job).length > 0 && (
+                <div className="rounded-2xl bg-primary/5 p-3">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                    Messages it writes
+                  </p>
+                  <div className="mt-1.5 flex flex-wrap gap-1.5">
+                    {jobKinds(job).map((k) => (
+                      <span
+                        key={k}
+                        className="rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-primary"
+                      >
+                        {kindInfo(k).label}
+                      </span>
+                    ))}
+                  </div>
+                  <p className="mt-1.5 text-[11px] leading-relaxed text-muted-foreground">
+                    {kindInfo(jobKinds(job)[0]).what} You can read, edit or delete everything it has already sent in the
+                    Messages tab.
+                  </p>
+                </div>
+              )}
+
 
               <div className="grid grid-cols-2 gap-2">
                 <div className="rounded-2xl bg-secondary/60 p-3">
@@ -154,10 +181,10 @@ const AdminJobsTab = () => {
                 <p className="mt-1 text-[11px] text-muted-foreground">Runs {describeSchedule(draft.schedule)}.</p>
               </label>
 
-              <label className="block">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                  What it does (SQL command)
-                </span>
+              <details className="rounded-2xl border border-border bg-card/60 p-3">
+                <summary className="cursor-pointer text-[11px] font-bold text-muted-foreground">
+                  Advanced: the exact command this job runs
+                </summary>
                 <textarea
                   value={draft.command}
                   onChange={(e) =>
@@ -165,9 +192,10 @@ const AdminJobsTab = () => {
                   }
                   rows={4}
                   spellCheck={false}
-                  className="mt-1 w-full rounded-2xl border border-border bg-card px-3 py-2 font-mono text-[11px] leading-relaxed text-foreground outline-none"
+                  className="mt-2 w-full rounded-2xl border border-border bg-card px-3 py-2 font-mono text-[11px] leading-relaxed text-foreground outline-none"
                 />
-              </label>
+              </details>
+
 
               <div className="flex flex-wrap gap-2">
                 <button

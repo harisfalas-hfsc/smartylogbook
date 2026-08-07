@@ -12,6 +12,8 @@ import { cn } from '@/lib/utils';
 import {
   DEFAULT_PRICING, PlanConfig, PricingConfig, conversationCost, planAllowance, planMargin,
 } from '@/lib/pricing';
+import { PREMIUM_PRICE_ID, getStripeEnvironment } from '@/lib/stripe';
+
 import AdminJobsTab from '@/components/admin/AdminJobsTab';
 import AdminMessagesTab from '@/components/admin/AdminMessagesTab';
 import AdminSupportTab from '@/components/admin/AdminSupportTab';
@@ -74,6 +76,13 @@ const AdminPage = () => {
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pricing, setPricing] = useState<PricingConfig>(DEFAULT_PRICING);
+  // What Stripe will really charge, so the numbers below can never silently
+  // disagree with the card the customer is billed on.
+  const [stripePrice, setStripePrice] = useState<
+    { amount: number; currency: string; interval: string } | null | 'loading'
+  >('loading');
+  const [stripeError, setStripeError] = useState<string | null>(null);
+
   const [grantPlan, setGrantPlan] = useState<string>(DEFAULT_PRICING.plans[0]?.key ?? 'premium');
   const [newUser, setNewUser] = useState({ email: '', password: '', username: '', months: 0 });
 
@@ -94,12 +103,22 @@ const AdminPage = () => {
       const plans = Array.isArray(cfg.plans) && cfg.plans.length ? cfg.plans : DEFAULT_PRICING.plans;
       setPricing({ ...DEFAULT_PRICING, ...cfg, plans });
       setGrantPlan((prev) => (plans.some((p) => p.key === prev) ? prev : plans[0]?.key ?? 'premium'));
+      adminApi<{ price: typeof stripePrice; error?: string }>('stripe_price', { environment: getStripeEnvironment() })
+        .then((r) => {
+          setStripePrice((r.price as { amount: number; currency: string; interval: string } | null) ?? null);
+          setStripeError(r.error ?? null);
+        })
+        .catch((e) => {
+          setStripePrice(null);
+          setStripeError(e instanceof Error ? e.message : 'Stripe unavailable');
+        });
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load admin data');
     } finally {
       setLoading(false);
     }
   }, []);
+
 
   useEffect(() => {
     if (isAdmin) load();
@@ -444,8 +463,44 @@ const AdminPage = () => {
                     Whatever you save here is what the public pricing page, the plan page and the conversation meter
                     show, nothing is hardcoded.
                   </li>
+                  <li>
+                    <strong className="text-foreground">Important:</strong> this tab does not change what Stripe
+                    charges. The real charge lives on the Stripe price <code>{PREMIUM_PRICE_ID}</code>, shown below. If
+                    the two disagree, customers see one price and pay another, so change the Stripe price first, then
+                    match it here.
+                  </li>
                 </ul>
               </div>
+
+              <div className="smarty-card p-4">
+                <p className="text-sm font-bold text-foreground">What Stripe actually charges</p>
+                {stripePrice === 'loading' ? (
+                  <p className="mt-1 text-[12px] text-muted-foreground">Checking Stripe…</p>
+                ) : stripePrice ? (
+                  <>
+                    <p className="mt-1 text-2xl font-extrabold text-foreground">
+                      {stripePrice.currency === 'EUR' ? euro(stripePrice.amount) : `${stripePrice.amount} ${stripePrice.currency}`}
+                      <span className="ml-1 text-sm font-semibold text-muted-foreground">
+                        / {stripePrice.interval}
+                      </span>
+                    </p>
+                    <p className="text-[11px] text-muted-foreground">
+                      Live from Stripe, price <code>{PREMIUM_PRICE_ID}</code>, {getStripeEnvironment()} mode.
+                    </p>
+                    {Math.abs((pricing.plans[0]?.price ?? 0) - stripePrice.amount) > 0.001 && (
+                      <p className="mt-2 rounded-2xl bg-destructive/10 px-3 py-2 text-[12px] font-semibold text-destructive">
+                        Mismatch: the app advertises {euro(pricing.plans[0]?.price ?? 0)} but Stripe bills{' '}
+                        {euro(stripePrice.amount)}. Fix one of them.
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  <p className="mt-1 text-[12px] text-muted-foreground">
+                    Could not read the Stripe price. {stripeError}
+                  </p>
+                )}
+              </div>
+
 
               <div className="smarty-card p-4">
 
