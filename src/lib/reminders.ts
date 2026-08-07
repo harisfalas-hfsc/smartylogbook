@@ -96,16 +96,30 @@ export const useReminders = () => {
       .like('dedupe_key', `reminder:${id}:%`);
   };
 
-  const toggleDone = async (id: string, done: boolean) => {
-    setReminders((prev) => prev.map((r) => (r.id === id ? { ...r, done } : r)));
-    const { error } = await supabase.from('reminders').update({ done }).eq('id', id);
-    if (error) {
-      setReminders((prev) => prev.map((r) => (r.id === id ? { ...r, done: !done } : r)));
-      return { error };
+  const patch = async (id: string, values: Partial<Reminder>) => {
+    const previous = reminders.find((r) => r.id === id);
+    setReminders((prev) => prev.map((r) => (r.id === id ? { ...r, ...values } : r)));
+    const { error } = await supabase.from('reminders').update(values as never).eq('id', id);
+    if (error && previous) {
+      setReminders((prev) => prev.map((r) => (r.id === id ? previous : r)));
     }
+    return { error };
+  };
+
+  const toggleDone = async (id: string, done: boolean) => {
+    const { error } = await patch(id, {
+      done,
+      status: done ? 'done' : 'open',
+      completed_at: done ? new Date().toISOString() : null,
+    });
+    if (error) return { error };
     if (done) await clearAlert(id);
     return { error: null };
   };
+
+  /** Move a scheduled item to a new date, and mark it postponed. */
+  const reschedule = async (id: string, dueAt: string) =>
+    patch(id, { due_at: dueAt, status: 'postponed', done: false, completed_at: null, notified_at: null });
 
   const remove = async (id: string) => {
     const removed = reminders.find((r) => r.id === id);
@@ -119,7 +133,7 @@ export const useReminders = () => {
     return { error: null };
   };
 
-  return { reminders, loading, reload: load, create, toggleDone, remove };
+  return { reminders, loading, reload: load, create, toggleDone, remove, update: patch, reschedule };
 };
 
 const typeEnabled = (prefs: Preferences, type: string) => {
