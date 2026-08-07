@@ -36,22 +36,80 @@ const AccountPage = () => {
     return data as Record<string, unknown>;
   };
 
+  /**
+   * Full data export: everything you ever put in, packaged as one ZIP.
+   * It contains your records as JSON and CSV, plus every original file you
+   * uploaded (photos, receipts, PDFs) inside a `files/` folder.
+   */
   const exportData = async () => {
     setBusy('export');
     try {
       const data = await callAccount({ action: 'export' });
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const files = (data.files as { path: string; name: string; url: string | null }[]) ?? [];
+
+      const { default: JSZip } = await import('jszip');
+      const zip = new JSZip();
+
+      const tables = (data.data ?? {}) as Record<string, Record<string, unknown>[]>;
+      zip.file('data.json', JSON.stringify({ ...data, files: files.map((f) => f.path) }, null, 2));
+
+      /* A spreadsheet-friendly copy of every table, so the export is readable
+       * without any technical tool. */
+      const csv = (rows: Record<string, unknown>[]) => {
+        if (!rows.length) return '';
+        const cols = Array.from(new Set(rows.flatMap((r) => Object.keys(r))));
+        const cell = (v: unknown) => {
+          const s = v == null ? '' : typeof v === 'object' ? JSON.stringify(v) : String(v);
+          return `"${s.replace(/"/g, '""')}"`;
+        };
+        return [cols.join(','), ...rows.map((r) => cols.map((c) => cell(r[c])).join(','))].join('\n');
+      };
+      for (const [name, rows] of Object.entries(tables)) {
+        if (Array.isArray(rows) && rows.length) zip.file(`tables/${name}.csv`, csv(rows));
+      }
+
+      let downloaded = 0;
+      let failed = 0;
+      await Promise.all(
+        files.map(async (f) => {
+          if (!f.url) { failed += 1; return; }
+          try {
+            const res = await fetch(f.url);
+            if (!res.ok) throw new Error(String(res.status));
+            zip.file(`files/${f.path}`, await res.blob());
+            downloaded += 1;
+          } catch {
+            failed += 1;
+          }
+        }),
+      );
+
+      zip.file(
+        'README.txt',
+        [
+          'Smarty Logbook, personal data export',
+          `Created: ${new Date().toISOString()}`,
+          '',
+          'data.json    every record we hold about you, in full',
+          'tables/      the same records as spreadsheet files',
+          'files/       every photo, receipt and document you uploaded',
+          '',
+          `Files included: ${downloaded}${failed ? ` (${failed} could not be fetched)` : ''}`,
+        ].join('\n'),
+      );
+
+      const blob = await zip.generateAsync({ type: 'blob' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `smarty-logbook-export-${new Date().toISOString().slice(0, 10)}.json`;
+      a.download = `smarty-logbook-export-${new Date().toISOString().slice(0, 10)}.zip`;
       a.click();
       URL.revokeObjectURL(url);
-      const files = (data.files as { url: string | null }[]) ?? [];
+
       toast.success(
-        files.length
-          ? `Export ready, includes ${files.length} uploaded document link${files.length > 1 ? 's' : ''} (valid 1 hour)`
-          : 'Export downloaded'
+        downloaded
+          ? `Export ready, ${downloaded} uploaded file${downloaded > 1 ? 's' : ''} included`
+          : 'Export downloaded',
       );
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Export failed');
@@ -59,6 +117,7 @@ const AccountPage = () => {
       setBusy(null);
     }
   };
+
 
   const deleteAccount = async () => {
     if (confirmText !== 'DELETE') {
@@ -139,9 +198,9 @@ const AccountPage = () => {
           <Download className="h-4 w-4 text-primary" /> Download your data
         </h2>
         <p className="text-xs text-muted-foreground">
-          A machine-readable JSON file with every entry, preference and reminder, plus
-          time-limited download links for every document, photo and receipt you uploaded
-          (right to data portability, Art. 20 GDPR).
+          A ZIP archive with every entry, preference and reminder as JSON and spreadsheet files,
+          plus a <span className="font-semibold">files</span> folder holding the original photos,
+          receipts and documents you uploaded (right to data portability, Art. 20 GDPR).
         </p>
         <button
           onClick={exportData}
