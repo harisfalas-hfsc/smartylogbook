@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Calendar as CalendarIcon, Check, FileText, Link2, Loader2, MapPin, Paperclip, Pencil,
-  RotateCcw, Save, Sparkles, Trash2,
+  Plus, RotateCcw, Save, Sparkles, Trash2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
@@ -16,6 +16,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { asStatus, isOverdue, shiftDays, STATUS_META } from '@/lib/status';
 import { cn } from '@/lib/utils';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface Props {
   memory: Memory | null;
@@ -32,6 +33,74 @@ const toLocalInput = (iso: string) => {
   const d = new Date(iso);
   const off = d.getTimezoneOffset();
   return new Date(d.getTime() - off * 60000).toISOString().slice(0, 16);
+};
+
+interface StoredAttachment {
+  path: string;
+  name: string;
+  type?: string;
+  size?: number;
+}
+
+const attachmentsOf = (memory: Memory): StoredAttachment[] => {
+  const additional = Array.isArray(memory.metadata?.attachments)
+    ? (memory.metadata.attachments as unknown[]).filter((item): item is StoredAttachment => {
+        if (!item || typeof item !== 'object') return false;
+        return typeof (item as { path?: unknown }).path === 'string';
+      })
+    : [];
+  const primary = memory.attachment_url
+    ? [{
+        path: memory.attachment_url,
+        name: String(memory.metadata?.file_name ?? titleOf(memory)),
+        type: typeof memory.metadata?.file_type === 'string' ? memory.metadata.file_type : undefined,
+        size: typeof memory.metadata?.file_size === 'number' ? memory.metadata.file_size : undefined,
+      }]
+    : [];
+  return [...primary, ...additional.filter((item) => item.path !== memory.attachment_url)];
+};
+
+const AttachmentRow = ({ file, onRemove }: { file: StoredAttachment; onRemove?: () => void }) => {
+  const url = useSignedUrl(file.path);
+  const image = file.type?.startsWith('image/');
+  const video = file.type?.startsWith('video/');
+  return (
+    <div className="overflow-hidden rounded-2xl border border-border bg-card">
+      {url && image ? (
+        <a href={url} target="_blank" rel="noreferrer" className="block">
+          <img src={url} alt={file.name} className="max-h-72 w-full object-cover" loading="lazy" />
+        </a>
+      ) : url && video ? (
+        <video src={url} controls playsInline className="max-h-72 w-full" />
+      ) : (
+        <a
+          href={url ?? undefined}
+          target={url ? '_blank' : undefined}
+          rel={url ? 'noreferrer' : undefined}
+          aria-disabled={!url}
+          className={cn('flex min-w-0 items-center gap-3 p-3.5', url ? 'hover:bg-secondary/50' : 'cursor-wait opacity-70')}
+        >
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+            {url ? <FileText className="h-5 w-5" /> : <Loader2 className="h-5 w-5 animate-spin" />}
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-sm font-bold text-foreground">{file.name}</span>
+            <span className="block text-[11px] text-muted-foreground">
+              {url ? 'Tap to open or download' : 'Preparing secure file link…'}
+            </span>
+          </span>
+        </a>
+      )}
+      <div className="flex items-center justify-between border-t border-border px-3.5 py-2">
+        <span className="text-[11px] text-muted-foreground">{typeof file.size === 'number' ? formatBytes(file.size) : 'Attachment'}</span>
+        {onRemove && (
+          <button type="button" onClick={onRemove} className="inline-flex items-center gap-1 text-[11px] font-semibold text-destructive">
+            <Trash2 className="h-3.5 w-3.5" /> Remove file
+          </button>
+        )}
+      </div>
+    </div>
+  );
 };
 
 
@@ -51,6 +120,7 @@ const MemoryDetailSheet = ({
   const [localModule, setLocalModule] = useState('personal');
   const [localDueAt, setLocalDueAt] = useState<string | null>(null);
   const [localCompletedAt, setLocalCompletedAt] = useState<string | null>(null);
+  const [localAttachments, setLocalAttachments] = useState<StoredAttachment[]>([]);
   const fileInput = useRef<HTMLInputElement | null>(null);
   const attachment = useSignedUrl(memory?.attachment_url);
   const { categories, getCategory } = useCategories();
@@ -72,6 +142,7 @@ const MemoryDetailSheet = ({
     setLocalModule(memory.module);
     setLocalDueAt(memory.due_at ?? null);
     setLocalCompletedAt(memory.completed_at ?? null);
+    setLocalAttachments(attachmentsOf(memory));
   }, [memory]);
 
   if (!memory) return null;
@@ -113,13 +184,37 @@ const MemoryDetailSheet = ({
       setUploading(false);
       return toast.error(uploadError.message);
     }
-    const res = await onSave(memory.id, {
+    const nextFile = { path, name: file.name, type: file.type, size: file.size };
+    const hasPrimary = localAttachments.length > 0;
+    const additional = hasPrimary ? [...localAttachments.slice(1), nextFile] : [];
+    const res = await onSave(memory.id, hasPrimary ? {
+      metadata: { ...(memory.metadata ?? {}), attachments: additional },
+    } : {
       attachment_url: path,
-      metadata: { ...(memory.metadata ?? {}), file_name: file.name, file_type: file.type, file_size: file.size },
+      metadata: { ...(memory.metadata ?? {}), file_name: file.name, file_type: file.type, file_size: file.size, attachments: [] },
     });
     setUploading(false);
     if (res && 'error' in res && res.error) return toast.error('Could not attach the file');
-    toast.success('File attached');
+    setLocalAttachments((current) => [...current, nextFile]);
+    toast.success('File added');
+  };
+
+  const removeAttachment = async (file: StoredAttachment) => {
+    if (!onSave || !window.confirm(`Remove “${file.name}” from this record?`)) return;
+    const remaining = localAttachments.filter((item) => item.path !== file.path);
+    const nextPrimary = remaining[0];
+    const nextMetadata = {
+      ...(memory.metadata ?? {}),
+      file_name: nextPrimary?.name ?? null,
+      file_type: nextPrimary?.type ?? null,
+      file_size: nextPrimary?.size ?? null,
+      attachments: remaining.slice(1),
+    };
+    const res = await onSave(memory.id, { attachment_url: nextPrimary?.path ?? null, metadata: nextMetadata });
+    if (res && 'error' in res && res.error) return toast.error('Could not remove the file');
+    if (!/^https?:\/\//.test(file.path)) await supabase.storage.from('captures').remove([file.path]);
+    setLocalAttachments(remaining);
+    toast.success('File removed');
   };
 
 
@@ -207,13 +302,13 @@ const MemoryDetailSheet = ({
               <p className="text-xs font-medium text-foreground">
                 {status === 'done' ? 'This record is completed.' : status === 'postponed' ? `Moved to ${localDueAt ? new Date(localDueAt).toLocaleString([], { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'a later date'}.` : 'This record still needs attention.'}
               </p>
-              <div className="flex flex-wrap gap-2">
+              <div className="grid grid-cols-3 gap-1.5">
                 <button
                   type="button"
                   onClick={() => setStatus(status === 'done' ? 'open' : 'done')}
                   disabled={changingStatus}
                   className={cn(
-                    'inline-flex items-center gap-1.5 rounded-2xl px-3.5 py-2 text-xs font-bold transition-smooth active:scale-95',
+                    'inline-flex min-w-0 items-center justify-center gap-1 rounded-xl px-2 py-2 text-[11px] font-bold transition-smooth active:scale-95',
                     status === 'done'
                       ? 'border border-border bg-card text-muted-foreground'
                       : 'bg-gradient-primary text-primary-foreground'
@@ -227,15 +322,15 @@ const MemoryDetailSheet = ({
                   type="button"
                   onClick={() => setStatus('postponed', shiftDays(localDueAt ?? memory.occurred_at, 1))}
                   disabled={changingStatus}
-                  className="rounded-2xl border border-border bg-card px-3.5 py-2 text-xs font-semibold text-foreground transition-smooth active:scale-95"
+                  className="min-w-0 rounded-xl border border-border bg-card px-1.5 py-2 text-[11px] font-semibold text-foreground transition-smooth active:scale-95"
                 >
-                  Postpone 1 day
+                  +1 day
                 </button>
                 <button
                   type="button"
                   onClick={() => setStatus('postponed', shiftDays(localDueAt ?? memory.occurred_at, 7))}
                   disabled={changingStatus}
-                  className="rounded-2xl border border-border bg-card px-3.5 py-2 text-xs font-semibold text-foreground transition-smooth active:scale-95"
+                  className="min-w-0 rounded-xl border border-border bg-card px-1.5 py-2 text-[11px] font-semibold text-foreground transition-smooth active:scale-95"
                 >
                   Next week
                 </button>
@@ -320,11 +415,6 @@ const MemoryDetailSheet = ({
                 )}
               </div>
 
-              {albumOf(memory) && (
-                <span className="inline-flex rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-semibold text-primary">
-                  {albumOf(memory)}
-                </span>
-              )}
               {memory.summary && <p className="text-sm font-medium text-foreground">{memory.summary}</p>}
               {memory.content && (
                 <div className="smarty-card p-4">
@@ -341,44 +431,13 @@ const MemoryDetailSheet = ({
               >
                 <Sparkles className="h-3.5 w-3.5" /> Ask Smarty Assistant about this
               </button>
-              {memory.attachment_url && (
-                attachment && isVideoMemory(memory) ? (
-                  <video src={attachment} controls playsInline className="w-full overflow-hidden rounded-2xl border border-border" />
-                ) : attachment && isImageMemory(memory) ? (
-                  <a href={attachment} target="_blank" rel="noreferrer" className="block overflow-hidden rounded-2xl border border-border">
-                    <img src={attachment} alt={titleOf(memory)} className="w-full object-cover" loading="lazy" />
-                  </a>
-                ) : (
-                  <a
-                    href={attachment ?? undefined}
-                    target={attachment ? '_blank' : undefined}
-                    rel={attachment ? 'noreferrer' : undefined}
-                    aria-disabled={!attachment}
-                    className={cn(
-                      'flex items-center gap-3 rounded-2xl border border-border bg-card p-3.5 transition-smooth',
-                      attachment ? 'hover:border-primary/40' : 'cursor-wait opacity-70'
-                    )}
-                  >
-                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
-                      <FileText className="h-5 w-5" />
-                    </span>
-                    <span className="min-w-0">
-                      <span className="block truncate text-sm font-bold text-foreground">
-                        {String(memory.metadata?.file_name ?? titleOf(memory))}
-                      </span>
-                      <span className="block text-[11px] text-muted-foreground">
-                        {attachment ? 'Tap to open or download' : 'Preparing secure file link…'}
-                      </span>
-                    </span>
-                  </a>
-                )
-              )}
-
-              {memory.attachment_url && (
-                <p className="text-[11px] text-muted-foreground">
-                  {typeof memory.metadata?.file_size === 'number' ? formatBytes(memory.metadata.file_size as number) : 'File'}
-                  {durationOf(memory) != null ? ` , ${formatDuration(durationOf(memory)!)}` : ''}
-                </p>
+              {localAttachments.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">Attachments</p>
+                  {localAttachments.map((file) => (
+                    <AttachmentRow key={file.path} file={file} onRemove={onSave ? () => void removeAttachment(file) : undefined} />
+                  ))}
+                </div>
               )}
 
               {onSave && (
@@ -400,7 +459,7 @@ const MemoryDetailSheet = ({
                     className="inline-flex items-center gap-1.5 rounded-2xl border border-border bg-card px-3.5 py-2 text-xs font-semibold text-foreground transition-smooth active:scale-95 disabled:opacity-60"
                   >
                     {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Paperclip className="h-3.5 w-3.5" />}
-                    {memory.attachment_url ? 'Replace file' : 'Attach a file'}
+                     <Plus className="h-3.5 w-3.5" /> {localAttachments.length ? 'Add another file' : 'Add a file'}
                   </button>
                 </div>
               )}
@@ -435,29 +494,26 @@ const MemoryDetailSheet = ({
 
           {onMove && (
             <div className="space-y-2">
-              <p className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">Category</p>
-              <div className="flex flex-wrap gap-2">
-                {categories.map((m) => (
-                  <button
-                    key={m.id}
-                    onClick={async () => {
-                      if (m.id === localModule) return;
-                      const res = await onMove(memory, m.id);
-                      if (res && 'error' in res && res.error) return toast.error('Could not move this record');
-                      setLocalModule(m.id);
-                      toast.success(`Moved to ${m.label}`, { description: 'Smarty Assistant will remember this choice.' });
-                    }}
-                    className={cn(
-                      'inline-flex items-center gap-1.5 rounded-2xl border px-3 py-1.5 text-[11px] font-semibold transition-smooth active:scale-95',
-                      m.id === localModule ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-card text-muted-foreground'
-                    )}
-                  >
-                    <m.icon className={cn('h-3.5 w-3.5', m.id === localModule ? '' : m.color)} />
-                    {m.label}
-                    {m.id === localModule && <Check className="h-3 w-3" />}
-                  </button>
-                ))}
-              </div>
+              <p className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">Move to another category</p>
+              <Select
+                value={localModule}
+                onValueChange={async (next) => {
+                  if (next === localModule) return;
+                  const chosen = categories.find((item) => item.id === next);
+                  const res = await onMove(memory, next);
+                  if (res && 'error' in res && res.error) return toast.error('Could not move this record');
+                  setLocalModule(next);
+                  toast.success(`Moved to ${chosen?.label ?? next}`, { description: 'Smarty Assistant will remember this choice.' });
+                }}
+              >
+                <SelectTrigger className="h-12 rounded-2xl border-border bg-card px-4 font-semibold">
+                  <SelectValue placeholder="Choose a category" />
+                </SelectTrigger>
+                <SelectContent className="rounded-2xl">
+                  {categories.map((item) => <SelectItem key={item.id} value={item.id} className="rounded-xl py-2.5">{item.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <p className="text-[11px] text-muted-foreground">Selecting a category moves this record immediately.</p>
             </div>
           )}
 
