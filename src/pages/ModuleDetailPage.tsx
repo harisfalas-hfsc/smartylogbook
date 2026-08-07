@@ -51,10 +51,25 @@ const ModuleDetailPage = () => {
   const [icon, setIcon] = useState(own?.icon ?? 'folder');
   const [saving, setSaving] = useState(false);
 
-  const albums = useMemo(() => albumsOf(memories), [memories]);
+  /** In a gallery, anything without its own album still belongs to its month. */
+  const albumFor = (m: Memory) => albumOf(m) ?? (isMedia ? monthAlbum(m.occurred_at) : null);
+
+  const albums = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const m of memories) {
+      const a = albumFor(m);
+      if (a) map.set(a, (map.get(a) ?? 0) + 1);
+    }
+    return [...map.entries()]
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [memories, isMedia]);
+
   const visible = useMemo(
-    () => (album ? memories.filter((m) => albumOf(m) === album) : memories),
-    [memories, album]
+    () => (album ? memories.filter((m) => albumFor(m) === album) : memories),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [memories, album, isMedia]
   );
 
   const groups = useMemo(() => {
