@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
+import { hasPremium } from '@/lib/subscription';
+
 
 export const SUPPORT_EMAIL = 'smartylogbook@outlook.com';
 
