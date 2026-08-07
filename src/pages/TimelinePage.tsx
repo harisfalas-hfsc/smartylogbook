@@ -222,6 +222,25 @@ const TimelinePage = () => {
         </button>
       </div>
 
+      {/* Status: open / completed / postponed — same model everywhere */}
+      <div className="animate-fade-up -mx-1 flex gap-1.5 overflow-x-auto px-1 pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {STATUS_FILTERS.map((f) => (
+          <button
+            key={f.id}
+            onClick={() => setStatus(f.id)}
+            className={cn(
+              'shrink-0 rounded-full border px-3 py-1.5 text-[11px] font-semibold transition-smooth active:scale-95',
+              status === f.id
+                ? 'border-primary bg-primary/10 text-primary'
+                : 'border-border bg-card text-muted-foreground',
+            )}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
+
+
       {/* What it means → Insights */}
       {memories.length > 0 && (
         <Link
