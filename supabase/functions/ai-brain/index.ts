@@ -209,8 +209,63 @@ for (const mode of ["classify", "chat", "brief", "coach", "search", "insights", 
 
 
 
+/**
+ * Salvage a JSON object that was cut off mid-generation: drop the dangling tail,
+ * close any open string and balance the remaining brackets.
+ */
+function repairJson(text: string): string {
+  const start = text.indexOf("{");
+  if (start < 0) return "";
+  let s = text.slice(start);
+  // Cut a trailing incomplete token (e.g. `"tit`) back to the last complete value.
+  const stack: string[] = [];
+  let inString = false;
+  let escaped = false;
+  let lastSafe = -1;
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i];
+    if (inString) {
+      if (escaped) escaped = false;
+      else if (c === "\\") escaped = true;
+      else if (c === '"') inString = false;
+      continue;
+    }
+    if (c === '"') inString = true;
+    else if (c === "{" || c === "[") stack.push(c === "{" ? "}" : "]");
+    else if (c === "}" || c === "]") stack.pop();
+    if (!inString && (c === "}" || c === "]" || c === '"' || /[0-9a-z]/i.test(c))) lastSafe = i;
+  }
+  if (inString) {
+    // reopen-safe: truncate to before the unterminated string
+    const cut = s.lastIndexOf('"', lastSafe);
+    s = s.slice(0, cut > 0 ? cut : lastSafe + 1);
+  } else {
+    s = s.slice(0, lastSafe + 1);
+  }
+  s = s.replace(/,\s*$/, "");
+  // Recompute open brackets on the truncated text.
+  const open: string[] = [];
+  inString = false;
+  escaped = false;
+  for (const c of s) {
+    if (inString) {
+      if (escaped) escaped = false;
+      else if (c === "\\") escaped = true;
+      else if (c === '"') inString = false;
+      continue;
+    }
+    if (c === '"') inString = true;
+    else if (c === "{") open.push("}");
+    else if (c === "[") open.push("]");
+    else if (c === "}" || c === "]") open.pop();
+  }
+  if (inString) s += '"';
+  return s + open.reverse().join("");
+}
+
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+
 
 /** Text that represents a memory for semantic search. */
 const memoryText = (m: Record<string, unknown>) =>
