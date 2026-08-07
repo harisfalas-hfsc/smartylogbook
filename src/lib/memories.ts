@@ -171,7 +171,7 @@ export const useMemories = (options?: { module?: string; limit?: number }) => {
   };
 
 
-  return { memories, loading, reload: load, create, remove, reclassify, update, moveAll };
+  return { memories, loading, reload: load, create, remove, reclassify, update, moveAll, setStatus, reschedule };
 };
 
 export const groupByDay = (memories: Memory[]) => {
