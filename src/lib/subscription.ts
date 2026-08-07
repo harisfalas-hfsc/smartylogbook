@@ -56,12 +56,36 @@ export const hasPremium = async (userId: string): Promise<boolean> => {
 };
 
 
+/**
+ * Administrators get the full Premium experience, including a real, visible
+ * conversation counter. They are metered exactly like a paying member, but the
+ * cycle resets itself automatically the moment the allowance runs out, so an
+ * administrator is never blocked.
+ */
+const adminCycleKey = (userId: string) => `smarty:admin-cycle:${userId}`;
+
+const readAdminCycle = (userId: string): Date => {
+  const stored = localStorage.getItem(adminCycleKey(userId));
+  const parsed = stored ? new Date(stored) : null;
+  if (parsed && !Number.isNaN(parsed.getTime())) return parsed;
+  const start = new Date();
+  localStorage.setItem(adminCycleKey(userId), start.toISOString());
+  return start;
+};
+
+const resetAdminCycle = (userId: string): Date => {
+  const start = new Date();
+  localStorage.setItem(adminCycleKey(userId), start.toISOString());
+  return start;
+};
+
 export const useSubscription = () => {
   const { user } = useAuth();
   const { isAdmin, loading: adminLoading } = useIsAdmin();
   const { pricing, loading: pricingLoading } = usePricing();
   const [sub, setSub] = useState<SubscriptionRow | null>(null);
   const [used, setUsed] = useState(0);
+  const [cycleStart, setCycleStart] = useState<Date | null>(null);
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
@@ -80,14 +104,17 @@ export const useSubscription = () => {
     const row = (data as SubscriptionRow | null) ?? null;
     setSub(row);
 
+    const start = isAdmin && !isActive(row) ? readAdminCycle(user.id) : periodStart(row);
+    setCycleStart(start);
+
     const { count } = await supabase
       .from('ai_conversations')
       .select('id', { count: 'exact', head: true })
       .eq('user_id', user.id)
-      .gte('started_at', periodStart(row).toISOString());
+      .gte('started_at', start.toISOString());
     setUsed(count ?? 0);
     setLoading(false);
-  }, [user?.id]);
+  }, [user?.id, isAdmin]);
 
   useEffect(() => { void load(); }, [load]);
 
@@ -95,13 +122,28 @@ export const useSubscription = () => {
   const active = isAdmin || isActive(sub);
   const plan = active ? findPlan(pricing, sub?.plan_key) : null;
   const allowance = active && plan ? planAllowance(pricing, plan) : 0;
-  const remaining = isAdmin ? Math.max(allowance, 1) : Math.max(0, allowance - used);
+  const remaining = Math.max(0, allowance - used);
+
+  /* Administrator allowance rolls over on its own instead of blocking. */
+  useEffect(() => {
+    if (!user || !isAdmin || isActive(sub) || loading) return;
+    if (allowance > 0 && used >= allowance) {
+      resetAdminCycle(user.id);
+      void load();
+    }
+  }, [user?.id, isAdmin, sub, allowance, used, loading, load]);
+
 
   /**
    * Immediate renewal / top-up: the user pays for another month right away and
    * the billing cycle (and the conversation allowance) restarts from today.
    */
   const renewNow = async () => {
+    if (user && isAdmin && !isActive(sub)) {
+      resetAdminCycle(user.id);
+      await load();
+      return { error: null };
+    }
     const { data, error } = await supabase.functions.invoke('account', { body: { action: 'renew' } });
     await load();
     if (error) return { error: error.message };
@@ -129,8 +171,12 @@ export const useSubscription = () => {
     allowance,
     used,
     remaining,
-    canUseAssistant: active && remaining > 0,
-    renewsAt: sub?.current_period_end ?? null,
+    canUseAssistant: active && (remaining > 0 || isAdmin),
+    renewsAt:
+      sub?.current_period_end ??
+      (isAdmin && cycleStart
+        ? new Date(new Date(cycleStart).setMonth(cycleStart.getMonth() + 1)).toISOString()
+        : null),
     renewNow,
     cancelAtPeriodEnd: Boolean(sub?.cancel_at_period_end),
     cancelPlan: () => setCancellation(true),
