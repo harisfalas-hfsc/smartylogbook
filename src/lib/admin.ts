@@ -177,8 +177,8 @@ export const describeJob = (job: CronJob) => {
   const c = `${job.jobname} ${job.command}`.toLowerCase();
   if (c.includes('proactive-scan')) return JOB_TEMPLATES[0].description;
   if (c.includes('"mode":"recap"') || c.includes('weekly-recap')) return JOB_TEMPLATES[3].description;
-  if (c.includes('daily-tip')) return JOB_TEMPLATES[1].description;
-  if (c.includes('daily-insights')) return JOB_TEMPLATES[2].description;
+  if (c.includes('daily-tip')) return JOB_TEMPLATES[2].description;
+  if (c.includes('daily-insights')) return JOB_TEMPLATES[1].description;
   if (c.includes('purge_expired_trash')) return JOB_TEMPLATES[4].description;
   if (c.includes('ai-brain')) return 'Runs a Smarty Assistant background task.';
   return 'Runs a scheduled database or function task.';
