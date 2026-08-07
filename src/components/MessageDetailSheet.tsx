@@ -97,7 +97,7 @@ const MessageDetailSheet = ({
           )}
         </div>
 
-        <div className="flex shrink-0 gap-2 border-t border-border px-4 py-3">
+        <div className="flex shrink-0 gap-2 border-t border-border px-4 py-3 sm:gap-3 sm:px-6 sm:py-4">
           {action(
             message.read_at ? 'Unread' : 'Read',
             message.read_at ? <Mail className="h-3.5 w-3.5" /> : <MailOpen className="h-3.5 w-3.5" />,
