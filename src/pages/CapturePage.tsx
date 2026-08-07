@@ -94,6 +94,12 @@ const readAsDataUrl = (file: File | Blob) =>
     reader.readAsDataURL(file);
   });
 
+const titleFromFile = (name: string) => {
+  const withoutExtension = name.replace(/\.[^.]+$/, '');
+  const cleaned = withoutExtension.replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').trim();
+  return cleaned || name.trim() || 'Attached file';
+};
+
 const CapturePage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -344,10 +350,17 @@ const CapturePage = () => {
     setSaving(true);
 
     let classified: Extracted | null = extracted;
-    if (!classified && text.trim()) {
+    if (!classified && (text.trim() || file)) {
       try {
         const { data } = await supabase.functions.invoke('ai-brain', {
-          body: { mode: 'classify', input: text.trim(), candidates },
+          body: {
+            mode: 'classify',
+            input: [
+              text.trim(),
+              file ? `Attached ${file.type || 'file'} named "${file.name}".` : '',
+            ].filter(Boolean).join('\n'),
+            candidates,
+          },
         });
         if (data && !data.error) classified = data as Extracted;
       } catch {
@@ -396,7 +409,7 @@ const CapturePage = () => {
     const occurredAt = new Date().toISOString();
 
     const { error, id: newId } = await create({
-      title: classified?.title ?? text.trim().slice(0, 60) ?? 'Capture',
+      title: classified?.title?.trim() || text.trim().slice(0, 60) || (file ? titleFromFile(file.name) : 'Capture'),
       summary: classified?.summary ?? null,
       content: text.trim() || null,
       module: module ?? classified?.module ?? 'personal',

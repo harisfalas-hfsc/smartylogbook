@@ -48,6 +48,7 @@ const MemoryDetailSheet = ({
   const [uploading, setUploading] = useState(false);
   const [album, setAlbum] = useState('');
   const [localStatus, setLocalStatus] = useState<'open' | 'done' | 'postponed'>('open');
+  const [localModule, setLocalModule] = useState('personal');
   const [localDueAt, setLocalDueAt] = useState<string | null>(null);
   const [localCompletedAt, setLocalCompletedAt] = useState<string | null>(null);
   const fileInput = useRef<HTMLInputElement | null>(null);
@@ -68,12 +69,13 @@ const MemoryDetailSheet = ({
     setTagsText((memory.ai_tags ?? []).join(', '));
     setAlbum(albumOf(memory) ?? '');
     setLocalStatus(asStatus(memory.status));
+    setLocalModule(memory.module);
     setLocalDueAt(memory.due_at ?? null);
     setLocalCompletedAt(memory.completed_at ?? null);
   }, [memory]);
 
   if (!memory) return null;
-  const module = getCategory(memory.module);
+  const module = getCategory(localModule);
   const Icon = kindIcon(memory.kind);
   const related = allMemories.filter((m) => memory.related_ids?.includes(m.id));
   const status = localStatus;
@@ -339,19 +341,23 @@ const MemoryDetailSheet = ({
               >
                 <Sparkles className="h-3.5 w-3.5" /> Ask Smarty Assistant about this
               </button>
-              {memory.attachment_url && attachment && (
-                isVideoMemory(memory) ? (
+              {memory.attachment_url && (
+                attachment && isVideoMemory(memory) ? (
                   <video src={attachment} controls playsInline className="w-full overflow-hidden rounded-2xl border border-border" />
-                ) : isImageMemory(memory) ? (
+                ) : attachment && isImageMemory(memory) ? (
                   <a href={attachment} target="_blank" rel="noreferrer" className="block overflow-hidden rounded-2xl border border-border">
                     <img src={attachment} alt={titleOf(memory)} className="w-full object-cover" loading="lazy" />
                   </a>
                 ) : (
                   <a
-                    href={attachment}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3.5 transition-smooth hover:border-primary/40"
+                    href={attachment ?? undefined}
+                    target={attachment ? '_blank' : undefined}
+                    rel={attachment ? 'noreferrer' : undefined}
+                    aria-disabled={!attachment}
+                    className={cn(
+                      'flex items-center gap-3 rounded-2xl border border-border bg-card p-3.5 transition-smooth',
+                      attachment ? 'hover:border-primary/40' : 'cursor-wait opacity-70'
+                    )}
                   >
                     <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
                       <FileText className="h-5 w-5" />
@@ -360,7 +366,9 @@ const MemoryDetailSheet = ({
                       <span className="block truncate text-sm font-bold text-foreground">
                         {String(memory.metadata?.file_name ?? titleOf(memory))}
                       </span>
-                      <span className="block text-[11px] text-muted-foreground">Tap to open or download</span>
+                      <span className="block text-[11px] text-muted-foreground">
+                        {attachment ? 'Tap to open or download' : 'Preparing secure file link…'}
+                      </span>
                     </span>
                   </a>
                 )
@@ -433,19 +441,20 @@ const MemoryDetailSheet = ({
                   <button
                     key={m.id}
                     onClick={async () => {
-                      if (m.id === memory.module) return;
+                      if (m.id === localModule) return;
                       const res = await onMove(memory, m.id);
                       if (res && 'error' in res && res.error) return toast.error('Could not move this record');
+                      setLocalModule(m.id);
                       toast.success(`Moved to ${m.label}`, { description: 'Smarty Assistant will remember this choice.' });
                     }}
                     className={cn(
                       'inline-flex items-center gap-1.5 rounded-2xl border px-3 py-1.5 text-[11px] font-semibold transition-smooth active:scale-95',
-                      m.id === memory.module ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-card text-muted-foreground'
+                      m.id === localModule ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-card text-muted-foreground'
                     )}
                   >
-                    <m.icon className={cn('h-3.5 w-3.5', m.id === memory.module ? '' : m.color)} />
+                    <m.icon className={cn('h-3.5 w-3.5', m.id === localModule ? '' : m.color)} />
                     {m.label}
-                    {m.id === memory.module && <Check className="h-3 w-3" />}
+                    {m.id === localModule && <Check className="h-3 w-3" />}
                   </button>
                 ))}
               </div>

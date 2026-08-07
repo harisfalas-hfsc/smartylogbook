@@ -108,6 +108,7 @@ const TimelinePage = () => {
 
   const shown = filtered.slice(0, visible);
   const groups = groupByDay(shown);
+  const selectedMemory = selected ? memories.find((m) => m.id === selected.id) ?? selected : null;
 
   const activeFilters = (module ? 1 : 0) + (from || to ? 1 : 0);
 
@@ -395,7 +396,7 @@ const TimelinePage = () => {
       </Sheet>
 
       <MemoryDetailSheet
-        memory={selected}
+        memory={selectedMemory}
         open={!!selected}
         onOpenChange={(o) => !o && setSelected(null)}
         allMemories={memories}
