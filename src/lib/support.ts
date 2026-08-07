@@ -212,9 +212,13 @@ export const useTicketThread = (ticketId: string | null) => {
       .insert({ ticket_id: ticketId, author: 'customer', body: text.slice(0, 4000) })
       .select('*')
       .single();
-    if (!error && data) setReplies((prev) => [...prev, data as SupportReply]);
+    if (!error && data) {
+      setReplies((prev) => [...prev, data as SupportReply]);
+      notifyAdminOfFollowUp(ticketId, text.slice(0, 4000), (data as SupportReply).id);
+    }
     return { error };
   };
+
 
   /** Admin answer, delivered to the customer's message center. */
   const sendAsAdmin = async (body: string) => {
