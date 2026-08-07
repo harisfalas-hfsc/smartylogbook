@@ -78,12 +78,14 @@ const AdminMessagesTab = () => {
     () =>
       messages.filter((m) => {
         if (kindFilter && (m.kind ?? 'other') !== kindFilter) return false;
+        if (unreadOnly && m.read_at) return false;
         const q = search.trim().toLowerCase();
         if (!q) return true;
         return `${m.title ?? ''} ${m.body ?? ''} ${m.email} ${m.kind ?? ''}`.toLowerCase().includes(q);
       }),
-    [messages, search, kindFilter],
+    [messages, search, kindFilter, unreadOnly],
   );
+
 
   const recipients =
     broadcast.audience === 'premium'
