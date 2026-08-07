@@ -176,7 +176,7 @@ Reply with JSON only: {"title":"...","body":"..."}`,
               },
             ],
             response_format: { type: "json_object" },
-            max_tokens: 300,
+            max_tokens: 1200,
           }),
         });
         if (!res.ok) console.error("daily-tip gateway error", res.status, await res.text());
