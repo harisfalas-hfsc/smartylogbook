@@ -350,6 +350,28 @@ async function postInbox(
   }
 }
 
+async function clearReminderFootprints(
+  db: Awaited<ReturnType<typeof userClient>>,
+  userId: string,
+  id: string,
+  title: string | null,
+) {
+  await Promise.all([
+    db.from("proactive_alerts").update({ dismissed: true, seen: true })
+      .eq("user_id", userId).like("dedupe_key", `reminder:${id}:%`),
+    db.from("messages").delete()
+      .eq("user_id", userId).like("dedupe_key", `scan:reminder:${id}:%`),
+  ]);
+
+  if (title?.trim()) {
+    const escaped = title.trim().replace(/[%,]/g, "");
+    if (escaped) {
+      await db.from("messages").delete().eq("user_id", userId)
+        .or(`title.ilike.%${escaped}%,body.ilike.%${escaped}%`);
+    }
+  }
+}
+
 /**
  * Executes the calendar operations the assistant decided on: creating,
  * rescheduling, completing and deleting the user's own reminders/events.
@@ -420,8 +442,12 @@ async function applyCalendarOps(
         done.push({ op: "complete", id });
       } else if (kind === "delete") {
         if (!id) continue;
+        const { data: source, error: lookupError } = await db
+          .from("reminders").select("title").eq("id", id).maybeSingle();
+        if (lookupError) { console.error("calendar delete lookup failed", lookupError); continue; }
         const { error } = await db.from("reminders").delete().eq("id", id);
         if (error) { console.error("calendar delete failed", error); continue; }
+        await clearReminderFootprints(db, uid, id, source?.title ? String(source.title) : null);
         done.push({ op: "delete", id });
       }
     }

@@ -95,11 +95,29 @@ export const useReminders = () => {
     return { error };
   };
 
-  const clearAlert = async (id: string) => {
-    await supabase
-      .from('proactive_alerts')
-      .update({ dismissed: true, seen: true })
-      .like('dedupe_key', `reminder:${id}:%`);
+  const clearAlert = async (id: string, title?: string) => {
+    await Promise.all([
+      supabase
+        .from('proactive_alerts')
+        .update({ dismissed: true, seen: true })
+        .like('dedupe_key', `reminder:${id}:%`),
+      supabase
+        .from('messages')
+        .delete()
+        .like('dedupe_key', `scan:reminder:${id}:%`),
+    ]);
+
+    // Daily insights and assistant briefs summarize calendar items rather than
+    // retaining their ids. Remove those snapshots when their source is gone.
+    if (title?.trim()) {
+      const escaped = title.trim().replace(/[%,]/g, '');
+      if (escaped) {
+        await supabase
+          .from('messages')
+          .delete()
+          .or(`title.ilike.%${escaped}%,body.ilike.%${escaped}%`);
+      }
+    }
   };
 
   const patch = async (id: string, values: Partial<Reminder>) => {
@@ -135,7 +153,7 @@ export const useReminders = () => {
       if (removed) setReminders((prev) => [...prev, removed].sort((a, b) => a.due_at.localeCompare(b.due_at)));
       return { error };
     }
-    await clearAlert(id);
+    await clearAlert(id, removed?.title);
     return { error: null };
   };
 
