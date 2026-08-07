@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { indexMemories } from '@/lib/semantic';
 import { hasPremium } from '@/lib/subscription';
+import type { ItemStatus } from '@/lib/status';
 
 
 export interface Memory {
