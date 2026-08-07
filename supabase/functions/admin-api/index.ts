@@ -353,6 +353,7 @@ Deno.serve(async (req) => {
       const TEMPLATES: Record<string, string> = {
         proactive_scan: invoke("proactive-scan", '{"source":"cron"}'),
         daily_insights: invoke("daily-insights", '{"mode":"daily"}'),
+        daily_tip: invoke("daily-tip", '{"hour":6}'),
         weekly_recap: invoke("daily-insights", '{"mode":"recap"}'),
         purge_trash: "SELECT public.purge_expired_trash();",
       };
