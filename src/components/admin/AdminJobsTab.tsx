@@ -350,27 +350,31 @@ const AdminJobsTab = () => {
               className="w-full rounded-2xl border border-border bg-card px-3 py-2.5 text-sm text-foreground outline-none"
             />
             <div className="grid gap-2 sm:grid-cols-2">
-              <input
-                value={newJob.schedule}
-                onChange={(e) => setNewJob((p) => ({ ...p, schedule: e.target.value }))}
-                placeholder="Cron schedule"
-                className="w-full rounded-2xl border border-border bg-card px-3 py-2.5 text-sm font-semibold text-foreground outline-none"
-              />
               <select
-                value=""
-                onChange={(e) => e.target.value && setNewJob((p) => ({ ...p, schedule: e.target.value }))}
+                value={SCHEDULE_PRESETS.some((p) => p.value === newJob.schedule) ? newJob.schedule : 'custom'}
+                onChange={(e) => e.target.value !== 'custom' && setNewJob((p) => ({ ...p, schedule: e.target.value }))}
                 className="w-full rounded-2xl border border-border bg-card px-3 py-2.5 text-sm font-semibold text-foreground outline-none"
-                aria-label="Schedule presets"
+                aria-label="When it runs"
               >
-                <option value="">Pick a preset…</option>
+                {!SCHEDULE_PRESETS.some((p) => p.value === newJob.schedule) && (
+                  <option value="custom">Custom timing</option>
+                )}
                 {SCHEDULE_PRESETS.map((p) => (
                   <option key={p.value} value={p.value}>
                     {p.label}
                   </option>
                 ))}
               </select>
+              <input
+                value={newJob.schedule}
+                onChange={(e) => setNewJob((p) => ({ ...p, schedule: e.target.value }))}
+                placeholder="Or write the timing pattern"
+                spellCheck={false}
+                className="w-full rounded-2xl border border-border bg-card px-3 py-2.5 font-mono text-sm font-semibold text-foreground outline-none"
+              />
             </div>
-            <p className="text-[11px] text-muted-foreground">Runs {describeSchedule(newJob.schedule)}.</p>
+            <p className="text-[11px] text-muted-foreground">{describeSchedule(newJob.schedule)}.</p>
+
 
             {newJob.template === 'custom' && (
               <textarea
