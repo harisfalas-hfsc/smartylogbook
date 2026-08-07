@@ -7,7 +7,7 @@ import { useMemories, Memory } from '@/lib/memories';
 import MemoryCard from '@/components/MemoryCard';
 import MediaTile from '@/components/MediaTile';
 import MemoryDetailSheet from '@/components/MemoryDetailSheet';
-import { albumOf, albumsOf } from '@/lib/media';
+import { albumOf, monthAlbum } from '@/lib/media';
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
