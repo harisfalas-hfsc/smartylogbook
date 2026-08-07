@@ -8,9 +8,20 @@ const fmt = (d: string) => new Date(d).toLocaleString(undefined, { day: '2-digit
 
 /** The whole conversation on one ticket, plus the in-app reply box. */
 const Thread = ({ ticket }: { ticket: SupportTicket }) => {
-  const { replies, loading, sendAsAdmin } = useTicketThread(ticket.id);
+  const { replies, loading, sendAsAdmin, askAssistant } = useTicketThread(ticket.id);
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
+  const [asking, setAsking] = useState(false);
+  const hasAssistant = replies.some((r) => r.author === 'assistant');
+
+  const ask = async () => {
+    setAsking(true);
+    const { error } = await askAssistant();
+    setAsking(false);
+    if (error) toast.error(error.message);
+    else toast.success('Smarty Assistant answered');
+  };
+
 
   const send = async () => {
     setSending(true);
