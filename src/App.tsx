@@ -47,6 +47,7 @@ import OnboardingPage from "./pages/OnboardingPage";
 import NotFound from "./pages/NotFound";
 import AnalyticsTracker from "./components/AnalyticsTracker";
 import RouteSeo from "./components/RouteSeo";
+import SisterAppsPopup from "./components/growth/SisterAppsPopup";
 import { HelmetProvider } from "react-helmet-async";
 
 const queryClient = new QueryClient();
