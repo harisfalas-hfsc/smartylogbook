@@ -140,6 +140,7 @@ const App = () => (
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
+          <SisterAppsPopup />
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
