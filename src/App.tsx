@@ -100,7 +100,9 @@ const App = () => (
         <AuthProvider>
           <RouteSeo />
           <AnalyticsTracker />
+          <Suspense fallback={<RouteFallback />}>
           <Routes>
+
             <Route element={<PublicLayout />}>
               <Route path="/" element={<HomeEntry />} />
               <Route path="/index" element={<Navigate to="/" replace />} />
