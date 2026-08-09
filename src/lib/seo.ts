@@ -170,13 +170,14 @@ export const SEO_BY_PATH: Record<string, PageSeo> = {
     ],
   },
   "/pricing": {
-    title: "Pricing, Smarty Logbook Free & Premium (€9.99/month)",
+    title: "Pricing, Smarty Logbook Membership (€9.99/month)",
     description:
-      "Simple pricing: Free for capturing and organising your logbooks, Premium at €9.99 per month for the full Smarty Assistant, insights and proactive reminders.",
+      "One simple membership at €9.99 per month: the full Smarty Assistant, unlimited logbooks, insights and proactive reminders. Cancel any time.",
     keywords:
       "smarty logbook pricing, digital logbook price, AI journal subscription, personal knowledge management pricing",
     breadcrumb: [{ name: "Pricing", path: "/pricing" }],
   },
+
   "/testimonials": {
     title: "Testimonials, What People Use Smarty Logbook For",
     description:
