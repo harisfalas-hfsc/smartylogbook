@@ -228,16 +228,17 @@ export const SEO_BY_PATH: Record<string, PageSeo> = {
   "/auth": {
     title: "Sign In or Create Your Smarty Logbook Account",
     description:
-      "Sign in or create a free Smarty Logbook account and start your AI-powered digital logbook in under a minute.",
+      "Sign in or create your Smarty Logbook account and start your AI-powered digital logbook in under a minute.",
     noindex: true,
   },
 };
 
 export const FALLBACK_SEO: PageSeo = {
-  title: "Smarty Logbook: AI Digital Logbook & Life Operating System",
+  title: "Page Not Found, Smarty Logbook",
   description: BRAND_DESCRIPTION,
   noindex: true,
 };
+
 
 export function getSeoForPath(pathname: string): PageSeo {
   const clean =
