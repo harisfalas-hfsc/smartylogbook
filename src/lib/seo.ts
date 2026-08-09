@@ -233,6 +233,13 @@ export const SEO_BY_PATH: Record<string, PageSeo> = {
   },
 };
 
+/** Signed-in application screens: private, never indexed. */
+export const APP_SEO: PageSeo = {
+  title: "My Smarty Logbook",
+  description: BRAND_DESCRIPTION,
+  noindex: true,
+};
+
 export const FALLBACK_SEO: PageSeo = {
   title: "Page Not Found, Smarty Logbook",
   description: BRAND_DESCRIPTION,
@@ -243,8 +250,13 @@ export const FALLBACK_SEO: PageSeo = {
 export function getSeoForPath(pathname: string): PageSeo {
   const clean =
     pathname.length > 1 && pathname.endsWith("/") ? pathname.slice(0, -1) : pathname;
-  return SEO_BY_PATH[clean] ?? FALLBACK_SEO;
+  if (SEO_BY_PATH[clean]) return SEO_BY_PATH[clean];
+  if (clean === "/app" || clean.startsWith("/app/") || clean === "/onboarding" || clean === "/reset-password") {
+    return APP_SEO;
+  }
+  return FALLBACK_SEO;
 }
+
 
 export function buildBreadcrumb(items: { name: string; path: string }[]) {
   return {
