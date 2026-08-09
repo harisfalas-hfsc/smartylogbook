@@ -1,3 +1,4 @@
+import { Suspense, lazy } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -5,8 +6,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
-import AppShell from "./components/AppShell";
 import PublicLayout from "./components/PublicLayout";
+
 import Landing from "./pages/Landing";
 import AboutPage from "./pages/AboutPage";
 import HowItWorksPage from "./pages/HowItWorksPage";
@@ -22,33 +23,44 @@ import UnsubscribePage from "./pages/UnsubscribePage";
 
 import AuthPage from "./pages/AuthPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
-import Dashboard from "./pages/Dashboard";
-import TimelinePage from "./pages/TimelinePage";
-import CapturePage from "./pages/CapturePage";
 
-import AssistantPage from "./pages/AssistantPage";
-import InsightsPage from "./pages/InsightsPage";
-import ModulesPage from "./pages/ModulesPage";
-import ModuleDetailPage from "./pages/ModuleDetailPage";
-import NotificationsPage from "./pages/NotificationsPage";
-import SettingsPage from "./pages/SettingsPage";
-import TrashPage from "./pages/TrashPage";
-import AdminPage from "./pages/AdminPage";
-import AccountPage from "./pages/AccountPage";
-import PlanPage from "./pages/PlanPage";
-import CheckoutPage from "./pages/CheckoutPage";
-import PrivacySecurityPage from "./pages/PrivacySecurityPage";
-import AppearancePage from "./pages/AppearancePage";
-import CalendarPage from "./pages/CalendarPage";
-import RemindersPage from "./pages/RemindersPage";
-import MessagesPage from "./pages/MessagesPage";
-import SupportThreadPage from "./pages/SupportThreadPage";
-import OnboardingPage from "./pages/OnboardingPage";
+// The signed-in application is loaded on demand so first-time visitors only
+// download the public marketing site.
+const AppShell = lazy(() => import("./components/AppShell"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const TimelinePage = lazy(() => import("./pages/TimelinePage"));
+const CapturePage = lazy(() => import("./pages/CapturePage"));
+const AssistantPage = lazy(() => import("./pages/AssistantPage"));
+const InsightsPage = lazy(() => import("./pages/InsightsPage"));
+const ModulesPage = lazy(() => import("./pages/ModulesPage"));
+const ModuleDetailPage = lazy(() => import("./pages/ModuleDetailPage"));
+const NotificationsPage = lazy(() => import("./pages/NotificationsPage"));
+const SettingsPage = lazy(() => import("./pages/SettingsPage"));
+const TrashPage = lazy(() => import("./pages/TrashPage"));
+const AdminPage = lazy(() => import("./pages/AdminPage"));
+const AccountPage = lazy(() => import("./pages/AccountPage"));
+const PlanPage = lazy(() => import("./pages/PlanPage"));
+const CheckoutPage = lazy(() => import("./pages/CheckoutPage"));
+const PrivacySecurityPage = lazy(() => import("./pages/PrivacySecurityPage"));
+const AppearancePage = lazy(() => import("./pages/AppearancePage"));
+const CalendarPage = lazy(() => import("./pages/CalendarPage"));
+const RemindersPage = lazy(() => import("./pages/RemindersPage"));
+const MessagesPage = lazy(() => import("./pages/MessagesPage"));
+const SupportThreadPage = lazy(() => import("./pages/SupportThreadPage"));
+const OnboardingPage = lazy(() => import("./pages/OnboardingPage"));
+
 import NotFound from "./pages/NotFound";
 import AnalyticsTracker from "./components/AnalyticsTracker";
 import RouteSeo from "./components/RouteSeo";
 import SisterAppsPopup from "./components/growth/SisterAppsPopup";
 import { HelmetProvider } from "react-helmet-async";
+
+const RouteFallback = () => (
+  <div className="flex min-h-screen items-center justify-center">
+    <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+  </div>
+);
+
 
 const queryClient = new QueryClient();
 
@@ -88,7 +100,9 @@ const App = () => (
         <AuthProvider>
           <RouteSeo />
           <AnalyticsTracker />
+          <Suspense fallback={<RouteFallback />}>
           <Routes>
+
             <Route element={<PublicLayout />}>
               <Route path="/" element={<HomeEntry />} />
               <Route path="/index" element={<Navigate to="/" replace />} />
@@ -140,6 +154,8 @@ const App = () => (
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
+          </Suspense>
+
           <SisterAppsPopup />
         </AuthProvider>
       </BrowserRouter>

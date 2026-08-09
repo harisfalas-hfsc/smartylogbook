@@ -170,13 +170,14 @@ export const SEO_BY_PATH: Record<string, PageSeo> = {
     ],
   },
   "/pricing": {
-    title: "Pricing, Smarty Logbook Free & Premium (€9.99/month)",
+    title: "Pricing, Smarty Logbook Membership (€9.99/month)",
     description:
-      "Simple pricing: Free for capturing and organising your logbooks, Premium at €9.99 per month for the full Smarty Assistant, insights and proactive reminders.",
+      "One simple membership at €9.99 per month: the full Smarty Assistant, unlimited logbooks, insights and proactive reminders. Cancel any time.",
     keywords:
       "smarty logbook pricing, digital logbook price, AI journal subscription, personal knowledge management pricing",
     breadcrumb: [{ name: "Pricing", path: "/pricing" }],
   },
+
   "/testimonials": {
     title: "Testimonials, What People Use Smarty Logbook For",
     description:
@@ -227,22 +228,35 @@ export const SEO_BY_PATH: Record<string, PageSeo> = {
   "/auth": {
     title: "Sign In or Create Your Smarty Logbook Account",
     description:
-      "Sign in or create a free Smarty Logbook account and start your AI-powered digital logbook in under a minute.",
+      "Sign in or create your Smarty Logbook account and start your AI-powered digital logbook in under a minute.",
     noindex: true,
   },
 };
 
-export const FALLBACK_SEO: PageSeo = {
-  title: "Smarty Logbook: AI Digital Logbook & Life Operating System",
+/** Signed-in application screens: private, never indexed. */
+export const APP_SEO: PageSeo = {
+  title: "My Smarty Logbook",
   description: BRAND_DESCRIPTION,
   noindex: true,
 };
 
+export const FALLBACK_SEO: PageSeo = {
+  title: "Page Not Found, Smarty Logbook",
+  description: BRAND_DESCRIPTION,
+  noindex: true,
+};
+
+
 export function getSeoForPath(pathname: string): PageSeo {
   const clean =
     pathname.length > 1 && pathname.endsWith("/") ? pathname.slice(0, -1) : pathname;
-  return SEO_BY_PATH[clean] ?? FALLBACK_SEO;
+  if (SEO_BY_PATH[clean]) return SEO_BY_PATH[clean];
+  if (clean === "/app" || clean.startsWith("/app/") || clean === "/onboarding" || clean === "/reset-password") {
+    return APP_SEO;
+  }
+  return FALLBACK_SEO;
 }
+
 
 export function buildBreadcrumb(items: { name: string; path: string }[]) {
   return {

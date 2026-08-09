@@ -62,6 +62,16 @@ async function syncSubscription(subscription: any, env: StripeEnv) {
 
 async function recordPayment(invoiceOrSession: any, env: StripeEnv, userId?: string) {
   if (!userId) return;
+  const reference = invoiceOrSession.id;
+  // Stripe retries webhooks, so never record the same charge twice.
+  if (reference) {
+    const { data: existing } = await getSupabase()
+      .from("payments")
+      .select("id")
+      .eq("reference", reference)
+      .maybeSingle();
+    if (existing) return;
+  }
   const amount = (invoiceOrSession.amount_paid ?? invoiceOrSession.amount_total ?? 0) / 100;
   const { error } = await getSupabase().from("payments").insert({
     user_id: userId,
@@ -69,11 +79,18 @@ async function recordPayment(invoiceOrSession: any, env: StripeEnv, userId?: str
     currency: (invoiceOrSession.currency ?? "eur").toUpperCase(),
     status: "succeeded",
     provider: "stripe",
-    reference: invoiceOrSession.id,
+    reference,
     environment: env,
   });
   if (error) console.error("payments insert failed:", error.message);
 }
+
+/** Monthly renewals arrive as invoices, the member id travels on the subscription. */
+const userIdFromInvoice = (invoice: any): string | undefined =>
+  invoice.subscription_details?.metadata?.userId
+  ?? invoice.parent?.subscription_details?.metadata?.userId
+  ?? invoice.lines?.data?.[0]?.metadata?.userId
+  ?? invoice.metadata?.userId;
 
 async function handleWebhook(req: Request, env: StripeEnv) {
   const event = await verifyWebhook(req, env);
@@ -95,10 +112,19 @@ async function handleWebhook(req: Request, env: StripeEnv) {
     case "checkout.session.async_payment_succeeded":
       await recordPayment(event.data.object, env, event.data.object.metadata?.userId);
       break;
+    case "invoice.paid":
+    case "invoice.payment_succeeded": {
+      const invoice = event.data.object;
+      // The very first invoice is already recorded from the checkout session.
+      if (invoice.billing_reason === "subscription_create") break;
+      await recordPayment(invoice, env, userIdFromInvoice(invoice));
+      break;
+    }
     default:
       console.log("Unhandled event:", event.type);
   }
 }
+
 
 Deno.serve(async (req) => {
   if (req.method !== "POST") return new Response("Method not allowed", { status: 405 });
