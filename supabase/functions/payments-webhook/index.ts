@@ -92,6 +92,55 @@ const userIdFromInvoice = (invoice: any): string | undefined =>
   ?? invoice.lines?.data?.[0]?.metadata?.userId
   ?? invoice.metadata?.userId;
 
+/** Falls back to the stored customer id when the invoice carries no metadata. */
+async function resolveUserId(invoice: any, env: StripeEnv): Promise<string | undefined> {
+  const fromMetadata = userIdFromInvoice(invoice);
+  if (fromMetadata) return fromMetadata;
+  const customerId = typeof invoice.customer === "string" ? invoice.customer : invoice.customer?.id;
+  if (!customerId) return undefined;
+  const { data } = await getSupabase()
+    .from("subscriptions")
+    .select("user_id")
+    .eq("stripe_customer_id", customerId)
+    .maybeSingle();
+  return (data as { user_id?: string } | null)?.user_id ?? undefined;
+}
+
+async function notifyInvoicePaid(invoice: any, userId?: string) {
+  if (!userId) return;
+  const amount = euro(invoice.amount_paid ?? invoice.total, invoice.currency);
+  const periodEnd = invoice.lines?.data?.[0]?.period?.end;
+  const nextDate = periodEnd ? formatDate(new Date(periodEnd * 1000).toISOString()) : null;
+  await notifyOnce(getSupabase(), {
+    userId,
+    title: "Thank you — your payment went through",
+    body:
+      `We received ${amount} for your Smarty Premium membership.` +
+      (nextDate ? ` Your access is active until ${nextDate}.` : "") +
+      ` Thank you for using Smarty Logbook — your receipt is on its way by email.`,
+    dedupeKey: `invoice-paid:${invoice.id}`,
+  });
+}
+
+async function notifyInvoiceFailed(invoice: any, userId?: string) {
+  if (!userId) return;
+  const attempt = Number(invoice.attempt_count ?? 1);
+  const amount = euro(invoice.amount_due ?? invoice.total, invoice.currency);
+  const nextAttempt = invoice.next_payment_attempt
+    ? formatDate(new Date(invoice.next_payment_attempt * 1000).toISOString())
+    : null;
+  const body = nextAttempt
+    ? `We couldn't take ${amount} for your membership (attempt ${attempt}). This usually means the card expired, has insufficient funds, or the bank asked for confirmation. We'll try again automatically on ${nextAttempt}. To sort it out now — or to pay with a different card — open your membership page and update your payment method. Your access stays on in the meantime.`
+    : `We couldn't take ${amount} for your membership (attempt ${attempt}). This was the last automatic attempt, so your membership will pause unless the payment is completed. Open your membership page to update your card and restart it — nothing in your logbook is lost.`;
+  await notifyOnce(getSupabase(), {
+    userId,
+    title: nextAttempt ? "Payment didn't go through" : "Payment failed — action needed",
+    body,
+    level: nextAttempt ? "normal" : "high",
+    dedupeKey: `invoice-failed:${invoice.id}:${attempt}`,
+  });
+}
+
 async function handleWebhook(req: Request, env: StripeEnv) {
   const event = await verifyWebhook(req, env);
   console.log("payments-webhook event:", event.type, env);
@@ -115,11 +164,17 @@ async function handleWebhook(req: Request, env: StripeEnv) {
     case "invoice.paid":
     case "invoice.payment_succeeded": {
       const invoice = event.data.object;
+      const userId = await resolveUserId(invoice, env);
       // The very first invoice is already recorded from the checkout session.
-      if (invoice.billing_reason === "subscription_create") break;
-      await recordPayment(invoice, env, userIdFromInvoice(invoice));
+      if (invoice.billing_reason !== "subscription_create") {
+        await recordPayment(invoice, env, userId);
+      }
+      await notifyInvoicePaid(invoice, userId);
       break;
     }
+    case "invoice.payment_failed":
+      await notifyInvoiceFailed(event.data.object, await resolveUserId(event.data.object, env));
+      break;
     default:
       console.log("Unhandled event:", event.type);
   }
