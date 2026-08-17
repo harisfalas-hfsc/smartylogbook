@@ -54,7 +54,7 @@ const AppShell = () => {
     <div className="min-h-screen bg-background">
       {/* Single header for every screen size */}
       <header className="sticky top-0 z-40 bg-background">
-        <div className="mx-auto flex h-11 max-w-3xl items-center justify-between gap-2 px-3 lg:h-14 lg:px-4">
+        <div className="mx-auto flex h-11 max-w-5xl items-center justify-between gap-2 px-3 lg:h-14 lg:px-4">
           <div className="flex items-center gap-2">
             <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
               <SheetTrigger asChild>
@@ -175,7 +175,7 @@ const AppShell = () => {
         </div>
       </header>
 
-      <main className="mx-auto max-w-3xl px-4 pt-4">
+      <main className="mx-auto max-w-5xl px-4 pt-4">
         <Outlet />
       </main>
 

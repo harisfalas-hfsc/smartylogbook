@@ -61,7 +61,7 @@ const AuthPage = () => {
   };
 
   return (
-    <div className="min-h-screen pb-24 px-4 pt-2 max-w-lg mx-auto">
+    <div className="min-h-screen mx-auto w-full max-w-5xl px-3 pb-24 pt-2 sm:px-5">
       <div className="flex h-11 items-center gap-2">
         <BackButton />
         <Link to="/" aria-label="Smarty Logbook home">

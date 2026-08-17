@@ -11,7 +11,7 @@ export const LegalPage = ({
   subtitle?: string;
   children: ReactNode;
 }) => (
-  <div className="mx-auto max-w-3xl px-5 py-10">
+  <div className="mx-auto max-w-5xl px-3 py-7 sm:px-5 sm:py-10">
     <p className="text-[11px] font-bold uppercase tracking-widest text-primary">{eyebrow}</p>
     <h1 className="mt-2 text-[26px] font-extrabold leading-tight tracking-tight text-foreground md:text-4xl">
       {title}

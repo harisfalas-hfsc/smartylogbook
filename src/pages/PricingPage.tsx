@@ -32,7 +32,7 @@ const PricingPage = () => {
   const allowance = premium ? planAllowance(pricing, premium) : 300;
 
   return (
-    <div className="mx-auto max-w-4xl px-3 py-7 sm:px-5 sm:py-10">
+    <div className="mx-auto max-w-5xl px-3 py-7 sm:px-5 sm:py-10">
       <PageHeader
         eyebrow="Pricing"
         title="One membership. One brain."
