@@ -61,7 +61,7 @@ const AuthPage = () => {
   };
 
   return (
-    <div className="min-h-screen pb-24 px-4 pt-2 max-w-lg mx-auto">
+    <div className="min-h-screen mx-auto w-full max-w-5xl px-3 pb-24 pt-2 sm:px-5">
       <div className="flex h-11 items-center gap-2">
         <BackButton />
         <Link to="/" aria-label="Smarty Logbook home">
@@ -77,7 +77,7 @@ const AuthPage = () => {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="mx-auto w-full max-w-md space-y-4">
         {mode === 'signup' && (
           <div className="relative">
             <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />

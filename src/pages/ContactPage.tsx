@@ -73,7 +73,7 @@ const ContactPage = () => {
   const canWrite = active || isAdmin;
 
   return (
-    <div className="mx-auto max-w-4xl px-3 py-7 sm:px-5 sm:py-10">
+    <div className="mx-auto max-w-5xl px-3 py-7 sm:px-5 sm:py-10">
       <PageHeader
         eyebrow="Support"
         title="Ask the Assistant first, write to us if you still need a human."

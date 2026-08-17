@@ -1,7 +1,7 @@
 import { PageHeader, securityPoints } from '@/lib/marketing';
 
 const SecurityPage = () => (
-  <div className="mx-auto max-w-3xl px-5 py-10">
+  <div className="mx-auto max-w-5xl px-3 py-7 sm:px-5 sm:py-10">
     <PageHeader eyebrow="Security" title="Private by architecture." subtitle="Your life story deserves more than a checkbox." />
     <div className="grid gap-2.5 sm:grid-cols-3">
       {securityPoints.map((s) => (

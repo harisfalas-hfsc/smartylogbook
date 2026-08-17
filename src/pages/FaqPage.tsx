@@ -45,7 +45,7 @@ const groups = [
 
 
 const FaqPage = () => (
-  <div className="mx-auto max-w-4xl px-3 py-7 sm:px-5 sm:py-10">
+  <div className="mx-auto max-w-5xl px-3 py-7 sm:px-5 sm:py-10">
     <PageHeader
       eyebrow="FAQ"
       title="Everything else you're wondering about Smarty Logbook."

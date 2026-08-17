@@ -2,7 +2,7 @@ import { Star } from 'lucide-react';
 import { PageHeader, testimonials } from '@/lib/marketing';
 
 const TestimonialsPage = () => (
-  <div className="mx-auto max-w-3xl px-5 py-10">
+  <div className="mx-auto max-w-5xl px-3 py-7 sm:px-5 sm:py-10">
     <PageHeader eyebrow="Testimonials" title="People who stopped forgetting." subtitle="Real stories from people who use Smarty Logbook every day." />
     <div className="grid gap-2.5 md:grid-cols-3">
       {testimonials.map((t) => (
