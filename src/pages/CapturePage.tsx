@@ -646,7 +646,7 @@ const CapturePage = () => {
 
         <button
           onClick={save}
-          disabled={saving || extracting}
+          disabled={saving || extracting || !online}
           className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-primary px-5 py-3 text-sm font-semibold text-primary-foreground shadow-glow transition-smooth active:scale-[0.98] disabled:opacity-60"
         >
           {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
