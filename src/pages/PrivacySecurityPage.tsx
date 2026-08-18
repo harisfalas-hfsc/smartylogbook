@@ -1,8 +1,13 @@
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, FileText, Lock, ShieldCheck, Trash2, Database } from 'lucide-react';
+import { ArrowLeft, FileText, Lock, ShieldCheck, Trash2, Database, WifiOff } from 'lucide-react';
+import { toast } from 'sonner';
+import { forgetAllDevices, listDeviceRecords } from '@/lib/offline/device-auth';
 
 const PrivacySecurityPage = () => {
   const navigate = useNavigate();
+  const [devices, setDevices] = useState(() => listDeviceRecords());
+
 
   return (
     <div className="space-y-5">
