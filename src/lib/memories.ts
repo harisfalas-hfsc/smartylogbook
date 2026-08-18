@@ -4,6 +4,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { indexMemories } from '@/lib/semantic';
 import { hasPremium } from '@/lib/subscription';
 import type { ItemStatus } from '@/lib/status';
+import { offlineFirstDetailed, offlineSave } from '@/lib/offline/offline-first';
+import { enqueueAction } from '@/lib/offline/queue';
+import { OFFLINE_NOTICE } from '@/lib/offline/useOnlineStatus';
 
 
 export interface Memory {
@@ -38,6 +41,9 @@ export const useMemories = (options?: { module?: string; limit?: number }) => {
   const { user } = useAuth();
   const [memories, setMemories] = useState<Memory[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fromCache, setFromCache] = useState(false);
+  const [noCopy, setNoCopy] = useState(false);
+
 
   const load = useCallback(async () => {
     if (!user) {
@@ -46,15 +52,31 @@ export const useMemories = (options?: { module?: string; limit?: number }) => {
       return;
     }
     setLoading(true);
-    let query = supabase
-      .from('memories')
-      .select('*')
-      .is('deleted_at', null)
-      .order('occurred_at', { ascending: false });
-    if (options?.module) query = query.eq('module', options.module);
-    if (options?.limit) query = query.limit(options.limit);
-    const { data } = await query;
-    setMemories((data ?? []) as unknown as Memory[]);
+    const cacheKey = options?.module ? `logbook:list:${options.module}` : 'logbook:list';
+    try {
+      const result = await offlineFirstDetailed<Memory[]>(
+        cacheKey,
+        async () => {
+          let query = supabase
+            .from('memories')
+            .select('*')
+            .is('deleted_at', null)
+            .order('occurred_at', { ascending: false });
+          if (options?.module) query = query.eq('module', options.module);
+          if (options?.limit) query = query.limit(options.limit);
+          const { data } = await query;
+          return (data ?? []) as unknown as Memory[];
+        },
+        user.id,
+      );
+      const rows = options?.limit ? result.data.slice(0, options.limit) : result.data;
+      setMemories(rows);
+      setFromCache(result.fromCache);
+      setNoCopy(false);
+    } catch {
+      setMemories([]);
+      setNoCopy(typeof navigator !== 'undefined' && navigator.onLine === false);
+    }
     setLoading(false);
   }, [user, options?.module, options?.limit]);
 
@@ -64,6 +86,9 @@ export const useMemories = (options?: { module?: string; limit?: number }) => {
 
   const create = async (memory: NewMemory) => {
     if (!user) return { error: new Error('Not signed in') };
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+      return { error: new Error(OFFLINE_NOTICE), id: null };
+    }
     const { data: inserted, error } = await supabase.from('memories').insert({
       user_id: user.id,
       kind: memory.kind ?? 'text',
@@ -89,16 +114,30 @@ export const useMemories = (options?: { module?: string; limit?: number }) => {
     return { error, id: inserted?.id ?? null };
   };
 
-  /** Manual edit of a record by the user. */
+  /** Manual edit of a record by the user. Queued and replayed when offline. */
   const update = async (id: string, patch: Partial<Memory>) => {
     const allowed: Record<string, unknown> = {};
     for (const key of ['title', 'summary', 'content', 'module', 'kind', 'ai_tags', 'amount', 'currency', 'location', 'occurred_at', 'metadata', 'status', 'completed_at', 'due_at', 'attachment_url'] as const) {
       if (key in patch) allowed[key] = patch[key] ?? null;
     }
     if (!Object.keys(allowed).length) return { error: null };
+
+    const applyLocally = () =>
+      setMemories((prev) => {
+        const next = prev.map((m) => (m.id === id ? { ...m, ...(allowed as Partial<Memory>) } : m));
+        void offlineSave(options?.module ? `logbook:list:${options.module}` : 'logbook:list', next, user?.id);
+        return next;
+      });
+
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+      await enqueueAction('memory-update', { id, patch: allowed }, user?.id);
+      applyLocally();
+      return { error: null };
+    }
+
     const { error } = await supabase.from('memories').update(allowed).eq('id', id);
     if (!error) {
-      setMemories((prev) => prev.map((m) => (m.id === id ? { ...m, ...(allowed as Partial<Memory>) } : m)));
+      applyLocally();
       void indexMemories([id]);
     }
     return { error };
@@ -174,7 +213,7 @@ export const useMemories = (options?: { module?: string; limit?: number }) => {
   };
 
 
-  return { memories, loading, reload: load, create, remove, reclassify, update, moveAll, setStatus, reschedule };
+  return { memories, loading, fromCache, noCopy, reload: load, create, remove, reclassify, update, moveAll, setStatus, reschedule };
 };
 
 export const groupByDay = (memories: Memory[]) => {
@@ -229,12 +268,23 @@ export const useTrash = () => {
   const load = useCallback(async () => {
     if (!user) { setItems([]); setLoading(false); return; }
     setLoading(true);
-    const { data } = await supabase
-      .from('memories')
-      .select('*')
-      .not('deleted_at', 'is', null)
-      .order('deleted_at', { ascending: false });
-    setItems((data ?? []) as unknown as Memory[]);
+    try {
+      const rows = await offlineFirstDetailed<Memory[]>(
+        'logbook:trash',
+        async () => {
+          const { data } = await supabase
+            .from('memories')
+            .select('*')
+            .not('deleted_at', 'is', null)
+            .order('deleted_at', { ascending: false });
+          return (data ?? []) as unknown as Memory[];
+        },
+        user.id,
+      );
+      setItems(rows.data);
+    } catch {
+      setItems([]);
+    }
     setLoading(false);
   }, [user]);
 

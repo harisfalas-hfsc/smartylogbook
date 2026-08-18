@@ -1,3 +1,4 @@
+import { OFFLINE_NOTICE } from '@/lib/offline/useOnlineStatus';
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { CalendarClock, Camera, FileText, Loader2, Mic, Paperclip, Send, Square, Stethoscope, Wallet, X } from 'lucide-react';
@@ -173,6 +174,10 @@ const AssistantPage = () => {
   const send = async () => {
     const question = input.trim();
     if ((!question && files.length === 0) || thinking) return;
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+      toast.error(OFFLINE_NOTICE);
+      return;
+    }
 
     const attachments = files.map((f) => ({
       url: f.url,

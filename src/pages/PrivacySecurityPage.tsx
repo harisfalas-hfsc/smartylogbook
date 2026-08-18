@@ -1,8 +1,13 @@
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, FileText, Lock, ShieldCheck, Trash2, Database } from 'lucide-react';
+import { ArrowLeft, FileText, Lock, ShieldCheck, Trash2, Database, WifiOff } from 'lucide-react';
+import { toast } from 'sonner';
+import { forgetAllDevices, listDeviceRecords } from '@/lib/offline/device-auth';
 
 const PrivacySecurityPage = () => {
   const navigate = useNavigate();
+  const [devices, setDevices] = useState(() => listDeviceRecords());
+
 
   return (
     <div className="space-y-5">
@@ -40,6 +45,29 @@ const PrivacySecurityPage = () => {
           <Link to="/terms-and-conditions" className="block px-3 py-3.5 text-sm font-medium text-foreground">Terms & Conditions</Link>
           <Link to="/disclaimer" className="block px-3 py-3.5 text-sm font-medium text-foreground">Disclaimer</Link>
         </div>
+      </section>
+
+      <section className="smarty-card animate-fade-up space-y-3 p-5">
+        <h2 className="flex items-center gap-2 text-sm font-bold text-foreground">
+          <WifiOff className="h-4 w-4 text-primary" /> Offline sign-in on this device
+        </h2>
+        <p className="text-xs leading-relaxed text-muted-foreground">
+          {devices.length
+            ? 'This device can open your logbook without internet. Your password is never stored, only a locked check of it.'
+            : 'Nothing is stored on this device for offline sign-in yet.'}
+        </p>
+        {devices.length ? (
+          <button
+            onClick={() => {
+              forgetAllDevices();
+              setDevices([]);
+              toast.success('Offline sign-in removed from this device.');
+            }}
+            className="rounded-2xl border-2 border-destructive/30 px-3 py-2 text-xs font-bold text-destructive"
+          >
+            Clear stored sign-in on this device
+          </button>
+        ) : null}
       </section>
     </div>
   );

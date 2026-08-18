@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
 import { hasPremium } from '@/lib/subscription';
+import { useAuth } from '@/contexts/AuthContext';
+import { offlineFirst } from '@/lib/offline/offline-first';
 
 
 export const SUPPORT_EMAIL = 'smartylogbook@outlook.com';
@@ -211,20 +213,28 @@ const notifyAdminOfFollowUp = async (ticketId: string, body: string, replyId: st
 
 /** The full back and forth on one ticket, shared by the customer and the admin. */
 export const useTicketThread = (ticketId: string | null) => {
+  const { user } = useAuth();
   const [replies, setReplies] = useState<SupportReply[]>([]);
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
     if (!ticketId) { setReplies([]); setLoading(false); return; }
     setLoading(true);
-    const { data } = await supabase
-      .from('support_replies')
-      .select('*')
-      .eq('ticket_id', ticketId)
-      .order('created_at', { ascending: true });
-    setReplies((data ?? []) as SupportReply[]);
+    const rows = await offlineFirst<SupportReply[]>(
+      `thread:${ticketId}`,
+      async () => {
+        const { data } = await supabase
+          .from('support_replies')
+          .select('*')
+          .eq('ticket_id', ticketId)
+          .order('created_at', { ascending: true });
+        return (data ?? []) as SupportReply[];
+      },
+      user?.id,
+    ).catch(() => [] as SupportReply[]);
+    setReplies(rows);
     setLoading(false);
-  }, [ticketId]);
+  }, [ticketId, user?.id]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -272,6 +282,7 @@ export const useTicketThread = (ticketId: string | null) => {
 
 /** One ticket the signed-in customer owns, with its conversation. */
 export const useMyTicket = (ticketId: string | null) => {
+  const { user } = useAuth();
   const [ticket, setTicket] = useState<SupportTicket | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -279,13 +290,25 @@ export const useMyTicket = (ticketId: string | null) => {
     let alive = true;
     (async () => {
       if (!ticketId) { setTicket(null); setLoading(false); return; }
-      const { data } = await supabase.from('support_tickets').select('*').eq('id', ticketId).maybeSingle();
+      const data = await offlineFirst<SupportTicket | null>(
+        `ticket:${ticketId}`,
+        async () => {
+          const { data: row } = await supabase
+            .from('support_tickets')
+            .select('*')
+            .eq('id', ticketId)
+            .maybeSingle();
+          return (row as SupportTicket) ?? null;
+        },
+        user?.id,
+      ).catch(() => null);
       if (!alive) return;
-      setTicket((data as SupportTicket) ?? null);
+      setTicket(data ?? null);
       setLoading(false);
     })();
     return () => { alive = false; };
-  }, [ticketId]);
+  }, [ticketId, user?.id]);
+
 
   return { ticket, loading };
 };

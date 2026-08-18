@@ -3,6 +3,7 @@ import {
   Bell, BrainCog, CalendarClock, CreditCard, FileText, HeartPulse, Lightbulb, Megaphone, Receipt, Sparkles,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { offlineFirst } from '@/lib/offline/offline-first';
 import { useAuth } from '@/contexts/AuthContext';
 
 export interface MessageRow {
@@ -90,10 +91,21 @@ export const useMessages = (archived = false) => {
       setLoading(false);
       return;
     }
-    let query = supabase.from('messages').select('*');
-    query = archived ? query.not('archived_at', 'is', null) : query.is('archived_at', null);
-    const { data } = await query.order('created_at', { ascending: false }).limit(120);
-    setMessages((data ?? []) as MessageRow[]);
+    try {
+      const rows = await offlineFirst<MessageRow[]>(
+        archived ? 'inbox:archived' : 'inbox:messages',
+        async () => {
+          let query = supabase.from('messages').select('*');
+          query = archived ? query.not('archived_at', 'is', null) : query.is('archived_at', null);
+          const { data } = await query.order('created_at', { ascending: false }).limit(120);
+          return (data ?? []) as MessageRow[];
+        },
+        user.id,
+      );
+      setMessages(rows);
+    } catch {
+      setMessages([]);
+    }
     setLoading(false);
   }, [user?.id, archived]);
 

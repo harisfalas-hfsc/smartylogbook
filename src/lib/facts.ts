@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { offlineFirst } from '@/lib/offline/offline-first';
 import { useAuth } from '@/contexts/AuthContext';
 
 /**
@@ -142,14 +143,21 @@ export const useFacts = (options?: { category?: string; limit?: number }) => {
       return;
     }
     setLoading(true);
-    let query = supabase
-      .from('facts')
-      .select('*')
-      .order('observed_at', { ascending: false })
-      .limit(options?.limit ?? 300);
-    if (options?.category) query = query.eq('category', options.category);
-    const { data } = await query;
-    setFacts((data ?? []) as unknown as Fact[]);
+    const rows = await offlineFirst<Fact[]>(
+      options?.category ? `facts:list:${options.category}` : 'facts:list',
+      async () => {
+        let query = supabase
+          .from('facts')
+          .select('*')
+          .order('observed_at', { ascending: false })
+          .limit(options?.limit ?? 300);
+        if (options?.category) query = query.eq('category', options.category);
+        const { data } = await query;
+        return (data ?? []) as unknown as Fact[];
+      },
+      user.id,
+    ).catch(() => [] as Fact[]);
+    setFacts(rows);
     setLoading(false);
   }, [user, options?.category, options?.limit]);
 

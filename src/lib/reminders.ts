@@ -4,6 +4,7 @@ import {
   FileText, Briefcase, Gift,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { offlineFirst } from '@/lib/offline/offline-first';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Preferences } from '@/lib/preferences';
 
@@ -55,11 +56,22 @@ export const useReminders = () => {
       setLoading(false);
       return;
     }
-    const { data } = await supabase
-      .from('reminders')
-      .select('*')
-      .order('due_at', { ascending: true });
-    setReminders((data ?? []) as Reminder[]);
+    try {
+      const rows = await offlineFirst<Reminder[]>(
+        'reminders:list',
+        async () => {
+          const { data } = await supabase
+            .from('reminders')
+            .select('*')
+            .order('due_at', { ascending: true });
+          return (data ?? []) as Reminder[];
+        },
+        user.id,
+      );
+      setReminders(rows);
+    } catch {
+      setReminders([]);
+    }
     setLoading(false);
   }, [user]);
 

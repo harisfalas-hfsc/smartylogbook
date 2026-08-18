@@ -53,6 +53,10 @@ import NotFound from "./pages/NotFound";
 import AnalyticsTracker from "./components/AnalyticsTracker";
 import RouteSeo from "./components/RouteSeo";
 import SisterAppsPopup from "./components/growth/SisterAppsPopup";
+import OfflineBanner from "./components/offline/OfflineBanner";
+import OfflineBootstrap from "./components/offline/OfflineBootstrap";
+import OfflineSync from "./components/offline/OfflineSync";
+import UpdatePrompt from "./components/offline/UpdatePrompt";
 import { HelmetProvider } from "react-helmet-async";
 
 const RouteFallback = () => (
@@ -100,6 +104,10 @@ const App = () => (
         <AuthProvider>
           <RouteSeo />
           <AnalyticsTracker />
+          <OfflineBootstrap />
+          <OfflineSync />
+          <OfflineBanner />
+          <UpdatePrompt />
           <Suspense fallback={<RouteFallback />}>
           <Routes>
 

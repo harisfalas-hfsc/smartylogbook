@@ -1,3 +1,4 @@
+import { useOnlineStatus, OFFLINE_NOTICE } from '@/lib/offline/useOnlineStatus';
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Brain, Camera, FileText, FolderTree, Link2, Loader2, Mic, Paperclip, Send, SlidersHorizontal, Sparkles, Square, X } from 'lucide-react';
@@ -103,6 +104,7 @@ const titleFromFile = (name: string) => {
 const CapturePage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const online = useOnlineStatus();
   const { create } = useMemories({ limit: 1 });
   const { memories: recent } = useMemories({ limit: 40 });
   const { create: createReminder } = useReminders();
@@ -343,6 +345,10 @@ const CapturePage = () => {
 
 
   const save = async () => {
+    if (!online) {
+      toast.error(OFFLINE_NOTICE);
+      return;
+    }
     if (!text.trim() && !file) {
       toast.error('Capture something first');
       return;
@@ -640,7 +646,7 @@ const CapturePage = () => {
 
         <button
           onClick={save}
-          disabled={saving || extracting}
+          disabled={saving || extracting || !online}
           className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-primary px-5 py-3 text-sm font-semibold text-primary-foreground shadow-glow transition-smooth active:scale-[0.98] disabled:opacity-60"
         >
           {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
