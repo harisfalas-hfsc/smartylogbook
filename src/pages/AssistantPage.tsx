@@ -1,3 +1,4 @@
+import { OFFLINE_NOTICE } from '@/lib/offline/useOnlineStatus';
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { CalendarClock, Camera, FileText, Loader2, Mic, Paperclip, Send, Square, Stethoscope, Wallet, X } from 'lucide-react';
