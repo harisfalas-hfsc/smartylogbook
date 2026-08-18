@@ -69,8 +69,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) fetchProfile(session.user.id);
+      if (session?.user) {
+        setUser(session.user);
+        fetchProfile(session.user.id);
+      } else {
+        // Offline the token cannot be refreshed, so the client may return no
+        // session even though this device is signed in. Keep the member inside
+        // in read-only mode using the stored session's identity.
+        const local = typeof navigator !== 'undefined' && navigator.onLine === false ? readLocalSessionUser() : null;
+        if (local) {
+          setUser({ id: local.id, email: local.email ?? undefined } as User);
+          fetchProfile(local.id);
+        } else {
+          setUser(null);
+        }
+      }
       setLoading(false);
     });
 
