@@ -268,12 +268,23 @@ export const useTrash = () => {
   const load = useCallback(async () => {
     if (!user) { setItems([]); setLoading(false); return; }
     setLoading(true);
-    const { data } = await supabase
-      .from('memories')
-      .select('*')
-      .not('deleted_at', 'is', null)
-      .order('deleted_at', { ascending: false });
-    setItems((data ?? []) as unknown as Memory[]);
+    try {
+      const rows = await offlineFirstDetailed<Memory[]>(
+        'logbook:trash',
+        async () => {
+          const { data } = await supabase
+            .from('memories')
+            .select('*')
+            .not('deleted_at', 'is', null)
+            .order('deleted_at', { ascending: false });
+          return (data ?? []) as unknown as Memory[];
+        },
+        user.id,
+      );
+      setItems(rows.data);
+    } catch {
+      setItems([]);
+    }
     setLoading(false);
   }, [user]);
 
