@@ -173,6 +173,10 @@ const AssistantPage = () => {
   const send = async () => {
     const question = input.trim();
     if ((!question && files.length === 0) || thinking) return;
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+      toast.error(OFFLINE_NOTICE);
+      return;
+    }
 
     const attachments = files.map((f) => ({
       url: f.url,
