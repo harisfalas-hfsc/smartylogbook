@@ -1,3 +1,4 @@
+import { useOnlineStatus, OFFLINE_NOTICE } from '@/lib/offline/useOnlineStatus';
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Brain, Camera, FileText, FolderTree, Link2, Loader2, Mic, Paperclip, Send, SlidersHorizontal, Sparkles, Square, X } from 'lucide-react';
@@ -103,6 +104,7 @@ const titleFromFile = (name: string) => {
 const CapturePage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const online = useOnlineStatus();
   const { create } = useMemories({ limit: 1 });
   const { memories: recent } = useMemories({ limit: 40 });
   const { create: createReminder } = useReminders();
