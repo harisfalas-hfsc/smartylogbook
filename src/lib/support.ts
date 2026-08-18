@@ -282,6 +282,7 @@ export const useTicketThread = (ticketId: string | null) => {
 
 /** One ticket the signed-in customer owns, with its conversation. */
 export const useMyTicket = (ticketId: string | null) => {
+  const { user } = useAuth();
   const [ticket, setTicket] = useState<SupportTicket | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -289,13 +290,25 @@ export const useMyTicket = (ticketId: string | null) => {
     let alive = true;
     (async () => {
       if (!ticketId) { setTicket(null); setLoading(false); return; }
-      const { data } = await supabase.from('support_tickets').select('*').eq('id', ticketId).maybeSingle();
+      const data = await offlineFirst<SupportTicket | null>(
+        `ticket:${ticketId}`,
+        async () => {
+          const { data: row } = await supabase
+            .from('support_tickets')
+            .select('*')
+            .eq('id', ticketId)
+            .maybeSingle();
+          return (row as SupportTicket) ?? null;
+        },
+        user?.id,
+      ).catch(() => null);
       if (!alive) return;
-      setTicket((data as SupportTicket) ?? null);
+      setTicket(data ?? null);
       setLoading(false);
     })();
     return () => { alive = false; };
-  }, [ticketId]);
+  }, [ticketId, user?.id]);
+
 
   return { ticket, loading };
 };
