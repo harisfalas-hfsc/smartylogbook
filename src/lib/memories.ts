@@ -40,6 +40,9 @@ export const useMemories = (options?: { module?: string; limit?: number }) => {
   const { user } = useAuth();
   const [memories, setMemories] = useState<Memory[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fromCache, setFromCache] = useState(false);
+  const [noCopy, setNoCopy] = useState(false);
+
 
   const load = useCallback(async () => {
     if (!user) {
