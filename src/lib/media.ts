@@ -94,16 +94,26 @@ export const useStorageUsage = () => {
       return;
     }
     setLoading(true);
-    const { data } = await supabase.from('memories').select('metadata, attachment_url').not('attachment_url', 'is', null);
-    let total = 0;
-    let count = 0;
-    for (const row of data ?? []) {
-      const size = (row as { metadata?: { file_size?: unknown } }).metadata?.file_size;
-      if (typeof size === 'number') total += size;
-      count += 1;
-    }
-    setUsed(total);
-    setFiles(count);
+    const stats = await offlineFirst<{ used: number; files: number }>(
+      'progress:storage',
+      async () => {
+        const { data } = await supabase
+          .from('memories')
+          .select('metadata, attachment_url')
+          .not('attachment_url', 'is', null);
+        let total = 0;
+        let count = 0;
+        for (const row of data ?? []) {
+          const size = (row as { metadata?: { file_size?: unknown } }).metadata?.file_size;
+          if (typeof size === 'number') total += size;
+          count += 1;
+        }
+        return { used: total, files: count };
+      },
+      user.id,
+    ).catch(() => ({ used: 0, files: 0 }));
+    setUsed(stats.used);
+    setFiles(stats.files);
     setLoading(false);
   }, [user]);
 
