@@ -213,6 +213,7 @@ const notifyAdminOfFollowUp = async (ticketId: string, body: string, replyId: st
 
 /** The full back and forth on one ticket, shared by the customer and the admin. */
 export const useTicketThread = (ticketId: string | null) => {
+  const { user } = useAuth();
   const [replies, setReplies] = useState<SupportReply[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -229,10 +230,11 @@ export const useTicketThread = (ticketId: string | null) => {
           .order('created_at', { ascending: true });
         return (data ?? []) as SupportReply[];
       },
+      user?.id,
     ).catch(() => [] as SupportReply[]);
     setReplies(rows);
     setLoading(false);
-  }, [ticketId]);
+  }, [ticketId, user?.id]);
 
   useEffect(() => { load(); }, [load]);
 
