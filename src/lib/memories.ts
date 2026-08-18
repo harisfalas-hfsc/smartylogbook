@@ -85,6 +85,9 @@ export const useMemories = (options?: { module?: string; limit?: number }) => {
 
   const create = async (memory: NewMemory) => {
     if (!user) return { error: new Error('Not signed in') };
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+      return { error: new Error(OFFLINE_NOTICE), id: null };
+    }
     const { data: inserted, error } = await supabase.from('memories').insert({
       user_id: user.id,
       kind: memory.kind ?? 'text',
