@@ -110,16 +110,30 @@ export const useMemories = (options?: { module?: string; limit?: number }) => {
     return { error, id: inserted?.id ?? null };
   };
 
-  /** Manual edit of a record by the user. */
+  /** Manual edit of a record by the user. Queued and replayed when offline. */
   const update = async (id: string, patch: Partial<Memory>) => {
     const allowed: Record<string, unknown> = {};
     for (const key of ['title', 'summary', 'content', 'module', 'kind', 'ai_tags', 'amount', 'currency', 'location', 'occurred_at', 'metadata', 'status', 'completed_at', 'due_at', 'attachment_url'] as const) {
       if (key in patch) allowed[key] = patch[key] ?? null;
     }
     if (!Object.keys(allowed).length) return { error: null };
+
+    const applyLocally = () =>
+      setMemories((prev) => {
+        const next = prev.map((m) => (m.id === id ? { ...m, ...(allowed as Partial<Memory>) } : m));
+        void offlineSave(options?.module ? `logbook:list:${options.module}` : 'logbook:list', next, user?.id);
+        return next;
+      });
+
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+      await enqueueAction('memory-update', { id, patch: allowed }, user?.id);
+      applyLocally();
+      return { error: null };
+    }
+
     const { error } = await supabase.from('memories').update(allowed).eq('id', id);
     if (!error) {
-      setMemories((prev) => prev.map((m) => (m.id === id ? { ...m, ...(allowed as Partial<Memory>) } : m)));
+      applyLocally();
       void indexMemories([id]);
     }
     return { error };
