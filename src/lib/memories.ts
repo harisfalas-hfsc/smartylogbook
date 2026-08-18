@@ -4,6 +4,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { indexMemories } from '@/lib/semantic';
 import { hasPremium } from '@/lib/subscription';
 import type { ItemStatus } from '@/lib/status';
+import { offlineFirstDetailed, offlineSave } from '@/lib/offline/offline-first';
+import { enqueueAction } from '@/lib/offline/queue';
 
 
 export interface Memory {
