@@ -3,7 +3,7 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { offlineFirst } from '@/lib/offline/offline-first';
 import { clearCacheForUser } from '@/lib/offline/store';
-import { rememberDevice, refreshRememberedSession } from '@/lib/offline/device-auth';
+import { rememberDevice, refreshRememberedSession, readLocalSessionUser } from '@/lib/offline/device-auth';
 
 interface Profile {
   id: string;
