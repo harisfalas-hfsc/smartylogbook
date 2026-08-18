@@ -168,3 +168,21 @@ export async function offlineSignIn(email: string, password: string): Promise<Of
 
 /** Marks the current tab as an offline, read-only restored session. */
 export const OFFLINE_SESSION_FLAG = 'smarty:offline-session';
+
+/**
+ * Reads the user stored in this browser's Supabase auth blob.
+ * Offline the access token cannot be refreshed, so the client may hand back no
+ * session — we still know who is signed in on this device.
+ */
+export function readLocalSessionUser(): { id: string; email: string | null } | null {
+  try {
+    const entry = findSupabaseAuthEntry();
+    if (!entry) return null;
+    const parsed = JSON.parse(entry.value);
+    const user = parsed?.user ?? parsed?.currentSession?.user ?? null;
+    if (!user?.id) return null;
+    return { id: user.id, email: user.email ?? null };
+  } catch {
+    return null;
+  }
+}
