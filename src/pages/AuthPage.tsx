@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { Eye, EyeOff, Mail, Lock, User } from 'lucide-react';
+import { offlineSignIn, OFFLINE_SESSION_FLAG } from '@/lib/offline/device-auth';
 
 const AuthPage = () => {
   const [mode, setMode] = useState<'login' | 'signup' | 'forgot'>('login');
