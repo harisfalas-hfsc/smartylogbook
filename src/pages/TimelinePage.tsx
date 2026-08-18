@@ -276,6 +276,8 @@ const TimelinePage = () => {
         <div className="smarty-card flex items-center justify-center p-10">
           <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
         </div>
+      ) : groups.length === 0 && noCopy ? (
+        <OfflineNotice />
       ) : groups.length === 0 ? (
         <div className="smarty-card p-10 text-center">
           <Sparkles className="mx-auto h-6 w-6 text-primary" />
