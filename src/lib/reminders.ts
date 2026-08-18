@@ -4,6 +4,7 @@ import {
   FileText, Briefcase, Gift,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { offlineFirst } from '@/lib/offline/offline-first';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Preferences } from '@/lib/preferences';
 
