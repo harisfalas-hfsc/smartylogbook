@@ -1,3 +1,4 @@
+import OfflineNotice from '@/components/offline/OfflineNotice';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Loader2, Search, SlidersHorizontal, Sparkles, Trash2, TrendingUp, X } from 'lucide-react';
@@ -26,7 +27,7 @@ const EXAMPLES = ['show me my expenses last month', 'show me workouts this week'
 const PAGE = 25;
 
 const TimelinePage = () => {
-  const { memories, loading, remove, reclassify, update } = useMemories();
+  const { memories, loading, noCopy, remove, reclassify, update } = useMemories();
   const { categories } = useCategories();
   const [range, setRange] = useState<(typeof RANGES)[number]['id']>('all');
   const [module, setModule] = useState<string | null>(null);
