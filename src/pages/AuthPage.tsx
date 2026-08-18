@@ -19,9 +19,40 @@ const AuthPage = () => {
   const { signIn, signUp, resetPassword } = useAuth();
   const navigate = useNavigate();
 
+  /** No internet: verify the password against this device's stored verifier. */
+  const tryOfflineSignIn = async () => {
+    const result = await offlineSignIn(email, password);
+    if (result === 'ok') {
+      sessionStorage.setItem(OFFLINE_SESSION_FLAG, '1');
+      toast.success("You're offline — opening everything saved on this device.");
+      window.location.assign('/app');
+      return true;
+    }
+    if (result === 'bad-password') {
+      toast.error('That password does not match the one saved on this device.');
+      return true;
+    }
+    toast.error(
+      "You're offline and this device has no saved sign-in yet. Connect once and it will be stored here.",
+    );
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+
+    if (!navigator.onLine) {
+      if (mode === 'login') {
+        await tryOfflineSignIn();
+      } else {
+        toast.error(
+          "You're offline — creating an account or resetting a password needs an internet connection.",
+        );
+      }
+      setLoading(false);
+      return;
+    }
 
     if (mode === 'signup') {
       if (password !== confirmPassword) {

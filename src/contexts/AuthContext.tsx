@@ -1,6 +1,9 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { offlineFirst } from '@/lib/offline/offline-first';
+import { clearCacheForUser } from '@/lib/offline/store';
+import { rememberDevice, refreshRememberedSession } from '@/lib/offline/device-auth';
 
 interface Profile {
   id: string;
@@ -31,13 +34,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // The profile is cached on the device so the header, name and avatar render
+  // with no internet.
   const fetchProfile = async (userId: string) => {
-    const { data } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('user_id', userId)
-      .single();
-    setProfile(data as Profile | null);
+    const data = await offlineFirst<Profile | null>(
+      'account:profile',
+      async () => {
+        const { data: row } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', userId)
+          .single();
+        return (row as Profile | null) ?? null;
+      },
+      userId,
+    ).catch(() => null);
+    setProfile(data ?? null);
   };
 
   useEffect(() => {
@@ -47,6 +59,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(session?.user ?? null);
         if (session?.user) {
           setTimeout(() => fetchProfile(session.user.id), 0);
+          refreshRememberedSession(session.user.email);
         } else {
           setProfile(null);
         }
@@ -73,19 +86,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         emailRedirectTo: `${window.location.origin}/app`,
       },
     });
+    if (!error) await rememberDevice(email, password);
     return { error };
   };
 
   const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
+    // Remember this device so the member can sign in again with no internet.
+    if (!error) await rememberDevice(email, password);
     return { error };
   };
 
   const signOut = async () => {
+    const leavingUserId = user?.id;
     await supabase.auth.signOut();
     setUser(null);
     setSession(null);
     setProfile(null);
+    // Only this account's saved copies are cleared, never another account's.
+    if (leavingUserId) await clearCacheForUser(leavingUserId);
   };
 
   const resetPassword = async (email: string) => {
