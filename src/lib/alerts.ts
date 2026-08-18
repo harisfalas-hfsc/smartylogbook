@@ -35,14 +35,25 @@ export const useProactiveAlerts = () => {
       setLoading(false);
       return;
     }
-    const { data } = await supabase
-      .from('proactive_alerts')
-      .select('*')
-      .eq('dismissed', false)
-      .order('severity', { ascending: true })
-      .order('created_at', { ascending: false })
-      .limit(20);
-    const rows = (data ?? []) as ProactiveAlert[];
+    const rows = await offlineFirst<ProactiveAlert[]>(
+      'alerts:list',
+      async () => {
+        const { data } = await supabase
+          .from('proactive_alerts')
+          .select('*')
+          .eq('dismissed', false)
+          .order('severity', { ascending: true })
+          .order('created_at', { ascending: false })
+          .limit(20);
+        return (data ?? []) as ProactiveAlert[];
+      },
+      user.id,
+    ).catch(() => [] as ProactiveAlert[]);
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+      setAlerts(rows);
+      setLoading(false);
+      return;
+    }
     const reminderRows = rows.filter((alert) => alert.dedupe_key?.startsWith('reminder:'));
     if (!reminderRows.length) {
       setAlerts(rows);

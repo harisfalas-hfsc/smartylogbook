@@ -55,11 +55,22 @@ export const useReminders = () => {
       setLoading(false);
       return;
     }
-    const { data } = await supabase
-      .from('reminders')
-      .select('*')
-      .order('due_at', { ascending: true });
-    setReminders((data ?? []) as Reminder[]);
+    try {
+      const rows = await offlineFirst<Reminder[]>(
+        'reminders:list',
+        async () => {
+          const { data } = await supabase
+            .from('reminders')
+            .select('*')
+            .order('due_at', { ascending: true });
+          return (data ?? []) as Reminder[];
+        },
+        user.id,
+      );
+      setReminders(rows);
+    } catch {
+      setReminders([]);
+    }
     setLoading(false);
   }, [user]);
 

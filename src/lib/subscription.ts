@@ -96,23 +96,32 @@ export const useSubscription = () => {
       return;
     }
     setLoading(true);
-    const { data } = await supabase
-      .from('subscriptions')
-      .select('plan, plan_key, status, source, current_period_start, current_period_end, cancel_at_period_end')
-      .eq('user_id', user.id)
-      .maybeSingle();
-    const row = (data as SubscriptionRow | null) ?? null;
+    // Access level and conversations used are cached so the app knows what the
+    // member may see even with no internet.
+    const access = await offlineFirst<{ subscription: SubscriptionRow | null; used: number }>(
+      'account:access',
+      async () => {
+        const { data } = await supabase
+          .from('subscriptions')
+          .select('plan, plan_key, status, source, current_period_start, current_period_end, cancel_at_period_end')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        const fresh = (data as SubscriptionRow | null) ?? null;
+        const from = isAdmin && !isActive(fresh) ? readAdminCycle(user.id) : periodStart(fresh);
+        const { count } = await supabase
+          .from('ai_conversations')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .gte('started_at', from.toISOString());
+        return { subscription: fresh, used: count ?? 0 };
+      },
+      user.id,
+    ).catch(() => ({ subscription: null as SubscriptionRow | null, used: 0 }));
+
+    const row = access.subscription;
     setSub(row);
-
-    const start = isAdmin && !isActive(row) ? readAdminCycle(user.id) : periodStart(row);
-    setCycleStart(start);
-
-    const { count } = await supabase
-      .from('ai_conversations')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', user.id)
-      .gte('started_at', start.toISOString());
-    setUsed(count ?? 0);
+    setCycleStart(isAdmin && !isActive(row) ? readAdminCycle(user.id) : periodStart(row));
+    setUsed(access.used);
     setLoading(false);
   }, [user?.id, isAdmin]);
 

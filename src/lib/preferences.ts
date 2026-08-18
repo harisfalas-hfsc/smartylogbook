@@ -45,32 +45,40 @@ export const usePreferences = () => {
       return;
     }
     setLoading(true);
-    const { data } = await supabase
-      .from('user_preferences')
-      .select('*')
-      .eq('user_id', user.id)
-      .maybeSingle();
-
     const browserTz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
 
+    const data = await offlineFirst<Preferences | null>(
+      'account:preferences',
+      async () => {
+        const { data: row } = await supabase
+          .from('user_preferences')
+          .select('*')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        if (row) return row as Preferences;
+        const { data: created } = await supabase
+          .from('user_preferences')
+          .insert({ user_id: user.id, timezone: browserTz })
+          .select('*')
+          .maybeSingle();
+        return (created as Preferences) ?? null;
+      },
+      user.id,
+    ).catch(() => null);
+
     if (data) {
-      setPrefs(data as Preferences);
+      setPrefs(data);
       // Keep the stored timezone in step with the device, so scheduled
       // messages always arrive at the right local hour after a move.
-      if ((data as Preferences).timezone !== browserTz) {
+      if (data.timezone !== browserTz && navigator.onLine !== false) {
         void supabase
           .from('user_preferences')
           .update({ timezone: browserTz })
           .eq('user_id', user.id);
-        setPrefs({ ...(data as Preferences), timezone: browserTz });
+        setPrefs({ ...data, timezone: browserTz });
       }
     } else {
-      const { data: created } = await supabase
-        .from('user_preferences')
-        .insert({ user_id: user.id, timezone: browserTz })
-        .select('*')
-        .maybeSingle();
-      setPrefs((created as Preferences) ?? null);
+      setPrefs(null);
     }
     setLoading(false);
   }, [user]);
