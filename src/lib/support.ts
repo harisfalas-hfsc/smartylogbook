@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
 import { hasPremium } from '@/lib/subscription';
+import { useAuth } from '@/contexts/AuthContext';
+import { offlineFirst } from '@/lib/offline/offline-first';
 
 
 export const SUPPORT_EMAIL = 'smartylogbook@outlook.com';
