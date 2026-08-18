@@ -3,11 +3,15 @@
  * Never registers in dev, iframes or Lovable preview hosts, and supports a
  * `?sw=off` kill switch that unregisters an already-installed worker.
  */
+import { isNativeApp } from './connectivity';
+
 const SW_URL = '/sw.js';
 
 function isBlockedContext(): boolean {
   if (typeof window === 'undefined') return true;
   if (!import.meta.env.PROD) return true;
+  // A native app already ships its whole shell locally; no worker needed.
+  if (isNativeApp()) return true;
   try {
     if (window.self !== window.top) return true;
   } catch {
