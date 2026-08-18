@@ -46,15 +46,31 @@ export const useMemories = (options?: { module?: string; limit?: number }) => {
       return;
     }
     setLoading(true);
-    let query = supabase
-      .from('memories')
-      .select('*')
-      .is('deleted_at', null)
-      .order('occurred_at', { ascending: false });
-    if (options?.module) query = query.eq('module', options.module);
-    if (options?.limit) query = query.limit(options.limit);
-    const { data } = await query;
-    setMemories((data ?? []) as unknown as Memory[]);
+    const cacheKey = options?.module ? `logbook:list:${options.module}` : 'logbook:list';
+    try {
+      const result = await offlineFirstDetailed<Memory[]>(
+        cacheKey,
+        async () => {
+          let query = supabase
+            .from('memories')
+            .select('*')
+            .is('deleted_at', null)
+            .order('occurred_at', { ascending: false });
+          if (options?.module) query = query.eq('module', options.module);
+          if (options?.limit) query = query.limit(options.limit);
+          const { data } = await query;
+          return (data ?? []) as unknown as Memory[];
+        },
+        user.id,
+      );
+      const rows = options?.limit ? result.data.slice(0, options.limit) : result.data;
+      setMemories(rows);
+      setFromCache(result.fromCache);
+      setNoCopy(false);
+    } catch {
+      setMemories([]);
+      setNoCopy(typeof navigator !== 'undefined' && navigator.onLine === false);
+    }
     setLoading(false);
   }, [user, options?.module, options?.limit]);
 
