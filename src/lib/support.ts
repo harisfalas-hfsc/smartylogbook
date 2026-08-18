@@ -217,12 +217,18 @@ export const useTicketThread = (ticketId: string | null) => {
   const load = useCallback(async () => {
     if (!ticketId) { setReplies([]); setLoading(false); return; }
     setLoading(true);
-    const { data } = await supabase
-      .from('support_replies')
-      .select('*')
-      .eq('ticket_id', ticketId)
-      .order('created_at', { ascending: true });
-    setReplies((data ?? []) as SupportReply[]);
+    const rows = await offlineFirst<SupportReply[]>(
+      `thread:${ticketId}`,
+      async () => {
+        const { data } = await supabase
+          .from('support_replies')
+          .select('*')
+          .eq('ticket_id', ticketId)
+          .order('created_at', { ascending: true });
+        return (data ?? []) as SupportReply[];
+      },
+    ).catch(() => [] as SupportReply[]);
+    setReplies(rows);
     setLoading(false);
   }, [ticketId]);
 
