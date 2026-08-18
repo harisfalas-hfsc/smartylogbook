@@ -3,6 +3,7 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { offlineFirst } from '@/lib/offline/offline-first';
 import { clearCacheForUser } from '@/lib/offline/store';
+import { isOnline } from '@/lib/offline/connectivity';
 import { rememberDevice, refreshRememberedSession, readLocalSessionUser } from '@/lib/offline/device-auth';
 
 interface Profile {
@@ -76,7 +77,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // Offline the token cannot be refreshed, so the client may return no
         // session even though this device is signed in. Keep the member inside
         // in read-only mode using the stored session's identity.
-        const local = typeof navigator !== 'undefined' && navigator.onLine === false ? readLocalSessionUser() : null;
+        const local = !isOnline() ? readLocalSessionUser() : null;
         if (local) {
           setUser({ id: local.id, email: local.email ?? undefined } as User);
           fetchProfile(local.id);

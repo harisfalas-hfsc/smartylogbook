@@ -5,6 +5,7 @@ import { offlineSave } from '@/lib/offline/offline-first';
 import { trimCache } from '@/lib/offline/store';
 import { signedUrl } from '@/lib/media';
 import { fetchPricing } from '@/lib/pricing';
+import { isOnline } from '@/lib/offline/connectivity';
 
 /**
  * Downloads the member's entire world in the background the moment they sign
@@ -22,7 +23,7 @@ const OfflineBootstrap = () => {
     const save = (key: string, value: unknown) => offlineSave(key, value, userId);
 
     const prefetch = async () => {
-      if (!navigator.onLine || running.current) return;
+      if (!isOnline() || running.current) return;
       running.current = true;
       try {
         const [

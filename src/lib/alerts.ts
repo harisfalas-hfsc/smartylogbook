@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { offlineFirst } from '@/lib/offline/offline-first';
 import { useAuth } from '@/contexts/AuthContext';
+import { isOnline } from '@/lib/offline/connectivity';
 
 /**
  * Proactive alerts written by the daily background scan (edge function
@@ -50,7 +51,7 @@ export const useProactiveAlerts = () => {
       },
       user.id,
     ).catch(() => [] as ProactiveAlert[]);
-    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+    if (!isOnline()) {
       setAlerts(rows);
       setLoading(false);
       return;

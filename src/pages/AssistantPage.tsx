@@ -10,6 +10,7 @@ import AssistantMemoryCard from '@/components/AssistantMemoryCard';
 import AssistantUpgrade from '@/components/AssistantUpgrade';
 import { useSubscription } from '@/lib/subscription';
 import { cn } from '@/lib/utils';
+import { isOnline } from '@/lib/offline/connectivity';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -174,7 +175,7 @@ const AssistantPage = () => {
   const send = async () => {
     const question = input.trim();
     if ((!question && files.length === 0) || thinking) return;
-    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+    if (!isOnline()) {
       toast.error(OFFLINE_NOTICE);
       return;
     }

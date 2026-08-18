@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { offlineFirst } from '@/lib/offline/offline-first';
 import { useAuth } from '@/contexts/AuthContext';
+import { isOnline } from '@/lib/offline/connectivity';
 
 export interface Preferences {
   id: string;
@@ -71,7 +72,7 @@ export const usePreferences = () => {
       setPrefs(data);
       // Keep the stored timezone in step with the device, so scheduled
       // messages always arrive at the right local hour after a move.
-      if (data.timezone !== browserTz && navigator.onLine !== false) {
+      if (data.timezone !== browserTz && isOnline()) {
         void supabase
           .from('user_preferences')
           .update({ timezone: browserTz })

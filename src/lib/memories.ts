@@ -7,6 +7,7 @@ import type { ItemStatus } from '@/lib/status';
 import { offlineFirstDetailed, offlineSave } from '@/lib/offline/offline-first';
 import { enqueueAction } from '@/lib/offline/queue';
 import { OFFLINE_NOTICE } from '@/lib/offline/useOnlineStatus';
+import { isOnline } from '@/lib/offline/connectivity';
 
 
 export interface Memory {
@@ -75,7 +76,7 @@ export const useMemories = (options?: { module?: string; limit?: number }) => {
       setNoCopy(false);
     } catch {
       setMemories([]);
-      setNoCopy(typeof navigator !== 'undefined' && navigator.onLine === false);
+      setNoCopy(!isOnline());
     }
     setLoading(false);
   }, [user, options?.module, options?.limit]);
@@ -86,7 +87,7 @@ export const useMemories = (options?: { module?: string; limit?: number }) => {
 
   const create = async (memory: NewMemory) => {
     if (!user) return { error: new Error('Not signed in') };
-    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+    if (!isOnline()) {
       return { error: new Error(OFFLINE_NOTICE), id: null };
     }
     const { data: inserted, error } = await supabase.from('memories').insert({
@@ -129,7 +130,7 @@ export const useMemories = (options?: { module?: string; limit?: number }) => {
         return next;
       });
 
-    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+    if (!isOnline()) {
       await enqueueAction('memory-update', { id, patch: allowed }, user?.id);
       applyLocally();
       return { error: null };
