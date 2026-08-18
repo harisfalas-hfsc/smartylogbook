@@ -343,6 +343,10 @@ const CapturePage = () => {
 
 
   const save = async () => {
+    if (!online) {
+      toast.error(OFFLINE_NOTICE);
+      return;
+    }
     if (!text.trim() && !file) {
       toast.error('Capture something first');
       return;
