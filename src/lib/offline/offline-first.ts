@@ -1,4 +1,5 @@
 import { readCache, scopedKey, trimCache, writeCache } from './store';
+import { isOnline } from './connectivity';
 
 export type OfflineResult<T> = { data: T; fromCache: boolean; savedAt: number | null };
 
@@ -23,7 +24,7 @@ export async function offlineFirstDetailed<T>(
 ): Promise<OfflineResult<T>> {
   const fullKey = scopedKey(userId ?? null, key);
   try {
-    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+    if (!isOnline()) {
       throw new Error('offline');
     }
     const fresh = await loader();

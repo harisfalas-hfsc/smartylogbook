@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { Eye, EyeOff, Mail, Lock, User } from 'lucide-react';
 import { offlineSignIn, OFFLINE_SESSION_FLAG } from '@/lib/offline/device-auth';
+import { isOnline } from '@/lib/offline/connectivity';
 
 const AuthPage = () => {
   const [mode, setMode] = useState<'login' | 'signup' | 'forgot'>('login');
@@ -43,7 +44,7 @@ const AuthPage = () => {
     e.preventDefault();
     setLoading(true);
 
-    if (!navigator.onLine) {
+    if (!isOnline()) {
       if (mode === 'login') {
         await tryOfflineSignIn();
       } else {
