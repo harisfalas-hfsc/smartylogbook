@@ -97,7 +97,8 @@ export const useMessages = (archived = false) => {
         async () => {
           let query = supabase.from('messages').select('*');
           query = archived ? query.not('archived_at', 'is', null) : query.is('archived_at', null);
-          const { data } = await query.order('created_at', { ascending: false }).limit(120);
+          const { data, error } = await query.order('created_at', { ascending: false }).limit(120);
+          if (error) throw new Error(error.message);
           return (data ?? []) as MessageRow[];
         },
         user.id,

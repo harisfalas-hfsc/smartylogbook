@@ -60,10 +60,11 @@ export const useReminders = () => {
       const rows = await offlineFirst<Reminder[]>(
         'reminders:list',
         async () => {
-          const { data } = await supabase
+          const { data, error } = await supabase
             .from('reminders')
             .select('*')
             .order('due_at', { ascending: true });
+          if (error) throw new Error(error.message);
           return (data ?? []) as Reminder[];
         },
         user.id,

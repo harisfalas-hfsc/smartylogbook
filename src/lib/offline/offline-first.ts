@@ -28,7 +28,8 @@ export async function offlineFirstDetailed<T>(
       throw new Error('offline');
     }
     const fresh = await loader();
-    void writeCache(fullKey, fresh).then(() => trimCache());
+    await writeCache(fullKey, fresh);
+    void trimCache();
     return { data: fresh, fromCache: false, savedAt: Date.now() };
   } catch (error) {
     const cached = await readCache<T>(fullKey);

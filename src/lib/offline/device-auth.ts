@@ -7,6 +7,7 @@
  */
 
 const VAULT_PREFIX = 'smarty:device-auth:';
+const ACTIVE_DEVICE_EMAIL = 'smarty:device-auth:active-email';
 const ITERATIONS = 150_000;
 
 export type DeviceRecord = {
@@ -79,6 +80,7 @@ export async function rememberDevice(email: string, password: string): Promise<v
       savedAt: Date.now(),
     };
     localStorage.setItem(keyFor(email), JSON.stringify(record));
+    localStorage.setItem(ACTIVE_DEVICE_EMAIL, record.email);
   } catch {
     /* best effort */
   }
@@ -97,6 +99,7 @@ export function refreshRememberedSession(email: string | null | undefined): void
       keyFor(email),
       JSON.stringify({ ...record, storageKey: entry.storageKey, session: entry.value }),
     );
+    localStorage.setItem(ACTIVE_DEVICE_EMAIL, email.trim().toLowerCase());
   } catch {
     /* ignore */
   }
@@ -132,6 +135,9 @@ export function forgetDevice(email: string | null | undefined): void {
   if (!email) return;
   try {
     localStorage.removeItem(keyFor(email));
+    if (localStorage.getItem(ACTIVE_DEVICE_EMAIL) === email.trim().toLowerCase()) {
+      localStorage.removeItem(ACTIVE_DEVICE_EMAIL);
+    }
   } catch {
     /* ignore */
   }
@@ -160,6 +166,7 @@ export async function offlineSignIn(email: string, password: string): Promise<Of
     const hash = await derive(password, fromB64(record.salt), record.iterations || ITERATIONS);
     if (hash !== record.hash) return 'bad-password';
     localStorage.setItem(record.storageKey, record.session);
+    localStorage.setItem(ACTIVE_DEVICE_EMAIL, record.email);
     return 'ok';
   } catch {
     return 'unsupported';
@@ -177,8 +184,11 @@ export const OFFLINE_SESSION_FLAG = 'smarty:offline-session';
 export function readLocalSessionUser(): { id: string; email: string | null } | null {
   try {
     const entry = findSupabaseAuthEntry();
-    if (!entry) return null;
-    const parsed = JSON.parse(entry.value);
+    const activeEmail = localStorage.getItem(ACTIVE_DEVICE_EMAIL);
+    const remembered = activeEmail ? localStorage.getItem(keyFor(activeEmail)) : null;
+    const sessionValue = entry?.value ?? (remembered ? (JSON.parse(remembered) as DeviceRecord).session : null);
+    if (!sessionValue) return null;
+    const parsed = JSON.parse(sessionValue);
     const user = parsed?.user ?? parsed?.currentSession?.user ?? null;
     if (!user?.id) return null;
     return { id: user.id, email: user.email ?? null };
