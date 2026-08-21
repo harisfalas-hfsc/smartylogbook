@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { offlineSave } from '@/lib/offline/offline-first';
-import { trimCache } from '@/lib/offline/store';
+import { readCache, scopedKey, trimCache } from '@/lib/offline/store';
 import { signedUrl } from '@/lib/media';
 import { fetchPricing } from '@/lib/pricing';
 import { isOnline, subscribeConnectivity } from '@/lib/offline/connectivity';
@@ -152,6 +152,10 @@ const OfflineBootstrap = () => {
           save('assistant:conversations', conversationRows),
           save('inbox:threads', ticketRows),
         ]);
+        const storedLogbook = await readCache<unknown[]>(scopedKey(userId, 'logbook:list'));
+        if (!storedLogbook || storedLogbook.data.length !== memoryRows.length) {
+          throw new Error('The downloaded logbook could not be stored on this device');
+        }
 
         // Every individual record's full detail, not just the list.
         await Promise.all(memoryRows.map((record) => save(`record:${record.id}`, record)));
