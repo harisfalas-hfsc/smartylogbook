@@ -205,6 +205,11 @@ const OfflineBootstrap = () => {
       // health probe must not suppress the real download attempt when the
       // device still has a network route.
       if (connectivityState() === 'offline' || running.current) return;
+      // Never issue authenticated downloads for a remembered offline identity
+      // whose real backend session has expired. That previously produced an
+      // endless retry loop and could make an online account look empty.
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token || session.user.id !== userId) return;
       running.current = true;
       const startedAt = Date.now();
       let completedState: SyncState = 'idle';
