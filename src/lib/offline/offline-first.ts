@@ -23,19 +23,31 @@ export async function offlineFirstDetailed<T>(
   userId?: string | null,
 ): Promise<OfflineResult<T>> {
   const fullKey = scopedKey(userId ?? null, key);
-  try {
-    if (!isOnline()) {
-      throw new Error('offline');
+  if (isOnline()) {
+    let fresh: T;
+    try {
+      fresh = await loader();
+    } catch (error) {
+      const cached = await readCache<T>(fullKey);
+      if (cached) return { data: cached.data, fromCache: true, savedAt: cached.savedAt };
+      throw error;
     }
-    const fresh = await loader();
-    await writeCache(fullKey, fresh);
-    void trimCache();
-    return { data: fresh, fromCache: false, savedAt: Date.now() };
-  } catch (error) {
-    const cached = await readCache<T>(fullKey);
-    if (cached) return { data: cached.data, fromCache: true, savedAt: cached.savedAt };
-    throw error;
+
+    // Local persistence must never hide valid online data. If this device
+    // refuses an IndexedDB write (quota, private mode, browser issue), the
+    // member still sees the fresh backend response instead of an empty screen.
+    try {
+      await writeCache(fullKey, fresh);
+      void trimCache();
+      return { data: fresh, fromCache: false, savedAt: Date.now() };
+    } catch {
+      return { data: fresh, fromCache: false, savedAt: null };
+    }
   }
+
+  const cached = await readCache<T>(fullKey);
+  if (cached) return { data: cached.data, fromCache: true, savedAt: cached.savedAt };
+  throw new Error('No saved offline copy is available on this device');
 }
 
 /** Reads only what is already on the device (never touches the network). */

@@ -15,6 +15,7 @@
  * `navigator.onLine` directly anywhere else.
  */
 import { Capacitor } from '@capacitor/core';
+import { supabase } from '@/integrations/supabase/client';
 
 export type ConnectivityState =
   /** Device reports no network at all. */
@@ -27,7 +28,7 @@ export type ConnectivityState =
 type Listener = (online: boolean) => void;
 type StateListener = (state: ConnectivityState) => void;
 
-const HEALTH_URL = `${import.meta.env.VITE_SUPABASE_URL ?? ''}/auth/v1/health`;
+const HEALTH_URL = `${import.meta.env.VITE_SUPABASE_URL ?? ''}/rest/v1/profiles?select=id&limit=1`;
 const PROBE_TIMEOUT_MS = 6000;
 /** How often we re-probe while we believe we are cut off. */
 const RECOVERY_INTERVAL_MS = 15000;
@@ -113,12 +114,22 @@ export async function probeBackend(force = false): Promise<boolean> {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), PROBE_TIMEOUT_MS);
     try {
-      const res = await fetch(`${HEALTH_URL}?t=${Date.now()}`, {
+      // Use the same authenticated client headers as the app. The previous
+      // auth-health request omitted the API key and produced a guaranteed 401,
+      // which was presented as a connectivity failure even while data requests
+      // were succeeding.
+      const { data: { session } } = await supabase.auth.getSession();
+      const apiKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? '';
+      const res = await fetch(HEALTH_URL, {
         method: 'GET',
         cache: 'no-store',
         signal: controller.signal,
+        headers: {
+          apikey: apiKey,
+          Authorization: `Bearer ${session?.access_token ?? apiKey}`,
+        },
       });
-      lastProbeOk = res.ok || res.status < 500;
+      lastProbeOk = res.status < 500;
     } catch {
       lastProbeOk = false;
     } finally {

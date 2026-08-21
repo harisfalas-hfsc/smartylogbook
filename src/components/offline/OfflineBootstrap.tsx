@@ -17,6 +17,8 @@ import {
   markSyncStarted,
 } from '@/lib/offline/db';
 
+const MEMORY_FIELDS = 'id,user_id,kind,module,title,summary,content,ai_tags,mood,amount,currency,location,attachment_url,metadata,related_ids,relation_note,deleted_at,status,completed_at,due_at,occurred_at,created_at,updated_at';
+
 type QueryResult<T> = { data: T | null; error: { message?: string } | null };
 type MemoryRow = {
   id: string;
@@ -38,7 +40,7 @@ async function fetchEveryMemory(deleted: boolean): Promise<MemoryRow[]> {
   for (let start = 0; ; start += pageSize) {
     let query = supabase
       .from('memories')
-      .select('*')
+      .select(MEMORY_FIELDS)
       .order(deleted ? 'deleted_at' : 'occurred_at', { ascending: false })
       .range(start, start + pageSize - 1);
     query = deleted ? query.not('deleted_at', 'is', null) : query.is('deleted_at', null);
@@ -80,7 +82,6 @@ const OfflineBootstrap = () => {
         save('account:preferences', preferences ?? null),
         save('logbook:list', memories),
         save('logbook:trash', trash),
-        ...memories.map((record) => save(`record:${record.id}`, record)),
       ]);
 
       // A successful network response is not enough: prove the complete list
@@ -204,6 +205,11 @@ const OfflineBootstrap = () => {
       // health probe must not suppress the real download attempt when the
       // device still has a network route.
       if (connectivityState() === 'offline' || running.current) return;
+      // Never issue authenticated downloads for a remembered offline identity
+      // whose real backend session has expired. That previously produced an
+      // endless retry loop and could make an online account look empty.
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token || session.user.id !== userId) return;
       running.current = true;
       const startedAt = Date.now();
       let completedState: SyncState = 'idle';

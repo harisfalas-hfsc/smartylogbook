@@ -8,6 +8,7 @@ import {
   refreshRememberedSession,
   readLocalSessionUser,
 } from '@/lib/offline/device-auth';
+import { isOnline } from '@/lib/offline/connectivity';
 
 interface Profile {
   id: string;
@@ -60,7 +61,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
-        const local = !session && !signingOut.current ? readLocalSessionUser() : null;
+        // A remembered identity is valid only for a genuinely offline start.
+        // Online, a missing backend session means the member must authenticate;
+        // pretending an expired local token is live causes empty network reads.
+        const local = !session && !signingOut.current && !isOnline() ? readLocalSessionUser() : null;
         setSession(session);
         setUser(session?.user ?? (local ? ({ id: local.id, email: local.email ?? undefined } as User) : null));
         if (session?.user) {
@@ -86,12 +90,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // The backend client may return no session while a stored session is
         // being refreshed. Keep the device identity so cached rows stay scoped
         // to the correct member instead of briefly rendering an empty account.
-        const local = readLocalSessionUser();
+        const local = !isOnline() ? readLocalSessionUser() : null;
         setUser(local ? ({ id: local.id, email: local.email ?? undefined } as User) : null);
         if (local) fetchProfile(local.id);
       })
       .catch(() => {
-        const local = readLocalSessionUser();
+        const local = !isOnline() ? readLocalSessionUser() : null;
         setSession(null);
         setUser(local ? ({ id: local.id, email: local.email ?? undefined } as User) : null);
         if (local) fetchProfile(local.id);
