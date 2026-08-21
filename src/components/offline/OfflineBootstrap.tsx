@@ -6,7 +6,7 @@ import { readCache, scopedKey, trimCache } from '@/lib/offline/store';
 import { signedUrl, filesOf } from '@/lib/media';
 import { fetchPricing } from '@/lib/pricing';
 import { isOnline, subscribeConnectivity } from '@/lib/offline/connectivity';
-import { onSyncRequested, setSyncState } from '@/lib/offline/sync-bus';
+import { onSyncRequested, setSyncState, type SyncState } from '@/lib/offline/sync-bus';
 import { markOfflineReady, readOfflineReadiness } from '@/lib/offline/readiness';
 import { cacheMediaUrls } from '@/lib/offline/media-cache';
 import {
@@ -206,6 +206,7 @@ const OfflineBootstrap = () => {
       if (!isOnline() || running.current) return;
       running.current = true;
       const startedAt = Date.now();
+      let completedState: SyncState = 'idle';
       setSyncState('syncing');
       await markSyncStarted();
       try {
@@ -239,15 +240,19 @@ const OfflineBootstrap = () => {
 
         const partial = phaseResults.some((result) => result.status === 'rejected');
         await markSyncFinished(partial ? new Error('Some optional data will retry') : undefined);
-        setSyncState(partial ? 'error' : 'idle');
+        completedState = partial ? 'error' : 'idle';
         if (partial && active && isOnline()) retryTimer = window.setTimeout(() => void prefetch(), 20_000);
       } catch (error) {
         await markSyncFinished(error);
-        setSyncState('error');
+        completedState = 'error';
         if (active && isOnline()) retryTimer = window.setTimeout(() => void prefetch(), 20_000);
       } finally {
+        // Keep the indicator tied to the real sync state until every durable
+        // write above has finished. The minimum display time only makes that
+        // genuine work visible; it never starts or extends a fake sync.
         const wait = 1000 - (Date.now() - startedAt);
         if (wait > 0) await new Promise((resolve) => window.setTimeout(resolve, wait));
+        if (active) setSyncState(completedState);
         running.current = false;
       }
     };
