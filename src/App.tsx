@@ -54,6 +54,7 @@ import AnalyticsTracker from "./components/AnalyticsTracker";
 import RouteSeo from "./components/RouteSeo";
 import SisterAppsPopup from "./components/growth/SisterAppsPopup";
 import OfflineBanner from "./components/offline/OfflineBanner";
+import OfflineStatus from "./components/offline/OfflineStatus";
 import OfflineBootstrap from "./components/offline/OfflineBootstrap";
 import OfflineSync from "./components/offline/OfflineSync";
 import UpdatePrompt from "./components/offline/UpdatePrompt";
@@ -107,6 +108,7 @@ const App = () => (
           <OfflineBootstrap />
           <OfflineSync />
           <OfflineBanner />
+          <OfflineStatus />
           <UpdatePrompt />
           <Suspense fallback={<RouteFallback />}>
           <Routes>
