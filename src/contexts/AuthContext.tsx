@@ -2,7 +2,6 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { offlineFirst } from '@/lib/offline/offline-first';
-import { clearCacheForUser } from '@/lib/offline/store';
 import { isOnline } from '@/lib/offline/connectivity';
 import { rememberDevice, refreshRememberedSession, readLocalSessionUser } from '@/lib/offline/device-auth';
 
@@ -112,13 +111,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signOut = async () => {
-    const leavingUserId = user?.id;
     await supabase.auth.signOut();
     setUser(null);
     setSession(null);
     setProfile(null);
-    // Only this account's saved copies are cleared, never another account's.
-    if (leavingUserId) await clearCacheForUser(leavingUserId);
+    // Keep this account's encrypted, user-scoped offline copy on the device.
+    // This is what allows the same member to sign back in and read their
+    // downloaded logbook while there is no connection.
   };
 
   const resetPassword = async (email: string) => {
