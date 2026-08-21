@@ -43,12 +43,12 @@ export async function cacheMediaUrls(
       const requestKey = stableMediaRequest(key);
       try {
         const existing = await mediaCache.match(requestKey);
-          if (existing && existing.type !== 'opaque') {
+        if (existing && existing.type !== 'opaque') {
           stored += 1;
           storedKeys.push(key);
           continue;
         }
-          if (existing) await mediaCache.delete(requestKey);
+        if (existing) await mediaCache.delete(requestKey);
         const response = await fetch(url, { mode: 'cors' });
         if (response.ok && response.type !== 'opaque') {
           await mediaCache.put(requestKey, response.clone());
