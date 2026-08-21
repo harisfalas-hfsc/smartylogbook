@@ -173,7 +173,10 @@ export async function initConnectivity(): Promise<void> {
     }
   }
 
-  void probeBackend(true);
+  // Finish the first real reachability check before React/auth starts. This is
+  // essential in native WebViews, where navigator.onLine may initially say
+  // true during airplane mode and would otherwise start the empty online path.
+  await probeBackend(true);
   manageRecoveryTimer();
 }
 
