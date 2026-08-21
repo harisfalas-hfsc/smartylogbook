@@ -1,9 +1,13 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useRef, useState, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { offlineFirst } from '@/lib/offline/offline-first';
-import { isOnline } from '@/lib/offline/connectivity';
-import { rememberDevice, refreshRememberedSession, readLocalSessionUser } from '@/lib/offline/device-auth';
+import {
+  OFFLINE_SESSION_FLAG,
+  rememberDevice,
+  refreshRememberedSession,
+  readLocalSessionUser,
+} from '@/lib/offline/device-auth';
 
 interface Profile {
   id: string;
@@ -33,6 +37,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const signingOut = useRef(false);
 
   // The profile is cached on the device so the header, name and avatar render
   // with no internet.
@@ -55,7 +60,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
-        const local = !session && !isOnline() ? readLocalSessionUser() : null;
+        const local = !session && !signingOut.current ? readLocalSessionUser() : null;
         setSession(session);
         setUser(session?.user ?? (local ? ({ id: local.id, email: local.email ?? undefined } as User) : null));
         if (session?.user) {
@@ -70,25 +75,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     );
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      if (session?.user) {
-        setUser(session.user);
-        fetchProfile(session.user.id);
-      } else {
-        // Offline the token cannot be refreshed, so the client may return no
-        // session even though this device is signed in. Keep the member inside
-        // in read-only mode using the stored session's identity.
-        const local = !isOnline() ? readLocalSessionUser() : null;
-        if (local) {
-          setUser({ id: local.id, email: local.email ?? undefined } as User);
-          fetchProfile(local.id);
-        } else {
-          setUser(null);
+    supabase.auth.getSession()
+      .then(({ data: { session } }) => {
+        setSession(session);
+        if (session?.user) {
+          setUser(session.user);
+          fetchProfile(session.user.id);
+          return;
         }
-      }
-      setLoading(false);
-    });
+        // The backend client may return no session while a stored session is
+        // being refreshed. Keep the device identity so cached rows stay scoped
+        // to the correct member instead of briefly rendering an empty account.
+        const local = readLocalSessionUser();
+        setUser(local ? ({ id: local.id, email: local.email ?? undefined } as User) : null);
+        if (local) fetchProfile(local.id);
+      })
+      .catch(() => {
+        const local = readLocalSessionUser();
+        setSession(null);
+        setUser(local ? ({ id: local.id, email: local.email ?? undefined } as User) : null);
+        if (local) fetchProfile(local.id);
+      })
+      .finally(() => setLoading(false));
 
     return () => subscription.unsubscribe();
   }, []);
@@ -116,10 +124,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signOut = async () => {
     // Local sign-out leaves the encrypted device verifier and downloaded world
     // intact, so this member can deliberately sign back in during a long outage.
+    signingOut.current = true;
+    sessionStorage.removeItem(OFFLINE_SESSION_FLAG);
     await supabase.auth.signOut({ scope: 'local' });
     setUser(null);
     setSession(null);
     setProfile(null);
+    signingOut.current = false;
     // Keep this account's encrypted, user-scoped offline copy on the device.
     // This is what allows the same member to sign back in and read their
     // downloaded logbook while there is no connection.

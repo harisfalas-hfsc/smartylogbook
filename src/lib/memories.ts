@@ -53,7 +53,10 @@ export const useMemories = (options?: { module?: string; limit?: number }) => {
       return;
     }
     setLoading(true);
-    const cacheKey = options?.module ? `logbook:list:${options.module}` : 'logbook:list';
+    const baseCacheKey = options?.module ? `logbook:list:${options.module}` : 'logbook:list';
+    // A short dashboard/capture query must never overwrite the complete
+    // timeline downloaded by OfflineBootstrap.
+    const cacheKey = options?.limit ? `${baseCacheKey}:limit:${options.limit}` : baseCacheKey;
     try {
       const result = await offlineFirstDetailed<Memory[]>(
         cacheKey,

@@ -212,7 +212,7 @@ const OfflineBootstrap = () => {
       await markSyncStarted();
       try {
         await bindOfflineUser(userId);
-        const previous = await readOfflineReadiness();
+        const previous = await readOfflineReadiness(userId);
         const memories = await saveCore();
 
         // Independent phases cannot prevent the core logbook from being usable.
@@ -270,6 +270,7 @@ const OfflineBootstrap = () => {
     window.addEventListener('focus', onFocus);
     return () => {
       active = false;
+      running.current = false;
       if (retryTimer) window.clearTimeout(retryTimer);
       if (statusTimer) window.clearTimeout(statusTimer);
       stopConnectivity();
