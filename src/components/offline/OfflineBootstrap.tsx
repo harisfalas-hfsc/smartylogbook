@@ -21,6 +21,7 @@ const OfflineBootstrap = () => {
   useEffect(() => {
     if (!user) return;
     let active = true;
+    let retryTimer = 0;
     const userId = user.id;
     const save = (key: string, value: unknown) => offlineSave(key, value, userId);
 
