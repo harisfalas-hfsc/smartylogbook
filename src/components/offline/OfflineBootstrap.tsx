@@ -197,17 +197,35 @@ const OfflineBootstrap = () => {
         }
 
         void trimCache(800);
+
+        await markOfflineReady({
+          userId,
+          records: memoryRows.length,
+          messages: rows(messages).length,
+          reminders: rows(reminders).length,
+        });
+        setSyncState('idle');
+      } catch {
+        setSyncState('error');
+        if (active && isOnline()) retryTimer = window.setTimeout(() => void prefetch(), 30_000);
       } finally {
         running.current = false;
       }
     };
 
     void prefetch();
-    const onOnline = () => void prefetch();
-    window.addEventListener('online', onOnline);
+    const stopConnectivity = subscribeConnectivity((online) => {
+      if (online) void prefetch();
+    });
+    const stopManual = onSyncRequested(() => void prefetch());
+    const onFocus = () => void prefetch();
+    window.addEventListener('focus', onFocus);
     return () => {
       active = false;
-      window.removeEventListener('online', onOnline);
+      if (retryTimer) window.clearTimeout(retryTimer);
+      stopConnectivity();
+      stopManual();
+      window.removeEventListener('focus', onFocus);
     };
   }, [user?.id]);
 
