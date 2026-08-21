@@ -28,7 +28,7 @@ export type ConnectivityState =
 type Listener = (online: boolean) => void;
 type StateListener = (state: ConnectivityState) => void;
 
-const HEALTH_URL = `${import.meta.env.VITE_SUPABASE_URL ?? ''}/rest/v1/`;
+const HEALTH_URL = `${import.meta.env.VITE_SUPABASE_URL ?? ''}/rest/v1/profiles?select=id&limit=1`;
 const PROBE_TIMEOUT_MS = 6000;
 /** How often we re-probe while we believe we are cut off. */
 const RECOVERY_INTERVAL_MS = 15000;
@@ -120,7 +120,8 @@ export async function probeBackend(force = false): Promise<boolean> {
       // were succeeding.
       const { data: { session } } = await supabase.auth.getSession();
       const apiKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? '';
-      const res = await fetch(`${HEALTH_URL}?t=${Date.now()}`, {
+      const separator = HEALTH_URL.includes('?') ? '&' : '?';
+      const res = await fetch(`${HEALTH_URL}${separator}t=${Date.now()}`, {
         method: 'GET',
         cache: 'no-store',
         signal: controller.signal,
