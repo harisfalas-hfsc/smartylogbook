@@ -8,6 +8,8 @@ import { fetchPricing } from '@/lib/pricing';
 import { isOnline, subscribeConnectivity } from '@/lib/offline/connectivity';
 import { onSyncRequested, setSyncState, syncState } from '@/lib/offline/sync-bus';
 import { markOfflineReady } from '@/lib/offline/readiness';
+import { cacheMediaUrls } from '@/lib/offline/media-cache';
+import { filesOf } from '@/lib/media';
 
 /**
  * Downloads the member's entire world in the background the moment they sign
@@ -131,7 +133,7 @@ const OfflineBootstrap = () => {
         const archivedRows = rows('archived messages', archived);
         const reminderRows = rows('reminders', reminders);
         const alertRows = rows('alerts', alerts);
-        const factRows = rows('facts', facts);
+        const factRows = rows<{ category?: string }>('facts', facts);
         const ticketRows = rows<{ id: string }>('support tickets', tickets);
         const conversationRows = rows('assistant conversations', conversations);
 
@@ -169,6 +171,15 @@ const OfflineBootstrap = () => {
         }
         await Promise.all(
           [...byModule].map(([moduleId, items]) => save(`logbook:list:${moduleId}`, items)),
+        );
+        const factsByCategory = new Map<string, unknown[]>();
+        for (const fact of factRows) {
+          const key = fact.category ?? 'other';
+          if (!factsByCategory.has(key)) factsByCategory.set(key, []);
+          factsByCategory.get(key)?.push(fact);
+        }
+        await Promise.all(
+          [...factsByCategory].map(([category, items]) => save(`facts:list:${category}`, items)),
         );
 
         // Access / entitlement level, including the conversations used.
@@ -217,21 +228,26 @@ const OfflineBootstrap = () => {
         }
         await save('progress:storage', { used: usedBytes, files: fileCount });
 
-        // Warm the media the member owns so photos render offline too.
-        const withFiles = memoryRows.filter((r) => r.attachment_url).slice(0, 200);
-        for (const record of withFiles) {
+        // Download every owned attachment, including album extras. A bare
+        // fetch is not durable in native WebViews, so explicitly store each
+        // signed URL in the same dedicated Cache Storage strategy as Workout.
+        const mediaUrls: string[] = [];
+        for (const record of memoryRows) {
           if (!active) return;
-          try {
-            const url = await signedUrl(record.attachment_url);
-            if (!url) continue;
-            void save(`media:${record.attachment_url}`, url);
-            void fetch(url, { mode: 'cors' }).catch(() => undefined);
-          } catch {
-            /* best effort */
+          for (const file of filesOf(record as never)) {
+            try {
+              const url = await signedUrl(file.path);
+              if (!url) continue;
+              await save(`media:${file.path}`, url);
+              mediaUrls.push(url);
+            } catch {
+              /* best effort */
+            }
           }
         }
+        await cacheMediaUrls(mediaUrls, { concurrency: 6, isActive: () => active });
 
-        void trimCache(800);
+        await trimCache(800);
 
         await markOfflineReady({
           userId,
