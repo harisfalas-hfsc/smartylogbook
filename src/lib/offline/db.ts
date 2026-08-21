@@ -22,7 +22,9 @@ const EMPTY: OfflineMeta = {
 };
 
 const metaStore = typeof indexedDB !== 'undefined'
-  ? createStore('smarty-offline-meta', 'meta')
+  // This metadata can be recreated safely. A fresh database name repairs
+  // devices left with an incomplete object-store schema by older builds.
+  ? createStore('smarty-offline-meta-v2', 'meta')
   : undefined;
 
 export async function readOfflineMeta(): Promise<OfflineMeta> {
