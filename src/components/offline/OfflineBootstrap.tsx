@@ -106,27 +106,55 @@ const OfflineBootstrap = () => {
         ]);
         if (!active) return;
 
-        const rows = <T,>(r: PromiseSettledResult<{ data: unknown }>): T[] =>
-          r.status === 'fulfilled' ? ((r.value.data ?? []) as T[]) : [];
-        const one = (r: PromiseSettledResult<{ data: unknown }>): unknown =>
-          r.status === 'fulfilled' ? (r.value.data ?? null) : null;
+        type QueryResult = { data: unknown; error?: { message?: string } | null };
+        const valueOf = (name: string, result: PromiseSettledResult<QueryResult>): unknown => {
+          if (result.status === 'rejected') {
+            throw result.reason instanceof Error ? result.reason : new Error(`${name} did not download`);
+          }
+          if (result.value.error) {
+            throw new Error(result.value.error.message || `${name} did not download`);
+          }
+          return result.value.data;
+        };
+        const rows = <T,>(name: string, result: PromiseSettledResult<QueryResult>): T[] =>
+          (valueOf(name, result) ?? []) as T[];
+        const one = (name: string, result: PromiseSettledResult<QueryResult>): unknown =>
+          valueOf(name, result) ?? null;
 
-        void save('account:profile', one(profile));
-        void save('account:preferences', one(preferences));
-        void save('account:roles', rows(roles));
+        const profileRow = one('profile', profile);
+        const preferenceRow = one('preferences', preferences);
+        const subscriptionRow = one('subscription', subscription);
+        const roleRows = rows('roles', roles);
+        const memoryRows = rows<{ id: string; attachment_url?: string | null }>('logbook', memories);
+        const trashRows = rows('trash', trash);
+        const messageRows = rows('messages', messages);
+        const archivedRows = rows('archived messages', archived);
+        const reminderRows = rows('reminders', reminders);
+        const alertRows = rows('alerts', alerts);
+        const factRows = rows('facts', facts);
+        const ticketRows = rows<{ id: string }>('support tickets', tickets);
+        const conversationRows = rows('assistant conversations', conversations);
 
-        const memoryRows = rows<{ id: string; attachment_url?: string | null }>(memories);
-        void save('logbook:list', memoryRows);
-        void save('logbook:trash', rows(trash));
-        void save('inbox:messages', rows(messages));
-        void save('inbox:archived', rows(archived));
-        void save('reminders:list', rows(reminders));
-        void save('alerts:list', rows(alerts));
-        void save('facts:list', rows(facts));
-        void save('assistant:conversations', rows(conversations));
+        // Do not announce "ready" until the core world is actually committed
+        // to IndexedDB. Previously these writes were fire-and-forget, so an
+        // immediate offline transition could expose an empty logbook.
+        await Promise.all([
+          save('account:profile', profileRow),
+          save('account:preferences', preferenceRow),
+          save('account:roles', roleRows),
+          save('logbook:list', memoryRows),
+          save('logbook:trash', trashRows),
+          save('inbox:messages', messageRows),
+          save('inbox:archived', archivedRows),
+          save('reminders:list', reminderRows),
+          save('alerts:list', alertRows),
+          save('facts:list', factRows),
+          save('assistant:conversations', conversationRows),
+          save('inbox:threads', ticketRows),
+        ]);
 
         // Every individual record's full detail, not just the list.
-        for (const record of memoryRows) void save(`record:${record.id}`, record);
+        await Promise.all(memoryRows.map((record) => save(`record:${record.id}`, record)));
 
         // Per-category slices, so a category page opens offline directly.
         const byModule = new Map<string, unknown[]>();
@@ -135,21 +163,21 @@ const OfflineBootstrap = () => {
           if (!byModule.has(key)) byModule.set(key, []);
           byModule.get(key)!.push(record);
         }
-        for (const [moduleId, items] of byModule) void save(`logbook:list:${moduleId}`, items);
+        await Promise.all(
+          [...byModule].map(([moduleId, items]) => save(`logbook:list:${moduleId}`, items)),
+        );
 
         // Access / entitlement level, including the conversations used.
-        const subRow = one(subscription);
+        const subRow = subscriptionRow;
         const start = (subRow as { current_period_start?: string } | null)?.current_period_start;
         const { count } = await supabase
           .from('ai_conversations')
           .select('id', { count: 'exact', head: true })
           .eq('user_id', userId)
           .gte('started_at', start ?? new Date(Date.now() - 30 * 86400000).toISOString());
-        void save('account:access', { subscription: subRow, used: count ?? 0 });
+        await save('account:access', { subscription: subRow, used: count ?? 0 });
 
         // Support threads plus every reply.
-        const ticketRows = rows<{ id: string }>(tickets);
-        void save('inbox:threads', ticketRows);
         await Promise.allSettled(
           ticketRows.map(async (ticket) => {
             const { data } = await supabase
@@ -157,18 +185,20 @@ const OfflineBootstrap = () => {
               .select('*')
               .eq('ticket_id', ticket.id)
               .order('created_at', { ascending: true });
-            void save(`thread:${ticket.id}`, data ?? []);
-            void save(`ticket:${ticket.id}`, ticket);
+            await Promise.all([
+              save(`thread:${ticket.id}`, data ?? []),
+              save(`ticket:${ticket.id}`, ticket),
+            ]);
           }),
         );
 
         // Reference library: plans / pricing and category filter values.
         try {
-          void save('library:pricing', await fetchPricing());
+          await save('library:pricing', await fetchPricing());
         } catch {
           /* best effort */
         }
-        void save('library:filters', {
+        await save('library:filters', {
           modules: [...byModule.keys()],
           kinds: [...new Set(memoryRows.map((r) => (r as { kind?: string }).kind).filter(Boolean))],
         });
@@ -181,7 +211,7 @@ const OfflineBootstrap = () => {
           fileCount += 1;
           if (typeof row.metadata?.file_size === 'number') usedBytes += row.metadata.file_size;
         }
-        void save('progress:storage', { used: usedBytes, files: fileCount });
+        await save('progress:storage', { used: usedBytes, files: fileCount });
 
         // Warm the media the member owns so photos render offline too.
         const withFiles = memoryRows.filter((r) => r.attachment_url).slice(0, 200);
@@ -202,8 +232,8 @@ const OfflineBootstrap = () => {
         await markOfflineReady({
           userId,
           records: memoryRows.length,
-          messages: rows(messages).length,
-          reminders: rows(reminders).length,
+          messages: messageRows.length,
+          reminders: reminderRows.length,
         });
       } catch {
         setSyncState('error');
