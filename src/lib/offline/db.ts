@@ -36,8 +36,15 @@ export async function readOfflineMeta(): Promise<OfflineMeta> {
 
 async function writeOfflineMeta(patch: Partial<OfflineMeta>): Promise<void> {
   if (!metaStore) return;
-  const current = await readOfflineMeta();
-  await set('meta', { ...current, ...patch }, metaStore);
+  try {
+    const current = await readOfflineMeta();
+    await set('meta', { ...current, ...patch }, metaStore);
+  } catch {
+    // Synchronization metadata is diagnostic only. A browser with a stale or
+    // partially-created metadata object store must never turn a successful
+    // Logbook download into "Sync failed". The canonical data cache performs
+    // its own durable-write verification separately.
+  }
 }
 
 export async function bindOfflineUser(userId: string): Promise<void> {
