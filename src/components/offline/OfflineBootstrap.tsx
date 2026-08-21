@@ -247,11 +247,11 @@ const OfflineBootstrap = () => {
         // synchronized.
         await markSyncFinished();
         completedState = 'synced';
-        if (partial && active && isOnline()) retryTimer = window.setTimeout(() => void prefetch(), 20_000);
+        if (partial && active && isOnline()) retryTimer = window.setTimeout(() => void prefetch(), 5 * 60_000);
       } catch (error) {
         await markSyncFinished(error);
         completedState = 'error';
-        if (active && isOnline()) retryTimer = window.setTimeout(() => void prefetch(), 20_000);
+        if (active && isOnline()) retryTimer = window.setTimeout(() => void prefetch(), 60_000);
       } finally {
         // Keep the indicator tied to the real sync state until every durable
         // write above has finished. The minimum display time only makes that
