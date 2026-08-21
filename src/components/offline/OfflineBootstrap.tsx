@@ -6,7 +6,7 @@ import { trimCache } from '@/lib/offline/store';
 import { signedUrl } from '@/lib/media';
 import { fetchPricing } from '@/lib/pricing';
 import { isOnline, subscribeConnectivity } from '@/lib/offline/connectivity';
-import { onSyncRequested, setSyncState } from '@/lib/offline/sync-bus';
+import { onSyncRequested, setSyncState, syncState } from '@/lib/offline/sync-bus';
 import { markOfflineReady } from '@/lib/offline/readiness';
 
 /**
@@ -205,12 +205,12 @@ const OfflineBootstrap = () => {
           messages: rows(messages).length,
           reminders: rows(reminders).length,
         });
-        setSyncState('idle');
       } catch {
         setSyncState('error');
         if (active && isOnline()) retryTimer = window.setTimeout(() => void prefetch(), 30_000);
       } finally {
         running.current = false;
+        if (syncState() === 'syncing') setSyncState('idle');
       }
     };
 
