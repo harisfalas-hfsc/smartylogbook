@@ -79,7 +79,7 @@ export const useSignedUrl = (path: string | null | undefined) => {
     const resolve = async () => {
       if (!path) return null;
       if (isOnline()) return signedUrl(path);
-      if (/^https?:\/\//.test(path)) return cachedMediaObjectUrl(path) ?? path;
+      if (/^https?:\/\//.test(path)) return (await cachedMediaObjectUrl(path)) ?? path;
       const storedUrl = await offlineRead<string>(`media:${path}`, user?.id);
       return storedUrl ? (await cachedMediaObjectUrl(storedUrl)) ?? storedUrl : null;
     };

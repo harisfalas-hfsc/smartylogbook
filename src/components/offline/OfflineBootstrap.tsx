@@ -34,6 +34,7 @@ const OfflineBootstrap = () => {
       }
       if (!isOnline() || running.current) return;
       running.current = true;
+      const syncStartedAt = Date.now();
       setSyncState('syncing');
       try {
         const [
@@ -154,9 +155,23 @@ const OfflineBootstrap = () => {
           save('assistant:conversations', conversationRows),
           save('inbox:threads', ticketRows),
         ]);
-        const storedLogbook = await readCache<unknown[]>(scopedKey(userId, 'logbook:list'));
-        if (!storedLogbook || storedLogbook.data.length !== memoryRows.length) {
-          throw new Error('The downloaded logbook could not be stored on this device');
+        const requiredCopies = await Promise.all([
+          readCache<unknown>(scopedKey(userId, 'account:profile')),
+          readCache<unknown>(scopedKey(userId, 'account:preferences')),
+          readCache<unknown[]>(scopedKey(userId, 'account:roles')),
+          readCache<unknown[]>(scopedKey(userId, 'logbook:list')),
+          readCache<unknown[]>(scopedKey(userId, 'logbook:trash')),
+          readCache<unknown[]>(scopedKey(userId, 'inbox:messages')),
+          readCache<unknown[]>(scopedKey(userId, 'inbox:archived')),
+          readCache<unknown[]>(scopedKey(userId, 'reminders:list')),
+          readCache<unknown[]>(scopedKey(userId, 'alerts:list')),
+          readCache<unknown[]>(scopedKey(userId, 'facts:list')),
+          readCache<unknown[]>(scopedKey(userId, 'assistant:conversations')),
+          readCache<unknown[]>(scopedKey(userId, 'inbox:threads')),
+        ]);
+        const storedLogbook = requiredCopies[3];
+        if (requiredCopies.some((copy) => copy === null) || storedLogbook?.data.length !== memoryRows.length) {
+          throw new Error('The downloaded account could not be stored on this device');
         }
 
         // Every individual record's full detail, not just the list.
@@ -259,6 +274,10 @@ const OfflineBootstrap = () => {
         setSyncState('error');
         if (active && isOnline()) retryTimer = window.setTimeout(() => void prefetch(), 30_000);
       } finally {
+        const remainingIndicatorTime = 800 - (Date.now() - syncStartedAt);
+        if (remainingIndicatorTime > 0) {
+          await new Promise((resolve) => window.setTimeout(resolve, remainingIndicatorTime));
+        }
         running.current = false;
         if (syncState() === 'syncing') setSyncState('idle');
       }
