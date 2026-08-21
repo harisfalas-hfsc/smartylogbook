@@ -40,8 +40,8 @@ async function unregisterAppWorker() {
 }
 
 /**
- * Registers the worker. Generated workers use skipWaiting + clientsClaim, so
- * updates activate silently without a refresh prompt or reload loop.
+ * Registers the worker. Updates remain waiting until a safe future navigation,
+ * avoiding forced reload prompts and mixed old/new lazy-loaded app chunks.
  */
 export function registerAppServiceWorker() {
   if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return;
