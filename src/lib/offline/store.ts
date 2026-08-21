@@ -20,12 +20,10 @@ export async function readCache<T>(key: string): Promise<Envelope<T> | null> {
 }
 
 export async function writeCache<T>(key: string, data: T): Promise<void> {
-  if (!store) return;
-  try {
-    await set(key, { data, savedAt: Date.now() } satisfies Envelope<T>, store);
-  } catch {
-    /* quota or private mode — the offline copy is best effort */
-  }
+  if (!store) throw new Error('Offline storage is unavailable on this device');
+  // A failed IndexedDB write must reach the bootstrap. Otherwise the UI can
+  // claim that synchronization completed even though nothing was persisted.
+  await set(key, { data, savedAt: Date.now() } satisfies Envelope<T>, store);
 }
 
 /** Sign-out clears only the keys that belong to that one account. */

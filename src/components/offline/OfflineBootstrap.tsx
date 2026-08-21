@@ -5,7 +5,7 @@ import { offlineSave } from '@/lib/offline/offline-first';
 import { readCache, scopedKey, trimCache } from '@/lib/offline/store';
 import { signedUrl, filesOf } from '@/lib/media';
 import { fetchPricing } from '@/lib/pricing';
-import { isOnline, subscribeConnectivity } from '@/lib/offline/connectivity';
+import { connectivityState, isOnline, subscribeConnectivity } from '@/lib/offline/connectivity';
 import { onSyncRequested, setSyncState, type SyncState } from '@/lib/offline/sync-bus';
 import { markOfflineReady, readOfflineReadiness } from '@/lib/offline/readiness';
 import { cacheMediaUrls } from '@/lib/offline/media-cache';
@@ -198,7 +198,10 @@ const OfflineBootstrap = () => {
     const prefetch = async () => {
       if (retryTimer) window.clearTimeout(retryTimer);
       retryTimer = 0;
-      if (!isOnline() || running.current) return;
+      // A definite device-offline signal should use the saved copy. A failed
+      // health probe must not suppress the real download attempt when the
+      // device still has a network route.
+      if (connectivityState() === 'offline' || running.current) return;
       running.current = true;
       const startedAt = Date.now();
       let completedState: SyncState = 'idle';
