@@ -215,9 +215,15 @@ const OfflineBootstrap = () => {
 
         // Independent phases cannot prevent the core logbook from being usable.
         const phaseResults = await Promise.allSettled([
-          isSyncPhaseFresh('supporting', 60_000).then((fresh) => fresh || saveSupportingData()),
-          isSyncPhaseFresh('support', 5 * 60_000).then((fresh) => fresh || saveSupport()),
-          isSyncPhaseFresh('media', 15 * 60_000).then((fresh) => fresh || saveMedia(memories)),
+          isSyncPhaseFresh('supporting', 60_000).then(async (fresh) => {
+            if (!fresh) await saveSupportingData();
+          }),
+          isSyncPhaseFresh('support', 5 * 60_000).then(async (fresh) => {
+            if (!fresh) await saveSupport();
+          }),
+          isSyncPhaseFresh('media', 15 * 60_000).then(async (fresh) => {
+            if (!fresh) await saveMedia(memories);
+          }),
           fetchPricing().then((pricing) => save('library:pricing', pricing)),
         ]);
 
