@@ -1,19 +1,47 @@
 /**
- * The single source of truth for "is there internet right now?".
+ * Single source of truth for connectivity, for the website, the PWA and the
+ * native (Capacitor) app.
  *
- * On the web (browser, PWA, desktop) it uses the browser's online/offline
- * events. Inside a true native app (Capacitor / iOS / Android) `navigator.onLine`
- * is unreliable — the WebView often reports `true` with airplane mode on — so we
- * listen to the native Network plugin instead. Every part of the app must read
- * connectivity through this module, never `navigator.onLine` directly.
+ * `navigator.onLine` only reports whether the device thinks it has a network
+ * interface. Inside a native WebView it can report `true` with no route to the
+ * internet, and on a flaky network it reports `true` while the backend is
+ * unreachable. This module combines three signals:
+ *
+ *   1. browser `online` / `offline` events
+ *   2. the native Capacitor Network plugin
+ *   3. a real reachability probe against our own backend
+ *
+ * and exposes ONE derived state the whole app reads. Never read
+ * `navigator.onLine` directly anywhere else.
  */
 import { Capacitor } from '@capacitor/core';
 
-type Listener = (online: boolean) => void;
+export type ConnectivityState =
+  /** Device reports no network at all. */
+  | 'offline'
+  /** Device has a network, but our backend did not answer. */
+  | 'backend-unreachable'
+  /** Everything reachable. */
+  | 'online';
 
-let current = typeof navigator === 'undefined' ? true : navigator.onLine !== false;
+type Listener = (online: boolean) => void;
+type StateListener = (state: ConnectivityState) => void;
+
+const HEALTH_URL = `${import.meta.env.VITE_SUPABASE_URL ?? ''}/auth/v1/health`;
+const PROBE_TIMEOUT_MS = 6000;
+/** How often we re-probe while we believe we are cut off. */
+const RECOVERY_INTERVAL_MS = 15000;
+
+let deviceOnline = typeof navigator === 'undefined' ? true : navigator.onLine !== false;
+let state: ConnectivityState = deviceOnline ? 'online' : 'offline';
+let lastProbeAt = 0;
+let lastProbeOk: boolean | null = null;
+let probing: Promise<boolean> | null = null;
+let recoveryTimer: ReturnType<typeof setInterval> | undefined;
 let started = false;
+
 const listeners = new Set<Listener>();
+const stateListeners = new Set<StateListener>();
 
 export const isNativeApp = (): boolean => {
   try {
@@ -23,16 +51,86 @@ export const isNativeApp = (): boolean => {
   }
 };
 
-function set(online: boolean) {
-  if (online === current) return;
-  current = online;
-  for (const listener of listeners) {
+function publish(next: ConnectivityState) {
+  if (next === state) return;
+  const wasOnline = state === 'online';
+  state = next;
+  const nowOnline = next === 'online';
+  for (const listener of stateListeners) {
     try {
-      listener(online);
+      listener(next);
     } catch {
-      /* a bad listener must never break connectivity */
+      /* a broken listener must never break connectivity */
     }
   }
+  if (wasOnline !== nowOnline) {
+    for (const listener of listeners) {
+      try {
+        listener(nowOnline);
+      } catch {
+        /* ignore */
+      }
+    }
+  }
+  manageRecoveryTimer();
+}
+
+function derive() {
+  if (!deviceOnline) {
+    publish('offline');
+    return;
+  }
+  publish(lastProbeOk === false ? 'backend-unreachable' : 'online');
+}
+
+function manageRecoveryTimer() {
+  if (typeof window === 'undefined') return;
+  const needed = state !== 'online';
+  if (needed && !recoveryTimer) {
+    recoveryTimer = setInterval(() => void probeBackend(true), RECOVERY_INTERVAL_MS);
+  } else if (!needed && recoveryTimer) {
+    clearInterval(recoveryTimer);
+    recoveryTimer = undefined;
+  }
+}
+
+/**
+ * Asks the backend whether it is actually reachable. Deduplicated and cheap:
+ * repeated calls inside 5s reuse the previous answer unless `force` is set.
+ */
+export async function probeBackend(force = false): Promise<boolean> {
+  if (typeof window === 'undefined') return true;
+  if (!HEALTH_URL.startsWith('http')) return deviceOnline;
+  if (!deviceOnline) {
+    lastProbeOk = false;
+    derive();
+    return false;
+  }
+  if (!force && Date.now() - lastProbeAt < 5000 && lastProbeOk !== null) return lastProbeOk;
+  if (probing) return probing;
+
+  probing = (async () => {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), PROBE_TIMEOUT_MS);
+    try {
+      const res = await fetch(`${HEALTH_URL}?t=${Date.now()}`, {
+        method: 'GET',
+        cache: 'no-store',
+        signal: controller.signal,
+      });
+      lastProbeOk = res.ok || res.status < 500;
+    } catch {
+      lastProbeOk = false;
+    } finally {
+      clearTimeout(timer);
+      lastProbeAt = Date.now();
+      probing = null;
+    }
+    derive();
+    return lastProbeOk === true;
+  })();
+
+  return probing;
 }
 
 /** Starts listening. Safe to call more than once; call it before rendering. */
@@ -40,28 +138,71 @@ export async function initConnectivity(): Promise<void> {
   if (started || typeof window === 'undefined') return;
   started = true;
 
-  window.addEventListener('online', () => set(true));
-  window.addEventListener('offline', () => set(false));
+  deviceOnline = typeof navigator === 'undefined' ? true : navigator.onLine !== false;
+  state = deviceOnline ? 'online' : 'offline';
 
-  if (!isNativeApp()) return;
+  window.addEventListener('online', () => {
+    deviceOnline = true;
+    lastProbeOk = null;
+    derive();
+    void probeBackend(true);
+  });
+  window.addEventListener('offline', () => {
+    deviceOnline = false;
+    derive();
+  });
+  window.addEventListener('focus', () => void probeBackend());
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') void probeBackend();
+  });
 
-  try {
-    const { Network } = await import('@capacitor/network');
-    const status = await Network.getStatus();
-    set(status.connected);
-    await Network.addListener('networkStatusChange', (s) => set(s.connected));
-  } catch {
-    /* fall back to the browser events above */
+  if (isNativeApp()) {
+    try {
+      const { Network } = await import('@capacitor/network');
+      const status = await Network.getStatus();
+      deviceOnline = Boolean(status.connected);
+      derive();
+      await Network.addListener('networkStatusChange', (s) => {
+        deviceOnline = Boolean(s.connected);
+        lastProbeOk = null;
+        derive();
+        if (deviceOnline) void probeBackend(true);
+      });
+    } catch {
+      /* fall back to the browser events above */
+    }
   }
+
+  void probeBackend(true);
+  manageRecoveryTimer();
 }
 
 /** Synchronous read used by data helpers and guards. */
 export function isOnline(): boolean {
-  return current;
+  return state === 'online';
 }
 
-/** Subscribe to changes. Returns an unsubscribe function. */
+/** Full connectivity state, for messages that must not lie to the member. */
+export function connectivityState(): ConnectivityState {
+  return state;
+}
+
+/** Subscribe to online/offline changes. Returns an unsubscribe function. */
 export function onConnectivityChange(listener: Listener): () => void {
   listeners.add(listener);
   return () => listeners.delete(listener);
+}
+
+/** Alias kept in sync with the other Smarty apps. */
+export const subscribeConnectivity = onConnectivityChange;
+
+/** Subscribes to the richer connectivity state. */
+export function subscribeConnectivityState(listener: StateListener): () => void {
+  stateListeners.add(listener);
+  return () => stateListeners.delete(listener);
+}
+
+/** Diagnostics — no personal data. */
+export function connectivityDiagnostics() {
+  return { state, deviceOnline, lastProbeAt, lastProbeOk };
 }
