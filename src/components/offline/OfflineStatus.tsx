@@ -45,7 +45,7 @@ const OfflineStatus = () => {
 
   const offline = state === 'offline';
   const backendDown = state === 'backend-unreachable';
-  const show = offline || backendDown || sync === 'syncing' || pending > 0;
+  const show = offline || backendDown || sync !== 'idle' || pending > 0;
   if (!show || dismissed) return null;
 
   const prepared = Boolean(readiness?.ready && readiness.userId === (user?.id ?? null));
@@ -57,7 +57,11 @@ const OfflineStatus = () => {
       ? "Can't reach Smarty Logbook right now"
       : sync === 'syncing'
         ? 'Syncing…'
-        : `${pending} change${pending === 1 ? '' : 's'} waiting to sync`;
+        : sync === 'synced'
+          ? 'Synced. Offline copy is ready'
+          : sync === 'error'
+            ? 'Sync incomplete. Retrying automatically'
+            : `${pending} change${pending === 1 ? '' : 's'} waiting to sync`;
 
   const Icon = offline ? CloudOff : backendDown ? ServerCrash : RefreshCw;
 

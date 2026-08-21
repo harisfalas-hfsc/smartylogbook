@@ -2,7 +2,7 @@
  * Tiny in-app bus so the prefetcher, the queue replay and the status pill all
  * share one notion of "we are synchronising" without a global state library.
  */
-export type SyncState = 'idle' | 'syncing' | 'error';
+export type SyncState = 'idle' | 'syncing' | 'synced' | 'error';
 
 type Listener = (state: SyncState) => void;
 

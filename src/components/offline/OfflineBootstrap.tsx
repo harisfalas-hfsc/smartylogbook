@@ -59,6 +59,7 @@ const OfflineBootstrap = () => {
     if (!user) return;
     let active = true;
     let retryTimer = 0;
+    let statusTimer = 0;
     const userId = user.id;
     const save = (key: string, value: unknown) => offlineSave(key, value, userId);
 
@@ -240,7 +241,7 @@ const OfflineBootstrap = () => {
 
         const partial = phaseResults.some((result) => result.status === 'rejected');
         await markSyncFinished(partial ? new Error('Some optional data will retry') : undefined);
-        completedState = partial ? 'error' : 'idle';
+        completedState = partial ? 'error' : 'synced';
         if (partial && active && isOnline()) retryTimer = window.setTimeout(() => void prefetch(), 20_000);
       } catch (error) {
         await markSyncFinished(error);
@@ -252,7 +253,12 @@ const OfflineBootstrap = () => {
         // genuine work visible; it never starts or extends a fake sync.
         const wait = 1000 - (Date.now() - startedAt);
         if (wait > 0) await new Promise((resolve) => window.setTimeout(resolve, wait));
-        if (active) setSyncState(completedState);
+        if (active) {
+          setSyncState(completedState);
+          if (completedState === 'synced') {
+            statusTimer = window.setTimeout(() => setSyncState('idle'), 3000);
+          }
+        }
         running.current = false;
       }
     };
@@ -265,6 +271,7 @@ const OfflineBootstrap = () => {
     return () => {
       active = false;
       if (retryTimer) window.clearTimeout(retryTimer);
+      if (statusTimer) window.clearTimeout(statusTimer);
       stopConnectivity();
       stopManual();
       window.removeEventListener('focus', onFocus);

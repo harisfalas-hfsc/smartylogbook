@@ -8,6 +8,12 @@ initTheme();
 
 // Connectivity must be known before the first render so an offline start
 // (airplane mode, native app cold start) never flashes the online path.
-void initConnectivity();
+const root = document.getElementById("root");
 
-createRoot(document.getElementById("root")!).render(<App />);
+const start = async () => {
+  await initConnectivity();
+  if (!root) throw new Error("App root was not found");
+  createRoot(root).render(<App />);
+};
+
+void start();
