@@ -186,10 +186,15 @@ export function readLocalSessionUser(): { id: string; email: string | null } | n
     const entry = findSupabaseAuthEntry();
     const activeEmail = localStorage.getItem(ACTIVE_DEVICE_EMAIL);
     const remembered = activeEmail ? localStorage.getItem(keyFor(activeEmail)) : null;
-    const sessionValue = entry?.value ?? (remembered ? (JSON.parse(remembered) as DeviceRecord).session : null);
+    // A remembered verifier alone is not an active login. Its saved session is
+    // used only after a successful offline password check sets this tab flag.
+    const offlineRestored = sessionStorage.getItem(OFFLINE_SESSION_FLAG) === '1';
+    const sessionValue = entry?.value ?? (
+      offlineRestored && remembered ? (JSON.parse(remembered) as DeviceRecord).session : null
+    );
     if (!sessionValue) return null;
     const parsed = JSON.parse(sessionValue);
-    const user = parsed?.user ?? parsed?.currentSession?.user ?? null;
+    const user = parsed?.user ?? parsed?.currentSession?.user ?? parsed?.session?.user ?? null;
     if (!user?.id) return null;
     return { id: user.id, email: user.email ?? null };
   } catch {

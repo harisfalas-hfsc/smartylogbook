@@ -1,4 +1,4 @@
-import { readCache, writeCache } from './store';
+import { readCache, scopedKey, writeCache } from './store';
 
 /** What this device has actually stored for the signed-in member. */
 export type OfflineReadiness = {
@@ -21,14 +21,14 @@ const EMPTY: OfflineReadiness = {
   reminders: 0,
 };
 
-export async function readOfflineReadiness(): Promise<OfflineReadiness> {
-  return (await readCache<OfflineReadiness>(KEY))?.data ?? EMPTY;
+export async function readOfflineReadiness(userId?: string | null): Promise<OfflineReadiness> {
+  return (await readCache<OfflineReadiness>(scopedKey(userId ?? null, KEY)))?.data ?? EMPTY;
 }
 
 export async function markOfflineReady(
   value: Omit<OfflineReadiness, 'ready' | 'preparedAt'>,
 ): Promise<void> {
-  await writeCache(KEY, {
+  await writeCache(scopedKey(value.userId, KEY), {
     ...value,
     ready: true,
     preparedAt: Date.now(),

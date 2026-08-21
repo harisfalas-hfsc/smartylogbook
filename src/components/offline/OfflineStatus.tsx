@@ -22,7 +22,7 @@ const OfflineStatus = () => {
 
   useEffect(() => {
     let active = true;
-    void readOfflineReadiness().then((value) => active && setReadiness(value));
+    void readOfflineReadiness(user?.id).then((value) => active && setReadiness(value));
     return () => {
       active = false;
     };
