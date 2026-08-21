@@ -120,8 +120,7 @@ export async function probeBackend(force = false): Promise<boolean> {
       // were succeeding.
       const { data: { session } } = await supabase.auth.getSession();
       const apiKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? '';
-      const separator = HEALTH_URL.includes('?') ? '&' : '?';
-      const res = await fetch(`${HEALTH_URL}${separator}t=${Date.now()}`, {
+      const res = await fetch(HEALTH_URL, {
         method: 'GET',
         cache: 'no-store',
         signal: controller.signal,
