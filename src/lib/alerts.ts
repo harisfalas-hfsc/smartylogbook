@@ -40,13 +40,14 @@ export const useProactiveAlerts = () => {
     const rows = await offlineFirst<ProactiveAlert[]>(
       'alerts:list',
       async () => {
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from('proactive_alerts')
           .select('*')
           .eq('dismissed', false)
           .order('severity', { ascending: true })
           .order('created_at', { ascending: false })
           .limit(20);
+        if (error) throw new Error(error.message);
         return (data ?? []) as ProactiveAlert[];
       },
       user.id,

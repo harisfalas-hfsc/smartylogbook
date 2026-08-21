@@ -152,7 +152,8 @@ export const useFacts = (options?: { category?: string; limit?: number }) => {
           .order('observed_at', { ascending: false })
           .limit(options?.limit ?? 300);
         if (options?.category) query = query.eq('category', options.category);
-        const { data } = await query;
+        const { data, error } = await query;
+        if (error) throw new Error(error.message);
         return (data ?? []) as unknown as Fact[];
       },
       user.id,

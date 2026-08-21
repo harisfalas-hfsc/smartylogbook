@@ -65,7 +65,8 @@ export const useMemories = (options?: { module?: string; limit?: number }) => {
             .order('occurred_at', { ascending: false });
           if (options?.module) query = query.eq('module', options.module);
           if (options?.limit) query = query.limit(options.limit);
-          const { data } = await query;
+          const { data, error } = await query;
+          if (error) throw new Error(error.message);
           return (data ?? []) as unknown as Memory[];
         },
         user.id,
@@ -273,11 +274,12 @@ export const useTrash = () => {
       const rows = await offlineFirstDetailed<Memory[]>(
         'logbook:trash',
         async () => {
-          const { data } = await supabase
+          const { data, error } = await supabase
             .from('memories')
             .select('*')
             .not('deleted_at', 'is', null)
             .order('deleted_at', { ascending: false });
+          if (error) throw new Error(error.message);
           return (data ?? []) as unknown as Memory[];
         },
         user.id,

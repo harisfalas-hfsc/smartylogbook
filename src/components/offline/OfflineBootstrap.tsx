@@ -3,19 +3,54 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { offlineSave } from '@/lib/offline/offline-first';
 import { readCache, scopedKey, trimCache } from '@/lib/offline/store';
-import { signedUrl } from '@/lib/media';
+import { signedUrl, filesOf } from '@/lib/media';
 import { fetchPricing } from '@/lib/pricing';
 import { isOnline, subscribeConnectivity } from '@/lib/offline/connectivity';
-import { onSyncRequested, setSyncState, syncState } from '@/lib/offline/sync-bus';
-import { markOfflineReady } from '@/lib/offline/readiness';
+import { onSyncRequested, setSyncState } from '@/lib/offline/sync-bus';
+import { markOfflineReady, readOfflineReadiness } from '@/lib/offline/readiness';
 import { cacheMediaUrls } from '@/lib/offline/media-cache';
-import { filesOf } from '@/lib/media';
+import {
+  bindOfflineUser,
+  isSyncPhaseFresh,
+  markSyncFinished,
+  markSyncPhaseDone,
+  markSyncStarted,
+} from '@/lib/offline/db';
 
-/**
- * Downloads the member's entire world in the background the moment they sign
- * in (and again whenever the connection returns), so every page works with no
- * internet without having to be visited first.
- */
+type QueryResult<T> = { data: T | null; error: { message?: string } | null };
+type MemoryRow = {
+  id: string;
+  module?: string;
+  kind?: string;
+  attachment_url?: string | null;
+  metadata?: { file_size?: unknown };
+};
+
+async function requireData<T>(promise: PromiseLike<QueryResult<T>>, name: string): Promise<T> {
+  const result = await promise;
+  if (result.error) throw new Error(result.error.message || `${name} did not download`);
+  return result.data as T;
+}
+
+async function fetchEveryMemory(deleted: boolean): Promise<MemoryRow[]> {
+  const rows: MemoryRow[] = [];
+  const pageSize = 1000;
+  for (let start = 0; ; start += pageSize) {
+    let query = supabase
+      .from('memories')
+      .select('*')
+      .order(deleted ? 'deleted_at' : 'occurred_at', { ascending: false })
+      .range(start, start + pageSize - 1);
+    query = deleted ? query.not('deleted_at', 'is', null) : query.is('deleted_at', null);
+    const page = await requireData(query, deleted ? 'trash' : 'logbook');
+    const values = (page ?? []) as unknown as MemoryRow[];
+    rows.push(...values);
+    if (values.length < pageSize) break;
+  }
+  return rows;
+}
+
+/** Downloads the signed-in member's complete readable world to this device. */
 const OfflineBootstrap = () => {
   const { user } = useAuth();
   const running = useRef(false);
@@ -27,266 +62,198 @@ const OfflineBootstrap = () => {
     const userId = user.id;
     const save = (key: string, value: unknown) => offlineSave(key, value, userId);
 
-    const prefetch = async () => {
-      if (retryTimer) {
-        window.clearTimeout(retryTimer);
-        retryTimer = 0;
-      }
-      if (!isOnline() || running.current) return;
-      running.current = true;
-      const syncStartedAt = Date.now();
-      setSyncState('syncing');
-      try {
-        const [
-          profile,
-          preferences,
-          subscription,
-          roles,
-          memories,
-          trash,
-          messages,
-          archived,
-          reminders,
-          alerts,
-          facts,
-          tickets,
-          conversations,
-        ] = await Promise.allSettled([
-          supabase.from('profiles').select('*').eq('user_id', userId).maybeSingle(),
+    const saveCore = async () => {
+      const [profile, preferences, memories, trash] = await Promise.all([
+        requireData(supabase.from('profiles').select('*').eq('user_id', userId).maybeSingle(), 'profile'),
+        requireData(
           supabase.from('user_preferences').select('*').eq('user_id', userId).maybeSingle(),
+          'preferences',
+        ),
+        fetchEveryMemory(false),
+        fetchEveryMemory(true),
+      ]);
+      if (!active) return [] as MemoryRow[];
+
+      await Promise.all([
+        save('account:profile', profile ?? null),
+        save('account:preferences', preferences ?? null),
+        save('logbook:list', memories),
+        save('logbook:trash', trash),
+        ...memories.map((record) => save(`record:${record.id}`, record)),
+      ]);
+
+      const byModule = new Map<string, MemoryRow[]>();
+      for (const record of memories) {
+        const key = record.module ?? 'personal';
+        byModule.set(key, [...(byModule.get(key) ?? []), record]);
+      }
+      await Promise.all([...byModule].map(([module, items]) => save(`logbook:list:${module}`, items)));
+
+      // A successful network response is not enough: prove the complete list
+      // was committed before this device can be called offline-ready.
+      const stored = await readCache<MemoryRow[]>(scopedKey(userId, 'logbook:list'));
+      if (!stored || stored.data.length !== memories.length) {
+        throw new Error('The downloaded logbook could not be stored on this device');
+      }
+      await markSyncPhaseDone('core');
+      return memories;
+    };
+
+    const saveSupportingData = async () => {
+      const jobs: Array<Promise<void>> = [
+        requireData(supabase.from('user_roles').select('role').eq('user_id', userId), 'roles')
+          .then((data) => save('account:roles', data ?? [])),
+        requireData(
           supabase
             .from('subscriptions')
-            .select(
-              'plan, plan_key, status, source, current_period_start, current_period_end, cancel_at_period_end',
-            )
+            .select('plan, plan_key, status, source, current_period_start, current_period_end, cancel_at_period_end')
             .eq('user_id', userId)
             .maybeSingle(),
-          supabase.from('user_roles').select('role').eq('user_id', userId),
-          supabase
-            .from('memories')
-            .select('*')
-            .is('deleted_at', null)
-            .order('occurred_at', { ascending: false })
-            .limit(2000),
-          supabase
-            .from('memories')
-            .select('*')
-            .not('deleted_at', 'is', null)
-            .order('deleted_at', { ascending: false }),
-          supabase
-            .from('messages')
-            .select('*')
-            .is('archived_at', null)
-            .order('created_at', { ascending: false })
-            .limit(120),
-          supabase
-            .from('messages')
-            .select('*')
-            .not('archived_at', 'is', null)
-            .order('created_at', { ascending: false })
-            .limit(120),
-          supabase.from('reminders').select('*').order('due_at', { ascending: true }),
-          supabase
-            .from('proactive_alerts')
-            .select('*')
-            .eq('dismissed', false)
-            .order('severity', { ascending: true })
-            .order('created_at', { ascending: false })
-            .limit(20),
-          supabase.from('facts').select('*').order('observed_at', { ascending: false }).limit(300),
-          supabase
-            .from('support_tickets')
-            .select('*')
-            .eq('user_id', userId)
-            .order('created_at', { ascending: false })
-            .limit(50),
-          supabase
+          'subscription',
+        ).then(async (subscription) => {
+          const start = (subscription as { current_period_start?: string } | null)?.current_period_start;
+          const countResult = await supabase
             .from('ai_conversations')
-            .select('*')
+            .select('id', { count: 'exact', head: true })
             .eq('user_id', userId)
-            .order('started_at', { ascending: false })
-            .limit(100),
-        ]);
-        if (!active) return;
-
-        type QueryResult = { data: unknown; error?: { message?: string } | null };
-        const valueOf = (name: string, result: PromiseSettledResult<QueryResult>): unknown => {
-          if (result.status === 'rejected') {
-            throw result.reason instanceof Error ? result.reason : new Error(`${name} did not download`);
-          }
-          if (result.value.error) {
-            throw new Error(result.value.error.message || `${name} did not download`);
-          }
-          return result.value.data;
-        };
-        const rows = <T,>(name: string, result: PromiseSettledResult<QueryResult>): T[] =>
-          (valueOf(name, result) ?? []) as T[];
-        const one = (name: string, result: PromiseSettledResult<QueryResult>): unknown =>
-          valueOf(name, result) ?? null;
-
-        const profileRow = one('profile', profile);
-        const preferenceRow = one('preferences', preferences);
-        const subscriptionRow = one('subscription', subscription);
-        const roleRows = rows('roles', roles);
-        const memoryRows = rows<{ id: string; attachment_url?: string | null }>('logbook', memories);
-        const trashRows = rows('trash', trash);
-        const messageRows = rows('messages', messages);
-        const archivedRows = rows('archived messages', archived);
-        const reminderRows = rows('reminders', reminders);
-        const alertRows = rows('alerts', alerts);
-        const factRows = rows<{ category?: string }>('facts', facts);
-        const ticketRows = rows<{ id: string }>('support tickets', tickets);
-        const conversationRows = rows('assistant conversations', conversations);
-
-        // Do not announce "ready" until the core world is actually committed
-        // to IndexedDB. Previously these writes were fire-and-forget, so an
-        // immediate offline transition could expose an empty logbook.
-        await Promise.all([
-          save('account:profile', profileRow),
-          save('account:preferences', preferenceRow),
-          save('account:roles', roleRows),
-          save('logbook:list', memoryRows),
-          save('logbook:trash', trashRows),
-          save('inbox:messages', messageRows),
-          save('inbox:archived', archivedRows),
-          save('reminders:list', reminderRows),
-          save('alerts:list', alertRows),
-          save('facts:list', factRows),
-          save('assistant:conversations', conversationRows),
-          save('inbox:threads', ticketRows),
-        ]);
-        const requiredCopies = await Promise.all([
-          readCache<unknown>(scopedKey(userId, 'account:profile')),
-          readCache<unknown>(scopedKey(userId, 'account:preferences')),
-          readCache<unknown[]>(scopedKey(userId, 'account:roles')),
-          readCache<unknown[]>(scopedKey(userId, 'logbook:list')),
-          readCache<unknown[]>(scopedKey(userId, 'logbook:trash')),
-          readCache<unknown[]>(scopedKey(userId, 'inbox:messages')),
-          readCache<unknown[]>(scopedKey(userId, 'inbox:archived')),
-          readCache<unknown[]>(scopedKey(userId, 'reminders:list')),
-          readCache<unknown[]>(scopedKey(userId, 'alerts:list')),
-          readCache<unknown[]>(scopedKey(userId, 'facts:list')),
-          readCache<unknown[]>(scopedKey(userId, 'assistant:conversations')),
-          readCache<unknown[]>(scopedKey(userId, 'inbox:threads')),
-        ]);
-        const storedLogbook = requiredCopies[3];
-        if (requiredCopies.some((copy) => copy === null) || storedLogbook?.data.length !== memoryRows.length) {
-          throw new Error('The downloaded account could not be stored on this device');
-        }
-
-        // Every individual record's full detail, not just the list.
-        await Promise.all(memoryRows.map((record) => save(`record:${record.id}`, record)));
-
-        // Per-category slices, so a category page opens offline directly.
-        const byModule = new Map<string, unknown[]>();
-        for (const record of memoryRows as { module?: string }[]) {
-          const key = record.module ?? 'personal';
-          if (!byModule.has(key)) byModule.set(key, []);
-          byModule.get(key)!.push(record);
-        }
-        await Promise.all(
-          [...byModule].map(([moduleId, items]) => save(`logbook:list:${moduleId}`, items)),
-        );
-        const factsByCategory = new Map<string, unknown[]>();
-        for (const fact of factRows) {
-          const key = fact.category ?? 'other';
-          if (!factsByCategory.has(key)) factsByCategory.set(key, []);
-          factsByCategory.get(key)?.push(fact);
-        }
-        await Promise.all(
-          [...factsByCategory].map(([category, items]) => save(`facts:list:${category}`, items)),
-        );
-
-        // Access / entitlement level, including the conversations used.
-        const subRow = subscriptionRow;
-        const start = (subRow as { current_period_start?: string } | null)?.current_period_start;
-        const { count } = await supabase
-          .from('ai_conversations')
-          .select('id', { count: 'exact', head: true })
-          .eq('user_id', userId)
-          .gte('started_at', start ?? new Date(Date.now() - 30 * 86400000).toISOString());
-        await save('account:access', { subscription: subRow, used: count ?? 0 });
-
-        // Support threads plus every reply.
-        await Promise.allSettled(
-          ticketRows.map(async (ticket) => {
-            const { data } = await supabase
-              .from('support_replies')
-              .select('*')
-              .eq('ticket_id', ticket.id)
-              .order('created_at', { ascending: true });
-            await Promise.all([
-              save(`thread:${ticket.id}`, data ?? []),
-              save(`ticket:${ticket.id}`, ticket),
-            ]);
-          }),
-        );
-
-        // Reference library: plans / pricing and category filter values.
-        try {
-          await save('library:pricing', await fetchPricing());
-        } catch {
-          /* best effort */
-        }
-        await save('library:filters', {
-          modules: [...byModule.keys()],
-          kinds: [...new Set(memoryRows.map((r) => (r as { kind?: string }).kind).filter(Boolean))],
-        });
-
-        // Storage / progress numbers.
-        let usedBytes = 0;
-        let fileCount = 0;
-        for (const row of memoryRows as { attachment_url?: string | null; metadata?: { file_size?: unknown } }[]) {
-          if (!row.attachment_url) continue;
-          fileCount += 1;
-          if (typeof row.metadata?.file_size === 'number') usedBytes += row.metadata.file_size;
-        }
-        await save('progress:storage', { used: usedBytes, files: fileCount });
-
-        // Download every owned attachment, including album extras. A bare
-        // fetch is not durable in native WebViews, so explicitly store each
-        // signed URL in the same dedicated Cache Storage strategy as Workout.
-        const mediaUrls: string[] = [];
-        for (const record of memoryRows) {
-          if (!active) return;
-          for (const file of filesOf(record as never)) {
-            try {
-              const url = await signedUrl(file.path);
-              if (!url) continue;
-              await save(`media:${file.path}`, url);
-              mediaUrls.push(url);
-            } catch {
-              /* best effort */
+            .gte('started_at', start ?? new Date(Date.now() - 30 * 86400000).toISOString());
+          if (countResult.error) throw new Error(countResult.error.message);
+          await save('account:access', { subscription: subscription ?? null, used: countResult.count ?? 0 });
+        }),
+        requireData(
+          supabase.from('messages').select('*').is('archived_at', null).order('created_at', { ascending: false }).limit(120),
+          'messages',
+        ).then((data) => save('inbox:messages', data ?? [])),
+        requireData(
+          supabase.from('messages').select('*').not('archived_at', 'is', null).order('created_at', { ascending: false }).limit(120),
+          'archived messages',
+        ).then((data) => save('inbox:archived', data ?? [])),
+        requireData(supabase.from('reminders').select('*').order('due_at', { ascending: true }), 'reminders')
+          .then((data) => save('reminders:list', data ?? [])),
+        requireData(
+          supabase.from('proactive_alerts').select('*').eq('dismissed', false).order('created_at', { ascending: false }).limit(100),
+          'alerts',
+        ).then((data) => save('alerts:list', data ?? [])),
+        requireData(supabase.from('facts').select('*').order('observed_at', { ascending: false }).limit(1000), 'facts')
+          .then(async (data) => {
+            const facts = (data ?? []) as Array<{ category?: string }>;
+            await save('facts:list', facts);
+            const groups = new Map<string, unknown[]>();
+            for (const fact of facts) {
+              const category = fact.category ?? 'other';
+              groups.set(category, [...(groups.get(category) ?? []), fact]);
             }
+            await Promise.all([...groups].map(([category, items]) => save(`facts:list:${category}`, items)));
+          }),
+        requireData(
+          supabase.from('ai_conversations').select('*').eq('user_id', userId).order('started_at', { ascending: false }).limit(300),
+          'assistant conversations',
+        ).then((data) => save('assistant:conversations', data ?? [])),
+      ];
+
+      const results = await Promise.allSettled(jobs);
+      if (results.some((result) => result.status === 'rejected')) {
+        throw new Error('Some supporting account data did not download');
+      }
+      await markSyncPhaseDone('supporting');
+    };
+
+    const saveSupport = async () => {
+      const tickets = (await requireData(
+        supabase.from('support_tickets').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(100),
+        'support tickets',
+      )) ?? [];
+      await save('inbox:threads', tickets);
+      await Promise.all((tickets as Array<{ id: string }>).map(async (ticket) => {
+        const replies = await requireData(
+          supabase.from('support_replies').select('*').eq('ticket_id', ticket.id).order('created_at', { ascending: true }),
+          'support replies',
+        );
+        await Promise.all([save(`thread:${ticket.id}`, replies ?? []), save(`ticket:${ticket.id}`, ticket)]);
+      }));
+      await markSyncPhaseDone('support');
+    };
+
+    const saveMedia = async (memories: MemoryRow[]) => {
+      const mediaUrls: string[] = [];
+      let usedBytes = 0;
+      let fileCount = 0;
+      for (const record of memories) {
+        for (const file of filesOf(record as never)) {
+          fileCount += 1;
+          try {
+            const url = await signedUrl(file.path);
+            if (!url) continue;
+            await save(`media:${file.path}`, url);
+            mediaUrls.push(url);
+          } catch {
+            // Keep downloading every other file; readiness reports metadata even
+            // when one remote object has been removed.
           }
         }
-        await cacheMediaUrls(mediaUrls, { concurrency: 6, isActive: () => active });
+        const size = record.metadata?.file_size;
+        if (typeof size === 'number') usedBytes += size;
+      }
+      await save('progress:storage', { used: usedBytes, files: fileCount });
+      const media = await cacheMediaUrls(mediaUrls, { concurrency: 4, isActive: () => active });
+      if (media.failed > 0) throw new Error(`${media.failed} media files did not download`);
+      await markSyncPhaseDone('media');
+    };
 
-        await trimCache(800);
+    const prefetch = async () => {
+      if (retryTimer) window.clearTimeout(retryTimer);
+      retryTimer = 0;
+      if (!isOnline() || running.current) return;
+      running.current = true;
+      const startedAt = Date.now();
+      setSyncState('syncing');
+      await markSyncStarted();
+      try {
+        await bindOfflineUser(userId);
+        const previous = await readOfflineReadiness();
+        const memories = await saveCore();
 
+        // Independent phases cannot prevent the core logbook from being usable.
+        const phaseResults = await Promise.allSettled([
+          isSyncPhaseFresh('supporting', 60_000).then(async (fresh) => {
+            if (!fresh) await saveSupportingData();
+          }),
+          isSyncPhaseFresh('support', 5 * 60_000).then(async (fresh) => {
+            if (!fresh) await saveSupport();
+          }),
+          isSyncPhaseFresh('media', 15 * 60_000).then(async (fresh) => {
+            if (!fresh) await saveMedia(memories);
+          }),
+          fetchPricing().then((pricing) => save('library:pricing', pricing)),
+        ]);
+
+        const messages = await readCache<unknown[]>(scopedKey(userId, 'inbox:messages'));
+        const reminders = await readCache<unknown[]>(scopedKey(userId, 'reminders:list'));
         await markOfflineReady({
           userId,
-          records: memoryRows.length,
-          messages: messageRows.length,
-          reminders: reminderRows.length,
+          records: memories.length,
+          messages: messages?.data.length ?? (previous.userId === userId ? previous.messages : 0),
+          reminders: reminders?.data.length ?? (previous.userId === userId ? previous.reminders : 0),
         });
-      } catch {
+        await trimCache(6000);
+
+        const partial = phaseResults.some((result) => result.status === 'rejected');
+        await markSyncFinished(partial ? new Error('Some optional data will retry') : undefined);
+        setSyncState(partial ? 'error' : 'idle');
+        if (partial && active && isOnline()) retryTimer = window.setTimeout(() => void prefetch(), 20_000);
+      } catch (error) {
+        await markSyncFinished(error);
         setSyncState('error');
-        if (active && isOnline()) retryTimer = window.setTimeout(() => void prefetch(), 30_000);
+        if (active && isOnline()) retryTimer = window.setTimeout(() => void prefetch(), 20_000);
       } finally {
-        const remainingIndicatorTime = 800 - (Date.now() - syncStartedAt);
-        if (remainingIndicatorTime > 0) {
-          await new Promise((resolve) => window.setTimeout(resolve, remainingIndicatorTime));
-        }
+        const wait = 1000 - (Date.now() - startedAt);
+        if (wait > 0) await new Promise((resolve) => window.setTimeout(resolve, wait));
         running.current = false;
-        if (syncState() === 'syncing') setSyncState('idle');
       }
     };
 
     void prefetch();
-    const stopConnectivity = subscribeConnectivity((online) => {
-      if (online) void prefetch();
-    });
+    const stopConnectivity = subscribeConnectivity((online) => online && void prefetch());
     const stopManual = onSyncRequested(() => void prefetch());
     const onFocus = () => void prefetch();
     window.addEventListener('focus', onFocus);

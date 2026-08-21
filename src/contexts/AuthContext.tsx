@@ -55,11 +55,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
+        const local = !session && !isOnline() ? readLocalSessionUser() : null;
         setSession(session);
-        setUser(session?.user ?? null);
+        setUser(session?.user ?? (local ? ({ id: local.id, email: local.email ?? undefined } as User) : null));
         if (session?.user) {
           setTimeout(() => fetchProfile(session.user.id), 0);
           refreshRememberedSession(session.user.email);
+        } else if (local) {
+          setTimeout(() => fetchProfile(local.id), 0);
         } else {
           setProfile(null);
         }
@@ -111,7 +114,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    // Local sign-out leaves the encrypted device verifier and downloaded world
+    // intact, so this member can deliberately sign back in during a long outage.
+    await supabase.auth.signOut({ scope: 'local' });
     setUser(null);
     setSession(null);
     setProfile(null);

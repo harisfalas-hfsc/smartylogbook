@@ -52,11 +52,12 @@ export const usePreferences = () => {
     const data = await offlineFirst<Preferences | null>(
       'account:preferences',
       async () => {
-        const { data: row } = await supabase
+        const { data: row, error } = await supabase
           .from('user_preferences')
           .select('*')
           .eq('user_id', user.id)
           .maybeSingle();
+        if (error) throw new Error(error.message);
         if (row) return row as Preferences;
         const { data: created } = await supabase
           .from('user_preferences')
