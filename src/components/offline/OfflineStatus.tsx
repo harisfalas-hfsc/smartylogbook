@@ -53,7 +53,9 @@ const OfflineStatus = () => {
   const label = offline
     ? prepared
       ? savedRecords > 0
-        ? `Offline. ${savedRecords} saved Logbook record${savedRecords === 1 ? '' : 's'} ready`
+        ? readiness?.mediaReady
+          ? `Offline. ${savedRecords} saved Logbook record${savedRecords === 1 ? '' : 's'} ready`
+          : `Offline. ${savedRecords} saved record${savedRecords === 1 ? '' : 's'} ready; some media unavailable`
         : 'Offline. No Logbook records are saved on this device'
       : 'Offline. Some content may not be saved on this device yet'
     : backendDown

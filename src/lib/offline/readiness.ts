@@ -8,6 +8,8 @@ export type OfflineReadiness = {
   records: number;
   messages: number;
   reminders: number;
+  mediaReady: boolean;
+  mediaFiles: number;
 };
 
 const KEY = 'offline:readiness';
@@ -19,6 +21,8 @@ const EMPTY: OfflineReadiness = {
   records: 0,
   messages: 0,
   reminders: 0,
+  mediaReady: false,
+  mediaFiles: 0,
 };
 
 export async function readOfflineReadiness(userId?: string | null): Promise<OfflineReadiness> {
