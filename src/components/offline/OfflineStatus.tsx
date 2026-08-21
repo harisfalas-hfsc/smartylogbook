@@ -71,7 +71,7 @@ const OfflineStatus = () => {
   const Icon = offline ? CloudOff : backendDown ? ServerCrash : RefreshCw;
 
   return (
-    <div className="pointer-events-none fixed bottom-20 left-1/2 z-40 -translate-x-1/2 px-3 md:bottom-6">
+    <div className="pointer-events-none fixed bottom-28 left-1/2 z-40 -translate-x-1/2 px-3 md:bottom-6">
       <div className="pointer-events-auto flex items-center gap-2 rounded-full border-2 border-primary bg-card/95 px-3 py-1.5 text-xs font-semibold text-foreground shadow-lg backdrop-blur">
         <Icon
           className={`h-3.5 w-3.5 shrink-0 text-primary ${sync === 'syncing' ? 'animate-spin' : ''}`}

@@ -240,8 +240,13 @@ const OfflineBootstrap = () => {
         await trimCache(6000);
 
         const partial = phaseResults.some((result) => result.status === 'rejected');
-        await markSyncFinished(partial ? new Error('Some optional data will retry') : undefined);
-        completedState = partial ? 'error' : 'synced';
+        // The complete Logbook is already durably stored at this point. A
+        // temporary failure downloading an optional file or supporting list
+        // must not tell the member that synchronization failed. Keep retrying
+        // those extras silently while reporting the usable offline copy as
+        // synchronized.
+        await markSyncFinished();
+        completedState = 'synced';
         if (partial && active && isOnline()) retryTimer = window.setTimeout(() => void prefetch(), 20_000);
       } catch (error) {
         await markSyncFinished(error);
