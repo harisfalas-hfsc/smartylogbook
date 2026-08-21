@@ -25,8 +25,13 @@ const OfflineBootstrap = () => {
     const save = (key: string, value: unknown) => offlineSave(key, value, userId);
 
     const prefetch = async () => {
+      if (retryTimer) {
+        window.clearTimeout(retryTimer);
+        retryTimer = 0;
+      }
       if (!isOnline() || running.current) return;
       running.current = true;
+      setSyncState('syncing');
       try {
         const [
           profile,
