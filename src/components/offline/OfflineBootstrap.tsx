@@ -5,7 +5,9 @@ import { offlineSave } from '@/lib/offline/offline-first';
 import { trimCache } from '@/lib/offline/store';
 import { signedUrl } from '@/lib/media';
 import { fetchPricing } from '@/lib/pricing';
-import { isOnline } from '@/lib/offline/connectivity';
+import { isOnline, subscribeConnectivity } from '@/lib/offline/connectivity';
+import { onSyncRequested, setSyncState, syncState } from '@/lib/offline/sync-bus';
+import { markOfflineReady } from '@/lib/offline/readiness';
 
 /**
  * Downloads the member's entire world in the background the moment they sign
@@ -19,12 +21,18 @@ const OfflineBootstrap = () => {
   useEffect(() => {
     if (!user) return;
     let active = true;
+    let retryTimer = 0;
     const userId = user.id;
     const save = (key: string, value: unknown) => offlineSave(key, value, userId);
 
     const prefetch = async () => {
+      if (retryTimer) {
+        window.clearTimeout(retryTimer);
+        retryTimer = 0;
+      }
       if (!isOnline() || running.current) return;
       running.current = true;
+      setSyncState('syncing');
       try {
         const [
           profile,
@@ -190,17 +198,35 @@ const OfflineBootstrap = () => {
         }
 
         void trimCache(800);
+
+        await markOfflineReady({
+          userId,
+          records: memoryRows.length,
+          messages: rows(messages).length,
+          reminders: rows(reminders).length,
+        });
+      } catch {
+        setSyncState('error');
+        if (active && isOnline()) retryTimer = window.setTimeout(() => void prefetch(), 30_000);
       } finally {
         running.current = false;
+        if (syncState() === 'syncing') setSyncState('idle');
       }
     };
 
     void prefetch();
-    const onOnline = () => void prefetch();
-    window.addEventListener('online', onOnline);
+    const stopConnectivity = subscribeConnectivity((online) => {
+      if (online) void prefetch();
+    });
+    const stopManual = onSyncRequested(() => void prefetch());
+    const onFocus = () => void prefetch();
+    window.addEventListener('focus', onFocus);
     return () => {
       active = false;
-      window.removeEventListener('online', onOnline);
+      if (retryTimer) window.clearTimeout(retryTimer);
+      stopConnectivity();
+      stopManual();
+      window.removeEventListener('focus', onFocus);
     };
   }, [user?.id]);
 
