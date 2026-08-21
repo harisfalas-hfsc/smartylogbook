@@ -83,13 +83,6 @@ const OfflineBootstrap = () => {
         ...memories.map((record) => save(`record:${record.id}`, record)),
       ]);
 
-      const byModule = new Map<string, MemoryRow[]>();
-      for (const record of memories) {
-        const key = record.module ?? 'personal';
-        byModule.set(key, [...(byModule.get(key) ?? []), record]);
-      }
-      await Promise.all([...byModule].map(([module, items]) => save(`logbook:list:${module}`, items)));
-
       // A successful network response is not enough: prove the complete list
       // was committed before this device can be called offline-ready.
       const stored = await readCache<MemoryRow[]>(scopedKey(userId, 'logbook:list'));
@@ -176,7 +169,7 @@ const OfflineBootstrap = () => {
     };
 
     const saveMedia = async (memories: MemoryRow[]) => {
-      const mediaUrls: string[] = [];
+      const mediaEntries: Array<{ key: string; url: string }> = [];
       let usedBytes = 0;
       let fileCount = 0;
       for (const record of memories) {
@@ -185,8 +178,7 @@ const OfflineBootstrap = () => {
           try {
             const url = await signedUrl(file.path);
             if (!url) continue;
-            await save(`media:${file.path}`, url);
-            mediaUrls.push(url);
+            mediaEntries.push({ key: file.path, url });
           } catch {
             // Keep downloading every other file; readiness reports metadata even
             // when one remote object has been removed.
@@ -196,7 +188,9 @@ const OfflineBootstrap = () => {
         if (typeof size === 'number') usedBytes += size;
       }
       await save('progress:storage', { used: usedBytes, files: fileCount });
-      const media = await cacheMediaUrls(mediaUrls, { concurrency: 4, isActive: () => active });
+      const media = await cacheMediaUrls(mediaEntries, { concurrency: 4, isActive: () => active });
+      await Promise.all(media.storedKeys.map((path) => save(`media:${path}`, path)));
+      await save('progress:media', { requested: media.requested, stored: media.stored });
       if (media.failed > 0) throw new Error(`${media.failed} media files did not download`);
       await markSyncPhaseDone('media');
     };
@@ -231,11 +225,14 @@ const OfflineBootstrap = () => {
 
         const messages = await readCache<unknown[]>(scopedKey(userId, 'inbox:messages'));
         const reminders = await readCache<unknown[]>(scopedKey(userId, 'reminders:list'));
+        const media = await readCache<{ requested: number; stored: number }>(scopedKey(userId, 'progress:media'));
         await markOfflineReady({
           userId,
           records: memories.length,
           messages: messages?.data.length ?? (previous.userId === userId ? previous.messages : 0),
           reminders: reminders?.data.length ?? (previous.userId === userId ? previous.reminders : 0),
+          mediaReady: Boolean(media && media.data.requested === media.data.stored),
+          mediaFiles: media?.data.stored ?? 0,
         });
         await trimCache(6000);
 

@@ -76,18 +76,31 @@ export const useSignedUrl = (path: string | null | undefined) => {
   const [url, setUrl] = useState<string | null>(path && /^https?:\/\//.test(path) ? path : null);
   useEffect(() => {
     let active = true;
+    let objectUrl: string | null = null;
+    const resolveCached = async () => {
+      if (!path) return null;
+      const direct = await cachedMediaObjectUrl(path);
+      if (direct) return direct;
+      const storedKey = await offlineRead<string>(`media:${path}`, user?.id);
+      return storedKey ? cachedMediaObjectUrl(storedKey) : null;
+    };
     const resolve = async () => {
       if (!path) return null;
-      if (isOnline()) return signedUrl(path);
-      if (/^https?:\/\//.test(path)) return (await cachedMediaObjectUrl(path)) ?? path;
-      const storedUrl = await offlineRead<string>(`media:${path}`, user?.id);
-      return storedUrl ? (await cachedMediaObjectUrl(storedUrl)) ?? storedUrl : null;
+      if (isOnline()) {
+        const remote = await signedUrl(path).catch(() => null);
+        if (remote) return remote;
+      }
+      return resolveCached();
     };
     void resolve().then((next) => {
-      if (active) setUrl(next);
+      if (active) {
+        objectUrl = next?.startsWith('blob:') ? next : null;
+        setUrl(next);
+      }
     });
     return () => {
       active = false;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
   }, [path, user?.id]);
   return url;

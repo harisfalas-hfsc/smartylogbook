@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { indexMemories } from '@/lib/semantic';
 import { hasPremium } from '@/lib/subscription';
 import type { ItemStatus } from '@/lib/status';
-import { offlineFirstDetailed, offlineSave } from '@/lib/offline/offline-first';
+import { offlineFirstDetailed, offlineRead, offlineSave } from '@/lib/offline/offline-first';
 import { enqueueAction } from '@/lib/offline/queue';
 import { OFFLINE_NOTICE } from '@/lib/offline/useOnlineStatus';
 import { isOnline } from '@/lib/offline/connectivity';
@@ -38,6 +38,33 @@ export interface Memory {
 
 export type NewMemory = Partial<Memory> & { title: string };
 
+const LOGBOOK_CACHE_KEY = 'logbook:list';
+
+/**
+ * The bootstrap persists one complete canonical list. Every Logbook view derives
+ * its category and size from that same list, so arbitrary limits never become
+ * competing offline caches.
+ */
+export const selectMemories = (
+  memories: Memory[],
+  options?: { module?: string; limit?: number },
+) => {
+  const filtered = options?.module
+    ? memories.filter((memory) => memory.module === options.module)
+    : memories;
+  return options?.limit ? filtered.slice(0, options.limit) : filtered;
+};
+
+async function updateCachedLogbook(
+  userId: string | undefined,
+  transform: (memories: Memory[]) => Memory[],
+) {
+  if (!userId) return;
+  const cached = await offlineRead<Memory[]>(LOGBOOK_CACHE_KEY, userId);
+  if (!cached) return;
+  await offlineSave(LOGBOOK_CACHE_KEY, transform(cached), userId);
+}
+
 export const useMemories = (options?: { module?: string; limit?: number }) => {
   const { user } = useAuth();
   const [memories, setMemories] = useState<Memory[]>([]);
@@ -53,28 +80,21 @@ export const useMemories = (options?: { module?: string; limit?: number }) => {
       return;
     }
     setLoading(true);
-    const baseCacheKey = options?.module ? `logbook:list:${options.module}` : 'logbook:list';
-    // A short dashboard/capture query must never overwrite the complete
-    // timeline downloaded by OfflineBootstrap.
-    const cacheKey = options?.limit ? `${baseCacheKey}:limit:${options.limit}` : baseCacheKey;
     try {
       const result = await offlineFirstDetailed<Memory[]>(
-        cacheKey,
+        LOGBOOK_CACHE_KEY,
         async () => {
-          let query = supabase
+          const { data, error } = await supabase
             .from('memories')
             .select('*')
             .is('deleted_at', null)
             .order('occurred_at', { ascending: false });
-          if (options?.module) query = query.eq('module', options.module);
-          if (options?.limit) query = query.limit(options.limit);
-          const { data, error } = await query;
           if (error) throw new Error(error.message);
           return (data ?? []) as unknown as Memory[];
         },
         user.id,
       );
-      const rows = options?.limit ? result.data.slice(0, options.limit) : result.data;
+      const rows = selectMemories(result.data, options);
       setMemories(rows);
       setFromCache(result.fromCache);
       setNoCopy(false);
@@ -127,12 +147,15 @@ export const useMemories = (options?: { module?: string; limit?: number }) => {
     }
     if (!Object.keys(allowed).length) return { error: null };
 
-    const applyLocally = () =>
+    const applyLocally = () => {
+      void updateCachedLogbook(user?.id, (cached) =>
+        cached.map((memory) => memory.id === id ? { ...memory, ...(allowed as Partial<Memory>) } : memory),
+      );
       setMemories((prev) => {
-        const next = prev.map((m) => (m.id === id ? { ...m, ...(allowed as Partial<Memory>) } : m));
-        void offlineSave(options?.module ? `logbook:list:${options.module}` : 'logbook:list', next, user?.id);
-        return next;
+        const changed = prev.map((m) => (m.id === id ? { ...m, ...(allowed as Partial<Memory>) } : m));
+        return selectMemories(changed, options);
       });
+    };
 
     if (!isOnline()) {
       await enqueueAction('memory-update', { id, patch: allowed }, user?.id);
@@ -171,6 +194,9 @@ export const useMemories = (options?: { module?: string; limit?: number }) => {
       .update({ module: toModule })
       .eq('id', memory.id);
     if (error) return { error };
+    void updateCachedLogbook(user.id, (cached) =>
+      cached.map((item) => item.id === memory.id ? { ...item, module: toModule } : item),
+    );
     setMemories((prev) => options?.module && options.module !== toModule
       ? prev.filter((m) => m.id !== memory.id)
       : prev.map((m) => (m.id === memory.id ? { ...m, module: toModule } : m)));
@@ -198,6 +224,9 @@ export const useMemories = (options?: { module?: string; limit?: number }) => {
       .eq('user_id', user.id)
       .eq('module', fromModule);
     if (!error) {
+      void updateCachedLogbook(user.id, (cached) =>
+        cached.map((memory) => memory.module === fromModule ? { ...memory, module: toModule } : memory),
+      );
       setMemories((prev) => prev.map((m) => (m.module === fromModule ? { ...m, module: toModule } : m)));
     }
     return { error };
@@ -213,7 +242,10 @@ export const useMemories = (options?: { module?: string; limit?: number }) => {
     const { error } = premium
       ? await supabase.from('memories').update({ deleted_at: new Date().toISOString() }).eq('id', id)
       : await supabase.from('memories').delete().eq('id', id);
-    if (!error) setMemories((prev) => prev.filter((m) => m.id !== id));
+    if (!error) {
+      void updateCachedLogbook(user.id, (cached) => cached.filter((memory) => memory.id !== id));
+      setMemories((prev) => prev.filter((m) => m.id !== id));
+    }
     return { error };
   };
 

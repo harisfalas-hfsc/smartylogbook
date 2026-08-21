@@ -49,9 +49,14 @@ const OfflineStatus = () => {
   if (!show || dismissed) return null;
 
   const prepared = Boolean(readiness?.ready && readiness.userId === (user?.id ?? null));
+  const savedRecords = prepared ? readiness?.records ?? 0 : 0;
   const label = offline
     ? prepared
-      ? 'Offline. Saved data is ready'
+      ? savedRecords > 0
+        ? readiness?.mediaReady
+          ? `Offline. ${savedRecords} saved Logbook record${savedRecords === 1 ? '' : 's'} ready`
+          : `Offline. ${savedRecords} saved record${savedRecords === 1 ? '' : 's'} ready; some media unavailable`
+        : 'Offline. No Logbook records are saved on this device'
       : 'Offline. Some content may not be saved on this device yet'
     : backendDown
       ? "Can't reach Smarty Logbook right now"
