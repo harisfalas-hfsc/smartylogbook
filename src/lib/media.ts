@@ -3,6 +3,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { offlineFirst } from '@/lib/offline/offline-first';
 import { useAuth } from '@/contexts/AuthContext';
 import { Memory } from '@/lib/memories';
+import { isOnline } from '@/lib/offline/connectivity';
+import { offlineRead } from '@/lib/offline/offline-first';
+import { cachedMediaObjectUrl } from '@/lib/offline/media-cache';
 
 /** Storage a plan gets for photos, videos and documents. */
 export const STORAGE_QUOTA_BYTES = { free: 1_073_741_824, premium: 21_474_836_480 };
@@ -69,14 +72,24 @@ export const signedUrl = async (path: string | null | undefined) => {
 };
 
 export const useSignedUrl = (path: string | null | undefined) => {
+  const { user } = useAuth();
   const [url, setUrl] = useState<string | null>(path && /^https?:\/\//.test(path) ? path : null);
   useEffect(() => {
     let active = true;
-    signedUrl(path).then((u) => active && setUrl(u));
+    const resolve = async () => {
+      if (!path) return null;
+      if (isOnline()) return signedUrl(path);
+      if (/^https?:\/\//.test(path)) return cachedMediaObjectUrl(path) ?? path;
+      const storedUrl = await offlineRead<string>(`media:${path}`, user?.id);
+      return storedUrl ? (await cachedMediaObjectUrl(storedUrl)) ?? storedUrl : null;
+    };
+    void resolve().then((next) => {
+      if (active) setUrl(next);
+    });
     return () => {
       active = false;
     };
-  }, [path]);
+  }, [path, user?.id]);
   return url;
 };
 
