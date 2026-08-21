@@ -16,7 +16,10 @@ export type QueuedAction = {
 
 const QUEUE_KEY = 'pending-actions';
 const store =
-  typeof indexedDB !== 'undefined' ? createStore('smarty-offline', 'queue') : undefined;
+  // Keep the write queue in its own database. idb-keyval creates databases at
+  // version 1, so sharing `smarty-offline` with the `cache` object store caused
+  // a race: whichever store opened first existed and the other was missing.
+  typeof indexedDB !== 'undefined' ? createStore('smarty-offline-queue', 'queue') : undefined;
 
 async function readQueue(): Promise<QueuedAction[]> {
   if (!store) return [];
