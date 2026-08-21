@@ -57,7 +57,10 @@ export async function cachedMediaObjectUrl(url: string): Promise<string | null> 
   if (typeof window === 'undefined' || !('caches' in window)) return null;
   try {
     const response = await (await caches.open(MEDIA_CACHE_NAME)).match(url);
-    if (!response || response.type === 'opaque') return url;
+    // Returning the remote URL for an opaque response makes the browser issue
+    // a network request and therefore is not an offline retrieval. Browsers
+    // that cannot expose the cached body must report the media as unavailable.
+    if (!response || response.type === 'opaque') return null;
     return URL.createObjectURL(await response.blob());
   } catch {
     return null;

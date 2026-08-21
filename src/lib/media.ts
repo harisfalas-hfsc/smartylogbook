@@ -76,6 +76,7 @@ export const useSignedUrl = (path: string | null | undefined) => {
   const [url, setUrl] = useState<string | null>(path && /^https?:\/\//.test(path) ? path : null);
   useEffect(() => {
     let active = true;
+    let objectUrl: string | null = null;
     const resolve = async () => {
       if (!path) return null;
       if (isOnline()) return signedUrl(path);
@@ -84,10 +85,14 @@ export const useSignedUrl = (path: string | null | undefined) => {
       return storedUrl ? (await cachedMediaObjectUrl(storedUrl)) ?? storedUrl : null;
     };
     void resolve().then((next) => {
-      if (active) setUrl(next);
+      if (active) {
+        objectUrl = next?.startsWith('blob:') ? next : null;
+        setUrl(next);
+      }
     });
     return () => {
       active = false;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
   }, [path, user?.id]);
   return url;
