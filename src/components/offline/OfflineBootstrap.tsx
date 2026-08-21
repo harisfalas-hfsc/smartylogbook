@@ -83,13 +83,6 @@ const OfflineBootstrap = () => {
         ...memories.map((record) => save(`record:${record.id}`, record)),
       ]);
 
-      const byModule = new Map<string, MemoryRow[]>();
-      for (const record of memories) {
-        const key = record.module ?? 'personal';
-        byModule.set(key, [...(byModule.get(key) ?? []), record]);
-      }
-      await Promise.all([...byModule].map(([module, items]) => save(`logbook:list:${module}`, items)));
-
       // A successful network response is not enough: prove the complete list
       // was committed before this device can be called offline-ready.
       const stored = await readCache<MemoryRow[]>(scopedKey(userId, 'logbook:list'));
