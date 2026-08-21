@@ -31,8 +31,6 @@ export default defineConfig(({ mode }) => ({
         navigateFallback: "/index.html",
         navigateFallbackDenylist: [/^\/~oauth/, /^\/functions\//],
         cleanupOutdatedCaches: true,
-        clientsClaim: true,
-        skipWaiting: true,
         runtimeCaching: [
           {
             // Hashed same-origin build assets.

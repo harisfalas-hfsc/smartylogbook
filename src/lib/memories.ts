@@ -40,6 +40,23 @@ export type NewMemory = Partial<Memory> & { title: string };
 
 const LOGBOOK_CACHE_KEY = 'logbook:list';
 
+async function fetchCompleteLogbook(): Promise<Memory[]> {
+  const rows: Memory[] = [];
+  const pageSize = 1000;
+  for (let start = 0; ; start += pageSize) {
+    const { data, error } = await supabase
+      .from('memories')
+      .select('*')
+      .is('deleted_at', null)
+      .order('occurred_at', { ascending: false })
+      .range(start, start + pageSize - 1);
+    if (error) throw new Error(error.message);
+    const page = (data ?? []) as unknown as Memory[];
+    rows.push(...page);
+    if (page.length < pageSize) return rows;
+  }
+}
+
 /**
  * The bootstrap persists one complete canonical list. Every Logbook view derives
  * its category and size from that same list, so arbitrary limits never become
@@ -83,15 +100,7 @@ export const useMemories = (options?: { module?: string; limit?: number }) => {
     try {
       const result = await offlineFirstDetailed<Memory[]>(
         LOGBOOK_CACHE_KEY,
-        async () => {
-          const { data, error } = await supabase
-            .from('memories')
-            .select('*')
-            .is('deleted_at', null)
-            .order('occurred_at', { ascending: false });
-          if (error) throw new Error(error.message);
-          return (data ?? []) as unknown as Memory[];
-        },
+        fetchCompleteLogbook,
         user.id,
       );
       const rows = selectMemories(result.data, options);
