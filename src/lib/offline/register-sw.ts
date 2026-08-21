@@ -40,10 +40,10 @@ async function unregisterAppWorker() {
 }
 
 /**
- * Registers the worker and calls `onUpdateReady` when a newer build is waiting,
- * with a callback that activates it.
+ * Registers the worker. Generated workers use skipWaiting + clientsClaim, so
+ * updates activate silently without a refresh prompt or reload loop.
  */
-export function registerAppServiceWorker(onUpdateReady?: (apply: () => void) => void) {
+export function registerAppServiceWorker() {
   if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return;
   if (isBlockedContext()) {
     void unregisterAppWorker();
@@ -53,22 +53,8 @@ export function registerAppServiceWorker(onUpdateReady?: (apply: () => void) => 
   void navigator.serviceWorker
     .register(SW_URL, { scope: '/' })
     .then((registration) => {
-      const notify = (worker: ServiceWorker | null) => {
-        if (!worker || !navigator.serviceWorker.controller) return;
-        onUpdateReady?.(() => {
-          worker.postMessage({ type: 'SKIP_WAITING' });
-          window.location.reload();
-        });
-      };
-
-      if (registration.waiting) notify(registration.waiting);
-      registration.addEventListener('updatefound', () => {
-        const installing = registration.installing;
-        if (!installing) return;
-        installing.addEventListener('statechange', () => {
-          if (installing.state === 'installed') notify(installing);
-        });
-      });
+      // Check for a newer shell now; Workbox activates it automatically.
+      void registration.update();
     })
     .catch(() => {
       /* offline support is best effort */
