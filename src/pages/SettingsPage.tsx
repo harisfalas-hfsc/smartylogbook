@@ -56,7 +56,7 @@ const SettingsPage = () => {
         <div className="min-w-0">
           <p className="truncate text-base font-bold text-foreground">{profile?.username ?? 'Your logbook'}</p>
           <p className="truncate text-xs text-muted-foreground">{user?.email}</p>
-          <p className="mt-1 text-[11px] font-semibold text-primary">{memories.length} memories stored</p>
+          <p className="mt-1 text-[11px] font-semibold text-primary">{memories.length} Logbook records</p>
         </div>
       </section>
 

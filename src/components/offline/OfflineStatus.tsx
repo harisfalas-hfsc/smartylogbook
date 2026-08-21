@@ -76,7 +76,7 @@ const OfflineStatus = () => {
         <Icon
           className={`h-3.5 w-3.5 shrink-0 text-primary ${sync === 'syncing' ? 'animate-spin' : ''}`}
         />
-        <span className="max-w-[60vw] truncate">{label}</span>
+        <span className="max-w-[calc(100vw-7rem)] whitespace-normal leading-tight sm:max-w-md">{label}</span>
         <button
           type="button"
           aria-label="Hide status"

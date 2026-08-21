@@ -39,6 +39,7 @@ export interface Memory {
 export type NewMemory = Partial<Memory> & { title: string };
 
 const LOGBOOK_CACHE_KEY = 'logbook:list';
+const MEMORY_FIELDS = 'id,user_id,kind,module,title,summary,content,ai_tags,mood,amount,currency,location,attachment_url,metadata,related_ids,relation_note,deleted_at,status,completed_at,due_at,occurred_at,created_at,updated_at';
 
 async function fetchCompleteLogbook(): Promise<Memory[]> {
   const rows: Memory[] = [];
@@ -46,7 +47,9 @@ async function fetchCompleteLogbook(): Promise<Memory[]> {
   for (let start = 0; ; start += pageSize) {
     const { data, error } = await supabase
       .from('memories')
-      .select('*')
+      // Embeddings are large search-only vectors. Downloading them into every
+      // screen and the offline copy wastes storage and can make IndexedDB fail.
+      .select(MEMORY_FIELDS)
       .is('deleted_at', null)
       .order('occurred_at', { ascending: false })
       .range(start, start + pageSize - 1);
@@ -108,7 +111,7 @@ export const useMemories = (options?: { module?: string; limit?: number }) => {
       setFromCache(result.fromCache);
       setNoCopy(false);
     } catch {
-      setMemories([]);
+      // A failed refresh must not erase records already visible on screen.
       setNoCopy(!isOnline());
     }
     setLoading(false);
@@ -320,7 +323,7 @@ export const useTrash = () => {
         async () => {
           const { data, error } = await supabase
             .from('memories')
-            .select('*')
+            .select(MEMORY_FIELDS)
             .not('deleted_at', 'is', null)
             .order('deleted_at', { ascending: false });
           if (error) throw new Error(error.message);

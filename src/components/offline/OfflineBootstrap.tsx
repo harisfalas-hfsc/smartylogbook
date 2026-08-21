@@ -17,6 +17,8 @@ import {
   markSyncStarted,
 } from '@/lib/offline/db';
 
+const MEMORY_FIELDS = 'id,user_id,kind,module,title,summary,content,ai_tags,mood,amount,currency,location,attachment_url,metadata,related_ids,relation_note,deleted_at,status,completed_at,due_at,occurred_at,created_at,updated_at';
+
 type QueryResult<T> = { data: T | null; error: { message?: string } | null };
 type MemoryRow = {
   id: string;
@@ -38,7 +40,7 @@ async function fetchEveryMemory(deleted: boolean): Promise<MemoryRow[]> {
   for (let start = 0; ; start += pageSize) {
     let query = supabase
       .from('memories')
-      .select('*')
+      .select(MEMORY_FIELDS)
       .order(deleted ? 'deleted_at' : 'occurred_at', { ascending: false })
       .range(start, start + pageSize - 1);
     query = deleted ? query.not('deleted_at', 'is', null) : query.is('deleted_at', null);
@@ -80,7 +82,6 @@ const OfflineBootstrap = () => {
         save('account:preferences', preferences ?? null),
         save('logbook:list', memories),
         save('logbook:trash', trash),
-        ...memories.map((record) => save(`record:${record.id}`, record)),
       ]);
 
       // A successful network response is not enough: prove the complete list
