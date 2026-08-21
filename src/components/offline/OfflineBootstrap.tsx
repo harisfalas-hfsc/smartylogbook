@@ -191,7 +191,9 @@ const OfflineBootstrap = () => {
       const media = await cacheMediaUrls(mediaEntries, { concurrency: 4, isActive: () => active });
       await Promise.all(media.storedKeys.map((path) => save(`media:${path}`, path)));
       await save('progress:media', { requested: media.requested, stored: media.stored });
-      if (media.failed > 0) throw new Error(`${media.failed} media files did not download`);
+      // Missing or removed attachments must not keep the whole account in a
+      // retry loop. Readiness already records the exact stored/requested
+      // counts, so the offline status can honestly report partial media.
       await markSyncPhaseDone('media');
     };
 
