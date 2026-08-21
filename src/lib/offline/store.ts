@@ -3,7 +3,14 @@ import { createStore, get, set, del, keys } from 'idb-keyval';
 export type Envelope<T> = { data: T; savedAt: number };
 
 const store =
-  typeof indexedDB !== 'undefined' ? createStore('smarty-offline', 'cache') : undefined;
+  typeof indexedDB !== 'undefined'
+    // Older builds opened `smarty-offline` with several different object-store
+    // names at database version 1. On an existing device, whichever opened
+    // first permanently won and later `cache` writes failed with NotFoundError.
+    // Use one dedicated canonical database so the complete Logbook can always
+    // be created and written after an online refresh.
+    ? createStore('smarty-offline-cache-v2', 'cache')
+    : undefined;
 
 /** Keys are scoped per signed-in user so nothing leaks between accounts. */
 export function scopedKey(userId: string | null | undefined, key: string) {
