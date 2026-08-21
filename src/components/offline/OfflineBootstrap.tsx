@@ -191,7 +191,9 @@ const OfflineBootstrap = () => {
       const media = await cacheMediaUrls(mediaEntries, { concurrency: 4, isActive: () => active });
       await Promise.all(media.storedKeys.map((path) => save(`media:${path}`, path)));
       await save('progress:media', { requested: media.requested, stored: media.stored });
-      if (media.failed > 0) throw new Error(`${media.failed} media files did not download`);
+      // Missing or removed attachments must not keep the whole account in a
+      // retry loop. Readiness already records the exact stored/requested
+      // counts, so the offline status can honestly report partial media.
       await markSyncPhaseDone('media');
     };
 
@@ -240,13 +242,18 @@ const OfflineBootstrap = () => {
         await trimCache(6000);
 
         const partial = phaseResults.some((result) => result.status === 'rejected');
-        await markSyncFinished(partial ? new Error('Some optional data will retry') : undefined);
-        completedState = partial ? 'error' : 'synced';
-        if (partial && active && isOnline()) retryTimer = window.setTimeout(() => void prefetch(), 20_000);
+        // The complete Logbook is already durably stored at this point. A
+        // temporary failure downloading an optional file or supporting list
+        // must not tell the member that synchronization failed. Keep retrying
+        // those extras silently while reporting the usable offline copy as
+        // synchronized.
+        await markSyncFinished();
+        completedState = 'synced';
+        if (partial && active && isOnline()) retryTimer = window.setTimeout(() => void prefetch(), 5 * 60_000);
       } catch (error) {
         await markSyncFinished(error);
         completedState = 'error';
-        if (active && isOnline()) retryTimer = window.setTimeout(() => void prefetch(), 20_000);
+        if (active && isOnline()) retryTimer = window.setTimeout(() => void prefetch(), 60_000);
       } finally {
         // Keep the indicator tied to the real sync state until every durable
         // write above has finished. The minimum display time only makes that
