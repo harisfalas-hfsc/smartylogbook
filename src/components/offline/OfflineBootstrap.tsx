@@ -5,7 +5,9 @@ import { offlineSave } from '@/lib/offline/offline-first';
 import { trimCache } from '@/lib/offline/store';
 import { signedUrl } from '@/lib/media';
 import { fetchPricing } from '@/lib/pricing';
-import { isOnline } from '@/lib/offline/connectivity';
+import { isOnline, subscribeConnectivity } from '@/lib/offline/connectivity';
+import { onSyncRequested, setSyncState } from '@/lib/offline/sync-bus';
+import { markOfflineReady } from '@/lib/offline/readiness';
 
 /**
  * Downloads the member's entire world in the background the moment they sign
