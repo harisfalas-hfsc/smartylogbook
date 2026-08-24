@@ -118,7 +118,7 @@ export const useReminders = () => {
     attachment_name?: string | null;
   }) => {
     if (!user) return { error: new Error('Not signed in') };
-    const { error } = await supabase.from('reminders').insert({
+    const row = {
       user_id: user.id,
       title: r.title,
       type: r.type,
@@ -129,10 +129,43 @@ export const useReminders = () => {
       notes: r.notes ?? null,
       attachment_url: r.attachment_url ?? null,
       attachment_name: r.attachment_name ?? null,
-    } as never);
+    };
+
+    if (!isOnline()) {
+      // A new file still needs a connection to upload, exactly like new
+      // logbook entries with attachments.
+      if (r.attachment_url) return { error: new Error(OFFLINE_NOTICE) };
+      const id = newLocalId();
+      const local: Reminder = {
+        id,
+        user_id: user.id,
+        title: row.title,
+        type: row.type,
+        module: row.module,
+        amount: row.amount,
+        due_at: row.due_at,
+        repeat_rule: row.repeat_rule,
+        notified_at: null,
+        done: false,
+        notes: row.notes,
+        attachment_url: null,
+        attachment_name: null,
+        status: 'open',
+        completed_at: null,
+      };
+      await enqueueAction('reminder-create', { row: { ...row, id } }, user.id);
+      await updateCachedReminders(user.id, (rows) =>
+        [...rows, local].sort((a, b) => a.due_at.localeCompare(b.due_at)),
+      );
+      setReminders((prev) => [...prev, local].sort((a, b) => a.due_at.localeCompare(b.due_at)));
+      return { error: null };
+    }
+
+    const { error } = await supabase.from('reminders').insert(row as never);
     if (!error) await load();
     return { error };
   };
+
 
   const clearAlert = async (id: string, title?: string) => {
     await Promise.all([
