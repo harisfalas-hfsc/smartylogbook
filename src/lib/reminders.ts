@@ -4,9 +4,13 @@ import {
   FileText, Briefcase, Gift,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { offlineFirst } from '@/lib/offline/offline-first';
+import { offlineFirst, offlineRead, offlineSave } from '@/lib/offline/offline-first';
+import { isOnline } from '@/lib/offline/connectivity';
+import { enqueueAction } from '@/lib/offline/queue';
+import { OFFLINE_NOTICE } from '@/lib/offline/useOnlineStatus';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Preferences } from '@/lib/preferences';
+
 
 export type ReminderType =
   | 'task' | 'bill' | 'health' | 'event' | 'fitness' | 'nutrition'
