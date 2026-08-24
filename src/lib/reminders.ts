@@ -49,6 +49,28 @@ export const REMINDER_TYPES: { id: ReminderType; label: string; icon: typeof Bel
 export const reminderIcon = (type: string) =>
   REMINDER_TYPES.find((t) => t.id === type)?.icon ?? Bell;
 
+const REMINDERS_CACHE_KEY = 'reminders:list';
+
+/** Keeps the on-device copy in step with a change made while offline. */
+async function updateCachedReminders(
+  userId: string | undefined,
+  transform: (rows: Reminder[]) => Reminder[],
+) {
+  if (!userId) return;
+  const cached = await offlineRead<Reminder[]>(REMINDERS_CACHE_KEY, userId);
+  if (!cached) return;
+  await offlineSave(REMINDERS_CACHE_KEY, transform(cached), userId);
+}
+
+const newLocalId = () => {
+  try {
+    return crypto.randomUUID();
+  } catch {
+    return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+  }
+};
+
+
 export const useReminders = () => {
   const { user } = useAuth();
   const [reminders, setReminders] = useState<Reminder[]>([]);
