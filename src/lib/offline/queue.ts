@@ -8,7 +8,9 @@ export type QueuedAction = {
     | 'memory-reclassify'
     | 'message-read'
     | 'message-archive'
+    | 'reminder-create'
     | 'reminder-patch'
+    | 'reminder-delete'
     | 'alert-dismiss';
   payload: Record<string, unknown>;
   queuedAt: number;
