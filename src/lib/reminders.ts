@@ -195,9 +195,23 @@ export const useReminders = () => {
   const patch = async (id: string, values: Partial<Reminder>) => {
     const previous = reminders.find((r) => r.id === id);
     setReminders((prev) => prev.map((r) => (r.id === id ? { ...r, ...values } : r)));
+
+    if (!isOnline()) {
+      await enqueueAction('reminder-patch', { id, patch: values }, user?.id);
+      await updateCachedReminders(user?.id, (rows) =>
+        rows.map((r) => (r.id === id ? { ...r, ...values } : r)),
+      );
+      return { error: null };
+    }
+
     const { error } = await supabase.from('reminders').update(values as never).eq('id', id);
     if (error && previous) {
       setReminders((prev) => prev.map((r) => (r.id === id ? previous : r)));
+    }
+    if (!error) {
+      await updateCachedReminders(user?.id, (rows) =>
+        rows.map((r) => (r.id === id ? { ...r, ...values } : r)),
+      );
     }
     return { error };
   };
@@ -209,7 +223,7 @@ export const useReminders = () => {
       completed_at: done ? new Date().toISOString() : null,
     });
     if (error) return { error };
-    if (done) await clearAlert(id);
+    if (done && isOnline()) await clearAlert(id);
     return { error: null };
   };
 
@@ -220,14 +234,23 @@ export const useReminders = () => {
   const remove = async (id: string) => {
     const removed = reminders.find((r) => r.id === id);
     setReminders((prev) => prev.filter((r) => r.id !== id));
+
+    if (!isOnline()) {
+      await enqueueAction('reminder-delete', { id, title: removed?.title ?? null }, user?.id);
+      await updateCachedReminders(user?.id, (rows) => rows.filter((r) => r.id !== id));
+      return { error: null };
+    }
+
     const { error } = await supabase.from('reminders').delete().eq('id', id);
     if (error) {
       if (removed) setReminders((prev) => [...prev, removed].sort((a, b) => a.due_at.localeCompare(b.due_at)));
       return { error };
     }
+    await updateCachedReminders(user?.id, (rows) => rows.filter((r) => r.id !== id));
     await clearAlert(id, removed?.title);
     return { error: null };
   };
+
 
   return { reminders, loading, reload: load, create, toggleDone, remove, update: patch, reschedule };
 };
