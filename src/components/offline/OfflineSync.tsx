@@ -29,10 +29,21 @@ const OfflineSync = () => {
             .eq('id', p.id as string);
           return fail(error);
         }
+        case 'reminder-create': {
+          const { error } = await supabase.from('reminders').insert(p.row as never);
+          return fail(error);
+        }
         case 'reminder-patch': {
           const { error } = await supabase
             .from('reminders')
             .update(p.patch as never)
+            .eq('id', p.id as string);
+          return fail(error);
+        }
+        case 'reminder-delete': {
+          const { error } = await supabase
+            .from('reminders')
+            .delete()
             .eq('id', p.id as string);
           return fail(error);
         }
