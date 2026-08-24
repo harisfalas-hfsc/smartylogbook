@@ -4,9 +4,13 @@ import {
   FileText, Briefcase, Gift,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { offlineFirst } from '@/lib/offline/offline-first';
+import { offlineFirst, offlineRead, offlineSave } from '@/lib/offline/offline-first';
+import { isOnline } from '@/lib/offline/connectivity';
+import { enqueueAction } from '@/lib/offline/queue';
+import { OFFLINE_NOTICE } from '@/lib/offline/useOnlineStatus';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Preferences } from '@/lib/preferences';
+
 
 export type ReminderType =
   | 'task' | 'bill' | 'health' | 'event' | 'fitness' | 'nutrition'
@@ -44,6 +48,28 @@ export const REMINDER_TYPES: { id: ReminderType; label: string; icon: typeof Bel
 
 export const reminderIcon = (type: string) =>
   REMINDER_TYPES.find((t) => t.id === type)?.icon ?? Bell;
+
+const REMINDERS_CACHE_KEY = 'reminders:list';
+
+/** Keeps the on-device copy in step with a change made while offline. */
+async function updateCachedReminders(
+  userId: string | undefined,
+  transform: (rows: Reminder[]) => Reminder[],
+) {
+  if (!userId) return;
+  const cached = await offlineRead<Reminder[]>(REMINDERS_CACHE_KEY, userId);
+  if (!cached) return;
+  await offlineSave(REMINDERS_CACHE_KEY, transform(cached), userId);
+}
+
+const newLocalId = () => {
+  try {
+    return crypto.randomUUID();
+  } catch {
+    return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+  }
+};
+
 
 export const useReminders = () => {
   const { user } = useAuth();
@@ -92,7 +118,7 @@ export const useReminders = () => {
     attachment_name?: string | null;
   }) => {
     if (!user) return { error: new Error('Not signed in') };
-    const { error } = await supabase.from('reminders').insert({
+    const row = {
       user_id: user.id,
       title: r.title,
       type: r.type,
@@ -103,10 +129,43 @@ export const useReminders = () => {
       notes: r.notes ?? null,
       attachment_url: r.attachment_url ?? null,
       attachment_name: r.attachment_name ?? null,
-    } as never);
+    };
+
+    if (!isOnline()) {
+      // A new file still needs a connection to upload, exactly like new
+      // logbook entries with attachments.
+      if (r.attachment_url) return { error: new Error(OFFLINE_NOTICE) };
+      const id = newLocalId();
+      const local: Reminder = {
+        id,
+        user_id: user.id,
+        title: row.title,
+        type: row.type,
+        module: row.module,
+        amount: row.amount,
+        due_at: row.due_at,
+        repeat_rule: row.repeat_rule,
+        notified_at: null,
+        done: false,
+        notes: row.notes,
+        attachment_url: null,
+        attachment_name: null,
+        status: 'open',
+        completed_at: null,
+      };
+      await enqueueAction('reminder-create', { row: { ...row, id } }, user.id);
+      await updateCachedReminders(user.id, (rows) =>
+        [...rows, local].sort((a, b) => a.due_at.localeCompare(b.due_at)),
+      );
+      setReminders((prev) => [...prev, local].sort((a, b) => a.due_at.localeCompare(b.due_at)));
+      return { error: null };
+    }
+
+    const { error } = await supabase.from('reminders').insert(row as never);
     if (!error) await load();
     return { error };
   };
+
 
   const clearAlert = async (id: string, title?: string) => {
     await Promise.all([
@@ -136,9 +195,23 @@ export const useReminders = () => {
   const patch = async (id: string, values: Partial<Reminder>) => {
     const previous = reminders.find((r) => r.id === id);
     setReminders((prev) => prev.map((r) => (r.id === id ? { ...r, ...values } : r)));
+
+    if (!isOnline()) {
+      await enqueueAction('reminder-patch', { id, patch: values }, user?.id);
+      await updateCachedReminders(user?.id, (rows) =>
+        rows.map((r) => (r.id === id ? { ...r, ...values } : r)),
+      );
+      return { error: null };
+    }
+
     const { error } = await supabase.from('reminders').update(values as never).eq('id', id);
     if (error && previous) {
       setReminders((prev) => prev.map((r) => (r.id === id ? previous : r)));
+    }
+    if (!error) {
+      await updateCachedReminders(user?.id, (rows) =>
+        rows.map((r) => (r.id === id ? { ...r, ...values } : r)),
+      );
     }
     return { error };
   };
@@ -150,7 +223,7 @@ export const useReminders = () => {
       completed_at: done ? new Date().toISOString() : null,
     });
     if (error) return { error };
-    if (done) await clearAlert(id);
+    if (done && isOnline()) await clearAlert(id);
     return { error: null };
   };
 
@@ -161,14 +234,23 @@ export const useReminders = () => {
   const remove = async (id: string) => {
     const removed = reminders.find((r) => r.id === id);
     setReminders((prev) => prev.filter((r) => r.id !== id));
+
+    if (!isOnline()) {
+      await enqueueAction('reminder-delete', { id, title: removed?.title ?? null }, user?.id);
+      await updateCachedReminders(user?.id, (rows) => rows.filter((r) => r.id !== id));
+      return { error: null };
+    }
+
     const { error } = await supabase.from('reminders').delete().eq('id', id);
     if (error) {
       if (removed) setReminders((prev) => [...prev, removed].sort((a, b) => a.due_at.localeCompare(b.due_at)));
       return { error };
     }
+    await updateCachedReminders(user?.id, (rows) => rows.filter((r) => r.id !== id));
     await clearAlert(id, removed?.title);
     return { error: null };
   };
+
 
   return { reminders, loading, reload: load, create, toggleDone, remove, update: patch, reschedule };
 };

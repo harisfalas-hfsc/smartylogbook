@@ -1,4 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
+import { createStripeClient, type StripeEnv } from "../_shared/stripe.ts";
+import { notifyOnce } from "../_shared/billing-notify.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -144,6 +146,38 @@ Deno.serve(async (req) => {
 
     if (action === "delete") {
       if (confirm !== "DELETE") return json({ error: "Confirmation required" }, 400);
+
+      /* Cancel any live Stripe subscription first: once the account is gone the
+       * member can no longer stop the monthly charge themselves. Deletion must
+       * never be blocked by a billing error, so failures are recorded as a
+       * message for every admin instead. */
+      const { data: sub } = await admin
+        .from("subscriptions")
+        .select("*")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (sub?.stripe_subscription_id && sub.status === "active") {
+        try {
+          const env = (sub.environment === "live" ? "live" : "sandbox") as StripeEnv;
+          const stripe = createStripeClient(env);
+          await stripe.subscriptions.cancel(sub.stripe_subscription_id as string);
+        } catch (e) {
+          const detail = e instanceof Error ? e.message : "Unknown error";
+          console.error("account delete: Stripe cancellation failed", detail);
+          const { data: admins } = await admin.from("user_roles").select("user_id").eq("role", "admin");
+          for (const a of admins ?? []) {
+            await notifyOnce(admin, {
+              userId: a.user_id as string,
+              title: "Manual Stripe cancellation needed",
+              body: `Account ${user.email ?? user.id} was deleted but its Stripe subscription ${sub.stripe_subscription_id} could not be cancelled automatically (${detail}). Please cancel it manually.`,
+              dedupeKey: `admin:stripe-cancel-failed:${sub.stripe_subscription_id}`,
+              level: "critical",
+            }).catch(() => {});
+          }
+        }
+      }
+
 
       const { data: objects } = await admin.storage.from("captures").list(user.id, { limit: 1000 });
       const paths = (objects ?? []).map((o) => `${user.id}/${o.name}`);
