@@ -67,20 +67,33 @@ const AuthPage = () => {
         setLoading(false);
         return;
       }
-      const { error } = await signUp(email, password, username);
+      const { error, alreadyRegistered } = await signUp(email, password, username);
       if (error) {
-        toast.error(error.message);
+        const known = /already|registered|exists/i.test(error.message);
+        toast.error(known ? 'This email is already registered. Please sign in or reset your password.' : error.message);
+        if (known) setMode('login');
+      } else if (alreadyRegistered) {
+        toast.error('This email is already registered. Please sign in, or use "Forgot password?" to reset it.');
+        setMode('login');
+        setPassword('');
+        setConfirmPassword('');
       } else {
-        toast.success('Account created! Check your email to verify.');
+        toast.success('Account created! Check your email to verify before signing in.');
         setMode('login');
       }
+
     } else if (mode === 'login') {
       const { error } = await signIn(email, password);
       if (error) {
-        toast.error(error.message);
+        toast.error(
+          /email not confirmed/i.test(error.message)
+            ? 'Please confirm your email first — check your inbox for the verification link.'
+            : error.message,
+        );
       } else {
         navigate('/app');
       }
+
     } else {
       const { error } = await resetPassword(email);
       if (error) {
